@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decora | Admin Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+        }
+
+        .premium-font {
+            font-family: 'Playfair+Display', serif;
+        }
+
+        /* Custom Glow Effect for the Login Card */
+        .login-card {
+            background: linear-gradient(145deg, #161616, #0f0f0f);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Input field styling */
+        .custom-input {
+            background-color: #0f0f0f !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .custom-input:focus {
+            border-color: #D4AF37;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-6">
+
+    <div class="max-w-md w-full login-card p-10 rounded-[2rem] border border-white/5 relative overflow-hidden">
+        
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50"></div>
+
+        <div class="text-center mb-10">
+            <h2 class="premium-font text-4xl text-white mb-2 uppercase tracking-[0.2em]">
+                Decora <span class="text-[#D4AF37]">Admin</span>
+            </h2>
+            <p class="text-gray-500 text-[9px] tracking-[0.3em] uppercase font-semibold">
+                Authorization Required
+            </p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="space-y-2">
+                <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 ml-4 font-bold">Username</label>
+                <input type="text" name="username" required autocomplete="off"
+                    class="w-full custom-input rounded-full px-6 py-4 text-white focus:outline-none text-sm">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 ml-4 font-bold">Password</label>
+                <input type="password" name="password" required
+                    class="w-full custom-input rounded-full px-6 py-4 text-white focus:outline-none text-sm">
+            </div>
+
+            {% if messages %}
+                <div class="pt-2">
+                    {% for message in messages %}
+                        <div class="bg-red-500/5 border border-red-500/20 py-3 rounded-xl">
+                            <p class="text-red-500 text-[10px] uppercase text-center font-bold tracking-widest">
+                                {{ message }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <button type="submit" 
+                class="w-full bg-[#D4AF37] hover:bg-white text-black py-5 rounded-full font-black uppercase text-[11px] tracking-[0.25em] transition-all duration-500 transform hover:shadow-[0_0_30px_rgba(212,175,55,0.2)] mt-4">
+                Enter Dashboard
+            </button>
+        </form>
+
+        <div class="mt-10 text-center">
+            <a href="/" class="text-gray-600 hover:text-[#D4AF37] text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-300">
+                ← Return to Gallery
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

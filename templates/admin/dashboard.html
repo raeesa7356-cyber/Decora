@@ -1,0 +1,108 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-10">
+        <h2 class="text-3xl font-light text-white tracking-tight">Executive <span class="font-bold">Overview</span></h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    {% for item in stats %}
+    <div class="bg-[#111111] p-7 rounded-2xl border border-white/5 hover:border-[#D4AF37]/30 transition-all duration-500 group">
+        <div class="flex justify-between items-start mb-5">
+            <div class="w-10 h-10 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black transition-all">
+                <i class="fa-solid fa-{{ item.icon }}"></i>
+            </div>
+            <span class="text-[#D4AF37] text-[10px] font-bold tracking-widest">{{ item.growth }}</span>
+        </div>
+        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">{{ item.title }}</p>
+        <h3 class="text-2xl font-bold text-white mt-1">{{ item.value }}</h3>
+    </div>
+    {% endfor %}
+</div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <div class="lg:col-span-2 bg-[#111111] p-8 rounded-3xl border border-white/5 shadow-2xl">
+            <h3 class="font-bold text-white mb-8 tracking-tight">Revenue Analytics</h3>
+            <canvas id="salesChart" height="140"></canvas>
+        </div>
+
+        <div class="bg-[#111111] p-8 rounded-3xl border border-white/5 flex flex-col">
+            <h3 class="font-bold text-white mb-8">Quick Actions</h3>
+            <div class="space-y-3">
+                <button class="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-[#D4AF37] text-gray-400 hover:text-black rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-widest">
+                    <span>Add Product</span><i class="fa-solid fa-plus"></i>
+                </button>
+                <button class="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-[#D4AF37] text-gray-400 hover:text-black rounded-2xl transition-all duration-300 font-bold text-xs uppercase tracking-widest">
+                    <span>View Orders</span><i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="mt-auto pt-8 border-t border-white/5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Nodes</span>
+                    <span class="text-[9px] text-[#D4AF37] font-bold uppercase"><i class="fa-solid fa-circle text-[6px] mr-2 animate-pulse"></i> All Systems Nominal</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-[#111111] rounded-3xl border border-white/5 overflow-hidden">
+        <div class="p-8 border-b border-white/5 flex justify-between items-center">
+            <h3 class="font-bold text-white">Recent Transactions</h3>
+            <a href="#" class="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">Archive</a>
+        </div>
+        <table class="w-full text-left">
+            <thead class="bg-black/20 text-[10px] uppercase text-gray-600 font-bold tracking-widest">
+                <tr>
+                    <th class="px-8 py-5">Order</th>
+                    <th class="px-8 py-5">Client</th>
+                    <th class="px-8 py-5">Total</th>
+                    <th class="px-8 py-5">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-sm text-gray-400">
+                <tr class="hover:bg-white/[0.02] transition">
+                    <td class="px-8 py-5 text-white font-medium">#ORD-1001</td>
+                    <td class="px-8 py-5">Eleanor James</td>
+                    <td class="px-8 py-5 font-bold text-white">$120.00</td>
+                    <td class="px-8 py-5"><span class="px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-[9px] font-bold uppercase">Processing</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const goldGradient = ctx.createLinearGradient(0, 0, 0, 400);
+    goldGradient.addColorStop(0, 'rgba(212, 175, 55, 0.2)');
+    goldGradient.addColorStop(1, 'rgba(212, 175, 55, 0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                data: [3000, 4500, 3800, 5200, 8000, 6500, 9500],
+                borderColor: '#D4AF37',
+                borderWidth: 3,
+                backgroundColor: goldGradient,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#D4AF37',
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 2
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#444' } },
+                x: { grid: { display: false }, ticks: { color: '#444' } }
+            }
+        }
+    });
+</script>
+{% endblock %}

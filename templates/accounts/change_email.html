@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decora | Change Email</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --matte-black: #1a1a1a;
+            --deep-black: #0f0f0f;
+            --error-red: #ff4d4d;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .change-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--matte-black);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            box-shadow: 0 15px-50px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+
+        .icon-box {
+            font-size: 40px;
+            color: var(--primary-gold);
+            margin-bottom: 20px;
+        }
+
+        .theme-title {
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--primary-gold);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: #fff;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-gold);
+        }
+
+        .btn-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-send {
+            padding: 15px;
+            background: var(--primary-gold);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-send:hover {
+            background: #b8952e;
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: #888;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+        }
+
+        .btn-cancel:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="change-container">
+    <div class="icon-box">✉</div>
+    <h2 class="theme-title">Change Email</h2>
+    <p class="subtitle">Enter your new email address. We will send a 6-digit OTP to verify it.</p>
+{% if messages %}
+    <div class="messages-container" style="margin-bottom: 20px;">
+        {% for message in messages %}
+            <div style="padding: 10px; border-radius: 8px; font-size: 0.9rem; 
+                        background: {% if message.tags == 'error' %}rgba(255, 77, 77, 0.2){% else %}rgba(212, 175, 55, 0.2){% endif %}; 
+                        color: {% if message.tags == 'error' %}#ff4d4d{% else %}#D4AF37{% endif %}; 
+                        border: 1px solid {% if message.tags == 'error' %}#ff4d4d{% else %}#D4AF37{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        <div class="input-group">
+            <label>New Email Address</label>
+            <input type="email" name="new_email" placeholder="example@gmail.com" required>
+        </div>
+
+        <!-- Inside change_email.html -->
+<div class="btn-stack">
+    <button type="submit" class="btn-send">Send OTP</button>
+    <!-- Replace history.back() with the actual URL name of your edit profile view -->
+    <a href="{% url 'edit_profile' %}" class="btn-cancel" style="text-align: center; display: block; margin-top: 10px;">Cancel and Go Back</a>
+</div>
+    </form>
+</div>
+
+</body>
+</html>

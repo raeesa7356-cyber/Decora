@@ -1,0 +1,11 @@
+# Django
+db.sqlite3
+.venv/
+__pycache__/
+*.pyc
+
+# Sensitive Data
+.env
+
+# Media
+media/

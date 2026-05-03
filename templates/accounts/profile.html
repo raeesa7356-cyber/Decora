@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+    
+    .premium-font {
+        font-family: 'Playfair+Display', serif;
+    }
+
+    /* Custom scrollbar for consistency with the dark theme */
+    .custom-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+        background: #111;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+        background: #D4AF37;
+    }
+</style>
+
+<div class="min-h-screen bg-[#0A0A0A] text-gray-300 p-8 md:p-12 custom-scroll">
+    <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-10">
+        
+        <aside>
+            <div class="bg-[#111111] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl relative">
+                
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-60"></div>
+
+                <div class="w-32 h-32 rounded-3xl border-4 border-[#D4AF37]/30 p-1 mb-6 mt-4">
+    <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=D4AF37&color=000&size=200" 
+         alt="{{ user.username }}" class="w-full h-full rounded-2xl">
+</div>
+
+<h2 class="text-white text-2xl font-bold premium-font tracking-tighter">{{ user.first_name| title }}</h2>
+
+<p class="text-gray-500 text-[10px] uppercase tracking-[0.2em] mb-8 font-semibold">
+    premium member
+</p>
+                
+                <a href="{%url 'edit_profile'%}" class="w-full bg-[#D4AF37] hover:bg-white text-black py-3.5 rounded-full font-bold uppercase text-[10px] tracking-[0.2em] transition-all transform hover:scale-[1.02] mb-10">
+                    Edit Profile
+                </a>
+                
+                <div class="w-full border-t border-white/5 pt-6 text-left space-y-1">
+    <p class="text-[10px] text-gray-600 uppercase tracking-widest">Member Since</p>
+    <p class="text-sm text-gray-300 font-medium">{{ user.date_joined|date:"F Y" }}</p>
+</div>
+            </div>
+        </aside>
+
+        <main class="space-y-10">
+            
+            <section>
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="premium-font text-white text-3xl font-bold tracking-tight">My Orders</h3>
+                    <a href="#" class="text-[10px] text-gray-600 hover:text-[#D4AF37] uppercase font-bold tracking-widest transition">View All Orders</a>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-[#111111] border border-white/5 p-6 rounded-2xl flex items-center justify-between transition hover:border-[#D4AF37]/20">
+                        <div class="flex items-center space-x-6">
+                            <img src="path/to/armchair.jpg" alt="Luna Velvet Armchair" class="w-16 h-16 rounded-xl bg-[#0f0f0f] p-2 border border-white/5">
+                            <div>
+                                <p class="text-xs text-gray-600 font-mono tracking-wider">ORDER #DEC-33912</p>
+                                <p class="text-white font-semibold mt-1">Luna Velvet Armchair</p>
+                                <p class="text-[#D4AF37] font-medium text-xs mt-0.5">$1,240.00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-6 text-right">
+                            <span class="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[9px] font-black uppercase tracking-tighter">Pending</span>
+                            <a href="#" class="text-[10px] text-[#D4AF37] hover:text-white uppercase font-bold tracking-widest transition">View Details</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#111111] border border-white/5 p-6 rounded-2xl flex items-center justify-between transition hover:border-[#D4AF37]/20">
+                        <div class="flex items-center space-x-6">
+                            <img src="path/to/tablelamp.jpg" alt="Aurelia Marble Table Lamp" class="w-16 h-16 rounded-xl bg-[#0f0f0f] p-2 border border-white/5">
+                            <div>
+                                <p class="text-xs text-gray-600 font-mono tracking-wider">ORDER #DEC-82756</p>
+                                <p class="text-white font-semibold mt-1">Aurelia Marble Table Lamp</p>
+                                <p class="text-[#D4AF37] font-medium text-xs mt-0.5">$485.00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-6 text-right">
+                            <span class="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[9px] font-black uppercase tracking-tighter">Delivered</span>
+                            <a href="#" class="text-[10px] text-[#D4AF37] hover:text-white uppercase font-bold tracking-widest transition">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<section>
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="premium-font text-white text-3xl font-bold tracking-tight">Saved Addresses</h3>
+        <a href="{% url 'manage_addresses' %}" class="text-[10px] text-gray-600 hover:text-[#D4AF37] uppercase font-bold tracking-widest transition">Manage</a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Loop through fetched addresses -->
+        {% for address in addresses %}
+            <div class="bg-[#111111] border border-white/5 p-8 rounded-2xl relative transition hover:border-[#D4AF37]/20">
+                {% if address.is_primary %}
+                    <span class="absolute top-6 right-6 text-[8px] font-black text-[#D4AF37] tracking-[0.2em] uppercase bg-[#D4AF37]/10 px-2.5 py-1 rounded-sm">Primary</span>
+                {% endif %}
+                
+                <h4 class="text-white font-semibold text-lg premium-font mb-4">{{ address.address_type|title }}</h4>
+                <p class="text-sm text-gray-400 leading-relaxed font-light">
+                    {{ address.house_no }}<br>
+                    {{ address.city }}, {{ address.state }} {{ address.pincode }}
+                </p>
+                
+                <a href="{% url 'manage_addresses' %}" class="absolute bottom-6 right-6 text-gray-700 hover:text-[#D4AF37] transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </a>
+            </div>
+        {% endfor %}
+
+        <!-- Premium "Add New" Card with Plus Icon -->
+        {% if address_count < 2 %}
+            <a href="{% url 'manage_addresses' %}" class="group bg-[#111111]/30 border-2 border-dashed border-white/5 rounded-2xl flex flex-col items-center justify-center text-center p-8 min-h-[180px] transition-all duration-500 hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5">
+                <div class="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:border-[#D4AF37] group-hover:rotate-90">
+                    <svg class="w-6 h-6 text-gray-600 group-hover:text-[#D4AF37] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </div>
+                <p class="text-[10px] text-gray-600 uppercase font-bold tracking-[0.2em] group-hover:text-white transition-colors">Add New Address</p>
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Clean Empty State Message -->
+    {% if not addresses %}
+        <div class="mt-8 text-center">
+            <p class="text-[11px] text-gray-700 uppercase tracking-[0.3em] italic">No addresses saved yet</p>
+        </div>
+    {% endif %}
+</section>
+
+            <section>
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="premium-font text-white text-3xl font-bold tracking-tight">My Wallet</h3>
+                </div>
+                <div class="bg-[#111111] border border-white/5 p-10 rounded-3xl flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold">Available Balance</p>
+                        <p class="text-white text-5xl font-bold premium-font mt-2 tracking-tighter">$120.<span class="text-2xl opacity-70">00</span></p>
+                        <a href="#" class="text-[10px] text-[#D4AF37] hover:text-white uppercase font-bold tracking-widest mt-6 block transition">Detailed Transactions <i class="fa-solid fa-chevron-right ml-1 text-[8px]"></i></a>
+                    </div>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-white/5 border border-white/10 text-white px-8 py-3.5 rounded-full text-[10px] uppercase font-bold tracking-widest hover:bg-white/10 transition">Add Money</a>
+                        <a href="#" class="bg-white/5 border border-white/10 text-white px-8 py-3.5 rounded-full text-[10px] uppercase font-bold tracking-widest hover:bg-white/10 transition">Withdraw</a>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+    <div class="flex items-center justify-between mb-5">
+        <h3 class="premium-font text-white text-3xl font-bold tracking-tight">Account Settings</h3>
+    </div>
+    <div class="space-y-4">
+        <!-- Change Password -->
+        <a href="{% url 'change_password' %}" class="bg-[#111111] border border-white/5 p-6 rounded-2xl flex items-center justify-between transition hover:border-[#D4AF37]/20 group">
+            <div class="flex items-center space-x-5">
+                <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[#D4AF37] border border-white/5 shadow-[0_0_15px_rgba(212,175,55,0.1)]">
+                    <!-- Security Lock Icon -->
+                    <i class="fa-solid fa-shield-halved text-xs"></i>
+                </div>
+                <span class="text-white font-medium group-hover:text-[#D4AF37] transition">Change Password</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-[10px] text-gray-700 group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all"></i>
+        </a>
+
+        <!-- Logout Button -->
+        <button onclick="toggleLogoutModal()" class="w-full bg-[#111111] border border-red-500/10 p-6 rounded-2xl flex items-center justify-between transition hover:border-red-500/30 group">
+            <div class="flex items-center space-x-5">
+                <div class="w-10 h-10 rounded-full bg-red-500/5 flex items-center justify-center text-red-500 border border-red-500/10 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                    <!-- Power/Exit Icon -->
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                </div>
+                <span class="text-red-500 font-medium transition">Logout Account</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-[10px] text-red-900 group-hover:text-red-500 group-hover:translate-x-1 transition-all"></i>
+        </button>
+    </div>
+</section>
+
+        </main>
+    </div>
+</div>
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 backdrop-blur-md p-4">
+    <div class="bg-[#111111] border border-white/10 w-full max-w-sm rounded-3xl p-8 shadow-2xl transform transition-all">
+        <div class="text-center">
+            <!-- Warning Circle Logo -->
+            <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+                <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
+            </div>
+            
+            <h3 class="premium-font text-white text-2xl font-bold mb-2">Confirm Logout</h3>
+            <p class="text-gray-500 text-[10px] mb-8 uppercase tracking-[0.2em]">Are you sure you want to end your session?</p>
+            
+            <div class="flex flex-col space-y-3">
+                <a href="{% url 'logout-page' %}" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-full text-[10px] uppercase font-bold tracking-[0.2em] transition shadow-lg shadow-red-600/20">
+                    Yes, Logout
+                </a>
+                <button onclick="toggleLogoutModal()" class="w-full bg-white/5 text-gray-400 py-4 rounded-full text-[10px] uppercase font-bold tracking-[0.2em] transition hover:bg-white/10">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleLogoutModal() {
+        const modal = document.getElementById('logoutModal');
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // Stop scrolling
+        } else {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto'; // Enable scrolling
+        }
+    }
+
+    // Close modal if clicking outside the box
+    window.onclick = function(event) {
+        const modal = document.getElementById('logoutModal');
+        if (event.target == modal) {
+            toggleLogoutModal();
+        }
+    }
+</script>
+{% endblock %}

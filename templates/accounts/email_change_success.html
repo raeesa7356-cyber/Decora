@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decora | Success</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --matte-black: #1a1a1a;
+            --deep-black: #0f0f0f;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .success-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--matte-black);
+            padding: 50px 40px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checkmark-wrapper {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--primary-gold);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 30px;
+        }
+
+        .checkmark {
+            font-size: 40px;
+            color: var(--primary-gold);
+        }
+
+        .theme-title {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .message {
+            color: #bbb;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 35px;
+        }
+
+        .btn-home {
+            display: inline-block;
+            padding: 14px 30px;
+            background: var(--primary-gold);
+            color: #000;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-home:hover {
+            background: #b8952e;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="success-container">
+    <div class="checkmark-wrapper">
+        <div class="checkmark">✓</div>
+    </div>
+    <h2 class="theme-title">Email Updated</h2>
+    <p class="message">
+        Your email and username have been successfully updated. <br>
+        Please use your new email address for future logins.
+    </p>
+
+    <a href="{% url 'edit_profile' %}" class="btn-home">Return to Profile</a>
+</div>
+
+</body>
+</html>

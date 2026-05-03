@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Decora | Member Login{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+    <div class="w-full max-w-[420px] bg-[#1a1a1a] border border-white/5 p-10 rounded-2xl shadow-2xl relative z-10 my-10">
+        
+        <div class="text-center mb-10">
+            <h1 class="premium-font text-4xl text-[#D4AF37] mb-2">Welcome Back</h1>
+            <p class="text-gray-500 text-[10px] uppercase tracking-[0.3em]">Enter your credentials to access Decora</p>
+        </div>
+
+        <form action="{% url 'login' %}" method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Email Address</label>
+                <input type="email" name="username" required
+                    class="w-full bg-[#252525] border border-white/10 rounded-lg px-4 py-3 text-white outline-none transition-all focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30">
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-[10px] uppercase tracking-widest text-gray-500">Password</label>
+                    <a href="{% url 'forgot_password' %}" class="text-[10px] text-[#D4AF37] uppercase tracking-tighter hover:underline">Forgot?</a>                </div>
+                <input type="password" name="password" required
+                    class="w-full bg-[#252525] border border-white/10 rounded-lg px-4 py-3 text-white outline-none transition-all focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30">
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-gradient-to-r from-[#D4AF37] via-[#F1D27B] to-[#B8860B] text-black font-bold py-4 rounded-lg mt-4 hover:opacity-90 transition-opacity uppercase text-xs tracking-[0.2em] shadow-lg shadow-[#D4AF37]/10">
+                Sign In
+            </button>
+        </form>
+
+        <div class="flex items-center my-8">
+            <div class="flex-grow border-t border-white/5"></div>
+            <span class="mx-4 text-gray-600 text-[10px] uppercase tracking-widest">Or</span>
+            <div class="flex-grow border-t border-white/5"></div>
+        </div>
+
+        {% load socialaccount %}
+
+<a href="{% provider_login_url 'google' %}" class="block w-full">
+    <button type="button" class="w-full bg-transparent border border-white/10 text-white py-3.5 rounded-lg flex items-center justify-center space-x-3 hover:bg-white/5 transition-colors group">
+        <img src="https://www.svgrepo.com/show/355037/google.svg" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" alt="Google">
+        <span class="text-xs uppercase tracking-widest">Login with Google</span>
+    </button>
+</a>
+
+        <p class="text-center text-gray-500 text-xs mt-10 tracking-wide">
+            Don't have an account? 
+            <a href="{% url 'signup' %}" class="text-[#D4AF37] hover:text-[#F1D27B] transition-colors font-medium">Create one</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

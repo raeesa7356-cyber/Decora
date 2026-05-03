@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Decora | Premium Indoor Aesthetics{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-dark: #B8860B;
+            --bg-dark: #0f0f0f;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .premium-font { font-family: 'Playfair Display', serif; }
+
+        .nav-link { position: relative; transition: color 0.3s ease; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--gold);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover { color: var(--gold); }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        .glow-spot {
+            position: fixed;
+            z-index: 0;
+            pointer-events: none;
+            border-radius: 50%;
+            filter: blur(120px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div class="glow-spot top-[-10%] left-[-5%] w-[500px] h-[500px] bg-yellow-900/10"></div>
+    <div class="glow-spot bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-orange-900/5"></div>
+
+    {% with url_name=request.resolver_match.url_name %}
+    
+    {# --- NAVBAR SECTION --- #}
+    {% if url_name not in 'login,signup,verify_otp,resend_otp' %}
+        <nav class="sticky top-0 z-50 border-b border-white/5 bg-[#0f0f0f]/80 backdrop-blur-xl">
+            <div class="max-w-[1380px] mx-auto px-6 h-20 flex items-center justify-between">
+                
+                <a href="/" class="premium-font text-3xl text-[#D4AF37] tracking-tighter hover:opacity-80 transition-opacity">
+                    Decora
+                </a>
+
+                <div class="hidden md:flex items-center space-x-12">
+                    <a href="{% url 'home'%}" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Home</a>
+                    <a href="#" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Shop</a>
+                    <a href="#" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Inspiration</a>
+                    <a href="#" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Contact</a>
+                </div>
+
+                {# --- Replace the old icon section with this --- #}
+<div class="flex items-center space-x-7">
+    {% if user.is_authenticated %}
+        <a href="/wishlist" class="text-gray-300 hover:text-[#D4AF37] transition-colors relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+        </a>
+
+        <a href="/cart" class="text-gray-300 hover:text-[#D4AF37] transition-colors relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            <span class="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[9px] font-bold px-1 rounded-full">0</span>
+        </a>
+
+        <div class="relative group">
+            <a href="{% url 'profile'%}" class="flex items-center space-x-2 border border-white/10 rounded-full pl-1 pr-3 py-1 hover:border-[#D4AF37] transition-all">
+                <div class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <span class="text-[9px] uppercase tracking-widest text-gray-400">Account</span>
+            </a>
+            
+            
+        </div>
+
+    {% else %}
+        <a href="{% url 'login' %}" class="text-[11px] uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors">Login</a>
+        <a href="{% url 'signup' %}" class="bg-[#D4AF37] text-black px-7 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-[#B8860B] transition-all transform hover:scale-105">
+            Signup
+        </a>
+    {% endif %}
+</div>
+            </div>
+        </nav>
+    {% endif %}
+
+    {# --- MAIN CONTENT & MESSAGES --- #}
+    <main class="flex-grow relative z-10">
+        {% if messages %}
+            <div class="max-w-[1380px] mx-auto px-6 mt-4">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg bg-[#1a1a1a] border border-[#D4AF37]/30 text-[#D4AF37] text-sm mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {# --- FOOTER SECTION --- #}
+    {% if url_name not in 'login,signup,verify_otp,resend_otp' %}
+    <footer class="bg-[#0a0a0a] border-t border-white/5 pt-24 pb-12 mt-auto relative z-10">
+        <div class="max-w-[1380px] mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
+                
+                <div class="space-y-8">
+                    <h2 class="premium-font text-3xl text-[#D4AF37]">Decora</h2>
+                    <p class="text-gray-500 text-sm leading-relaxed max-w-xs">
+                        Curating exceptional indoor lightings and minimal furniture for the modern home.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-[11px] uppercase tracking-[0.3em] font-semibold mb-8">Navigation</h4>
+                    <ul class="space-y-4 text-gray-500 text-[13px]">
+                        <li><a href="/shop" class="hover:text-[#D4AF37] transition-colors">Shop All</a></li>
+                        <li><a href="#" class="hover:text-[#D4AF37] transition-colors">New Arrivals</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-[11px] uppercase tracking-[0.3em] font-semibold mb-8">Service</h4>
+                    <ul class="space-y-4 text-gray-500 text-[13px]">
+                        <li><a href="#" class="hover:text-[#D4AF37] transition-colors">Order Tracking</a></li>
+                        <li><a href="#" class="hover:text-[#D4AF37] transition-colors">Returns</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-[11px] uppercase tracking-[0.3em] font-semibold mb-8">Newsletter</h4>
+                    <form class="flex border-b border-white/20 focus-within:border-[#D4AF37] transition-colors pb-2">
+                        <input type="email" placeholder="Email Address" class="bg-transparent border-none text-sm text-white w-full outline-none placeholder:text-gray-700">
+                        <button class="text-[#D4AF37] text-xs uppercase font-bold tracking-widest ml-2">Join</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center border-t border-white/5 pt-10 text-[10px] uppercase tracking-[0.2em] text-gray-600">
+                <p>&copy; 2026 Decora Interiors. Designed for Elegance.</p>
+                <div class="flex space-x-8 mt-6 md:mt-0">
+                    <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                    <a href="#" class="hover:text-white transition-colors">Instagram</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+
+    {% endwith %}
+
+</body>
+</html>

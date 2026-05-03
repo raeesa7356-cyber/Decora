@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decora Admin | Luxury Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-[#0A0A0A] flex font-sans text-gray-300">
+
+    <aside class="w-64 h-screen bg-[#111111] border-r border-white/5 flex flex-col sticky top-0">
+        <div class="p-8">
+            <h1 class="text-xl font-bold text-white tracking-tighter uppercase">Decora <span class="text-[#D4AF37]">Admin</span></h1>
+            <p class="text-[#D4AF37]/50 text-[9px] uppercase tracking-[0.2em] mt-1 font-semibold">The Curated Atelier</p>
+        </div>
+
+       <nav class="flex-1 px-4 overflow-y-auto space-y-1">
+    {% for name, icon, url_name in sidebar_items %}
+        <a href="{% if url_name == '#' %}#{% else %}{% url url_name %}{% endif %}" 
+           class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 
+           {% if request.resolver_match.url_name == url_name %} 
+                bg-white/5 text-[#D4AF37] border border-[#D4AF37]/20 
+           {% else %} 
+                text-gray-500 hover:text-[#D4AF37] hover:bg-white/5 
+           {% endif %}">
+            
+            <i class="fa-solid fa-{{ icon }} mr-3 text-xs {% if request.resolver_match.url_name == url_name %} text-[#D4AF37] {% endif %}"></i> 
+            {{ name }}
+        </a>
+    {% endfor %}
+</nav>
+        <div class="p-6 border-t border-white/5 space-y-4">
+            <a href="#" class="flex items-center text-gray-500 hover:text-white transition text-sm">
+                <i class="fa-solid fa-gear mr-3"></i> Settings
+            </a>
+            <a href="{% url 'logout-page' %}" class="flex items-center text-gray-500 hover:text-red-400 transition text-sm">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-3"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-20 bg-[#0A0A0A] border-b border-white/5 flex items-center justify-end px-10 shrink-0">
+    
+    <!-- Right Side: Profile & Notifications -->
+    <div class="flex items-center space-x-8">
+        
+        <!-- Notification Bell -->
+        <button class="relative text-gray-500 hover:text-[#D4AF37] transition">
+            <i class="fa-regular fa-bell text-lg"></i>
+            <!-- Small Notification Dot -->
+            <span class="absolute top-0 right-0 w-2 h-2 bg-[#D4AF37] rounded-full border-2 border-[#0A0A0A]"></span>
+        </button>
+
+        <!-- Vertical Divider -->
+        <div class="h-8 w-px bg-white/5"></div>
+
+        <!-- Admin Profile -->
+        <div class="flex items-center space-x-3">
+            <div class="text-right">
+                <p class="text-xs font-bold text-white leading-none">Raheesa</p>
+                <p class="text-[10px] text-[#D4AF37] font-medium uppercase tracking-tighter mt-1">Super Admin</p>
+            </div>
+            <div class="w-10 h-10 rounded-full border-2 border-[#D4AF37]/30 p-0.5 overflow-hidden">
+                <img src="https://ui-avatars.com/api/?name=Raheesa&background=D4AF37&color=000" class="w-full h-full rounded-full object-cover" alt="Avatar">
+            </div>
+        </div>
+        
+    </div>
+</header>
+
+        <main class="flex-1 overflow-y-auto p-10">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% block extra_js %}
+<script>
+let currentUserId = null;
+
+window.openModal = function(userId, username, isActive) {
+    currentUserId = userId;
+
+    const isCurrentlyActive = (isActive === 'True' || isActive === 'true');
+    const action = isCurrentlyActive ? 'Block' : 'Unblock';
+
+    document.getElementById('modalMessage').innerText =
+        `Are you sure you want to ${action} ${username}?`;
+
+    document.getElementById('confirmModal').classList.remove('hidden');
+};
+
+window.closeModal = function() {
+    document.getElementById('confirmModal').classList.add('hidden');
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById('confirmBtn').addEventListener('click', function () {
+        if (currentUserId) {
+            const form = document.getElementById('form-' + currentUserId);
+            if (form) {
+                form.submit();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+</body>
+</html>
