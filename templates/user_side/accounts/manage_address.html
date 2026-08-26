@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-[#0A0A0A] text-gray-300 p-6 md:p-12">
+    <div class="max-w-[1400px] mx-auto">
+        
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-white/5 pb-8">
+    <div class="flex items-center gap-6">
+        <!-- New Back Button -->
+        <a href="{% url 'profile' %}" class="group flex items-center justify-center w-12 h-12 rounded-full border border-white/10 hover:border-[#D4AF37] transition-all duration-300">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        
+        <div>
+            <h3 class="text-white text-4xl font-bold tracking-tight premium-font">Manage Addresses</h3>
+            <p class="text-gray-500 text-sm mt-2">Add, edit, or remove your delivery locations.</p>
+        </div>
+    </div>
+    
+    <button onclick="showAddForm()" class="mt-4 md:mt-0 bg-[#D4AF37] text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-lg shadow-[#D4AF37]/10">
+        + Add New Address
+    </button>
+</div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            
+            <div class="space-y-6">
+                <h4 class="text-gray-500 text-[10px] uppercase tracking-[0.3em] font-bold mb-6">Saved Locations</h4>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    {% for addr in addresses %}
+                    <div class="bg-[#111111] border border-white/5 p-8 rounded-3xl relative group hover:border-[#D4AF37]/40 transition-all duration-500">
+                        {% if addr.is_primary %}
+                            <span class="absolute top-8 right-8 text-[8px] font-black text-[#D4AF37] tracking-widest bg-[#D4AF37]/10 px-3 py-1 rounded-full border border-[#D4AF37]/20">DEFAULT</span>
+                        {% endif %}
+                        
+<h4 class="text-white font-bold text-lg mb-2 truncate" title="{{ addr.address_type }}">{{ addr.address_type }}</h4>
+<div class="text-sm text-gray-500 leading-relaxed space-y-1">
+    <p class="text-gray-200 font-medium truncate" title="{{ addr.full_name }}">{{ addr.full_name }}</p>
+    <p class="truncate" title="{{ addr.house_no }}">{{ addr.house_no }}</p>
+    <p class="truncate" title="{{ addr.city }}, {{ addr.state }} {{ addr.pincode }}">{{ addr.city }}, {{ addr.state }} {{ addr.pincode }}</p>
+    <p class="text-[11px] font-mono mt-3 text-[#D4AF37]/70 italic tracking-wider">PH: {{ addr.phone_number }}</p>
+</div>
+
+                        <div class="mt-8 flex space-x-8 border-t border-white/5 pt-6">
+                            <button onclick="populateEditForm('{{ addr.id }}', '{{ addr.address_type }}', '{{ addr.full_name }}', '{{ addr.phone_number }}', '{{ addr.house_no }}', '{{ addr.city }}', '{{ addr.state }}', '{{ addr.pincode }}', '{{ addr.is_primary }}')" 
+                                    class="text-gray-400 hover:text-[#D4AF37] transition text-[10px] uppercase font-black tracking-widest">Edit Details</button>
+                            
+                            <!-- Update your button to pass the actual URL -->
+<button onclick="openDeleteModal('{% url 'delete_address' addr.id %}')" 
+        class="text-red-900/60 hover:text-red-500 transition text-[10px] uppercase font-black tracking-widest">
+    Remove
+</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="py-20 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                        <p class="text-gray-600 italic">No addresses found.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="relative">
+                <div class="lg:sticky lg:top-12 bg-[#111111] border border-white/5 p-10 rounded-[40px] shadow-2xl">
+                    <h4 id="form-title" class="text-white text-2xl font-bold mb-8">Add New Address</h4>
+                    
+                    <form id="address-form" method="POST" action="." class="space-y-5">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-2">
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Label</label>
+                                <input type="text" name="address_type" id="id_address_type" placeholder="Home / Work" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Receiver Name</label>
+                                <input type="text" name="full_name" id="id_full_name" placeholder="Full Name" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Phone Number</label>
+                            <input type="text" 
+                                   name="phone_number" 
+                                   id="id_phone_number" 
+                                   pattern="[0-9]{10}" 
+                                   maxlength="10"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="10-digit mobile number" 
+                                   class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" 
+                                   required>
+                            <p id="phone-error" class="text-[9px] text-red-500/80 ml-2 uppercase tracking-tighter hidden font-bold">Please enter exactly 10 digits.</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Address Details</label>
+                            <input type="text" name="house_no" id="id_house_no" placeholder="House No, Street, Landmark" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <input type="text" name="city" id="id_city" placeholder="City" class="bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+<input type="text" 
+       name="state" 
+       id="id_state" 
+       placeholder="State" 
+       pattern="[A-Za-z\s]+" 
+       oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '');"
+       class="bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" 
+       required>
+       <input type="text" 
+       name="pincode" 
+       id="id_pincode" 
+       placeholder="Pincode" 
+       pattern="[1-9][0-9]{5}" 
+       maxlength="6"
+       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+       class="bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" 
+       required>                        </div>
+                        
+                        <div class="flex items-center space-x-3 py-4">
+                            <input type="checkbox" name="is_primary" id="id_is_primary" class="w-4 h-4 accent-[#D4AF37] bg-black border-white/10">
+                            <label for="id_is_primary" class="text-[10px] text-gray-500 uppercase tracking-widest cursor-pointer">Set as default address</label>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button type="submit" id="submit-btn" class="flex-1 bg-[#D4AF37] text-black py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-white transition-all shadow-xl shadow-[#D4AF37]/5">
+                                Save Address
+                            </button>
+                            <button type="button" onclick="showAddForm()" id="cancel-btn" class="hidden flex-1 bg-white/5 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden z-[9999] items-center justify-center p-4">
+    <div class="bg-[#111111] border border-white/10 p-10 rounded-[32px] max-w-sm w-full text-center shadow-2xl">
+        <div class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-2">Delete Address?</h3>
+        <p class="text-gray-500 text-sm mb-8">This action cannot be undone. This address will be removed from your profile.</p>
+        <div class="flex flex-col gap-3">
+            <a id="confirmDeleteLink" href="#" class="bg-red-600 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-red-700 transition">Remove Permanently</a>
+            <button onclick="closeDeleteModal()" class="text-gray-500 py-2 text-[10px] uppercase tracking-widest font-bold hover:text-white transition">Keep Address</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('address-form');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const phoneInput = document.getElementById('id_phone_number');
+    const phoneError = document.getElementById('phone-error');
+const deleteModal = document.getElementById('deleteModal');
+document.body.appendChild(deleteModal);
+    // Phone Validation on Submit
+    form.onsubmit = function(e) {
+        if (phoneInput.value.length !== 10) {
+            phoneError.classList.remove('hidden');
+            phoneInput.classList.add('border-red-500/50');
+            phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            e.preventDefault();
+            return false;
+        }
+        phoneError.classList.add('hidden');
+        phoneInput.classList.remove('border-red-500/50');
+        return true;
+    };
+
+    function populateEditForm(id, type, name, phone, house, city, state, pin, primary) {
+        formTitle.innerText = "Edit Address";
+        submitBtn.innerText = "Update Address";
+        cancelBtn.classList.remove('hidden');
+        
+        // Update URL to the edit endpoint
+        form.action = `/address/edit/${id}/`;
+        document.getElementById('id_address_type').value = type;
+        document.getElementById('id_full_name').value = name;
+        document.getElementById('id_phone_number').value = phone;
+        document.getElementById('id_house_no').value = house;
+        document.getElementById('id_city').value = city;
+        document.getElementById('id_state').value = state;
+        document.getElementById('id_pincode').value = pin;
+        document.getElementById('id_is_primary').checked = (primary === 'True');
+        
+        // Clear validation errors
+        phoneError.classList.add('hidden');
+        phoneInput.classList.remove('border-red-500/50');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showAddForm() {
+        formTitle.innerText = "Add New Address";
+        submitBtn.innerText = "Save Address";
+        cancelBtn.classList.add('hidden');
+        form.action = "."; 
+        form.reset();
+        
+        phoneError.classList.add('hidden');
+        phoneInput.classList.remove('border-red-500/50');
+    }
+
+function openDeleteModal(deleteUrl) {
+    const confirmBtn = document.getElementById('confirmDeleteLink');
+    if (confirmBtn) {
+        confirmBtn.href = deleteUrl;
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteModal').classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    document.getElementById('deleteModal').classList.remove('flex');
+    document.body.style.overflow = '';
+}
+    form.onsubmit = function(e) {
+    const pincode = document.getElementById('id_pincode').value;
+    const state = document.getElementById('id_state').value;
+    
+    // Phone Validation (Existing)
+    if (phoneInput.value.length !== 10) {
+        phoneError.classList.remove('hidden');
+        phoneInput.classList.add('border-red-500/50');
+        e.preventDefault();
+        return false;
+    }
+
+    // Pincode Validation
+    if (pincode.length !== 6) {
+        alert("Please enter a valid 6-digit Pincode.");
+        e.preventDefault();
+        return false;
+    }
+
+    // State Validation (Ensure it's not just spaces)
+    if (state.trim().length < 2) {
+        alert("Please enter a valid State name.");
+        e.preventDefault();
+        return false;
+    }
+
+    return true;
+};
+</script>
+{% endblock %}

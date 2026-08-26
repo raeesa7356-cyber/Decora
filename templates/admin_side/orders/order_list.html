@@ -1,0 +1,379 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<style>
+.gold-gradient{
+    background: linear-gradient(
+        135deg,
+        #C6A972 0%,
+        #E5D3AE 100%
+    );
+}
+
+.gold-text{
+    color:#C6A972;
+}
+
+.gold-border{
+    border-color:#C6A972;
+}
+</style>
+
+<div class="p-6 bg-[#0F0F0F] min-h-screen">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+<h1 class="text-3xl font-bold text-[#C6A972]">                Orders
+            </h1>
+
+<p class="text-gray-400 mt-1">
+                    Manage customer orders
+            </p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+
+<div class="
+    bg-[#141414]
+    border
+    border-[#C8A97E]/15
+    rounded-2xl
+    p-5
+    mb-8
+">
+        <form method="GET">
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+    <!-- Search -->
+
+    <div class="lg:col-span-6">
+        <div class="relative">
+
+            <svg
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#C8A97E]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
+                />
+            </svg>
+
+            <input
+                type="text"
+                name="search"
+                value="{{ search }}"
+                placeholder="Search by Order ID, Customer Name or Email..."
+                class="
+                    w-full
+                    h-12
+                    pl-12
+                    pr-4
+                    bg-[#0F0F0F]
+                    border
+                    border-[#C8A97E]/20
+                    rounded-xl
+                    text-white
+                    placeholder:text-gray-500
+                    focus:outline-none
+                    focus:border-[#C8A97E]
+                    transition
+                "
+            >
+
+        </div>
+    </div>
+
+    <!-- Status -->
+
+    <div class="lg:col-span-2">
+
+        <select
+            name="status"
+            class="
+                w-full
+                h-12
+                bg-[#0F0F0F]
+                border
+                border-[#C8A97E]/20
+                rounded-xl
+                px-4
+                text-white
+                focus:outline-none
+                focus:border-[#C8A97E]
+            "
+        >
+            <option value="">All Status</option>
+
+            {% for value,label in status_choices %}
+            <option
+                value="{{ value }}"
+                {% if status == value %}selected{% endif %}
+            >
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+    </div>
+
+    <!-- Sort -->
+
+    <div class="lg:col-span-2">
+
+        <select
+            name="sort"
+            class="
+                w-full
+                h-12
+                bg-[#0F0F0F]
+                border
+                border-[#C8A97E]/20
+                rounded-xl
+                px-4
+                text-white
+                focus:outline-none
+                focus:border-[#C8A97E]
+            "
+        >
+            <option value="latest">Latest First</option>
+            <option value="oldest">Oldest First</option>
+        </select>
+
+    </div>
+
+    <!-- Buttons -->
+
+    <div class="lg:col-span-2 flex gap-2">
+
+        <button
+            type="submit"
+            class="
+                flex-1
+                h-12
+                bg-[#C8A97E]
+                text-black
+                font-medium
+                rounded-xl
+                hover:opacity-90
+                transition
+            "
+        >
+            Apply
+        </button>
+
+        <a
+            href="{% url 'admin_order_list' %}"
+            class="
+                flex-1
+                h-12
+                flex
+                items-center
+                justify-center
+                border
+                border-[#C8A97E]/30
+                text-[#C8A97E]
+                rounded-xl
+                hover:bg-[#C8A97E]
+                hover:text-black
+                transition
+            "
+        >
+            Clear
+        </a>
+
+    </div>
+
+</div>
+
+        </form>
+
+    </div>
+
+    <!-- Orders Table -->
+
+<div class="bg-[#161616] border border-[#C6A972]/30 rounded-xl shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+
+            <table class="w-full">
+
+<thead class="bg-black border-b border-[#C6A972]/30">
+                    <tr>
+
+                        <th class="text-left px-6 py-4 font-semibold text-[#C6A972]">
+                            Order ID
+                        </th>
+
+                        <th class="text-left px-6 py-4 font-semibold text-[#C6A972]">
+                            Date
+                        </th>
+
+                        <th class="text-left px-6 py-4 font-semibold text-[#C6A972]">
+                            Customer
+                        </th>
+
+                        <th class="text-left px-6 py-4 font-semibold text-[#C6A972]">
+                            Email
+                        </th>
+
+                        <th class="text-left px-6 py-4 font-semibold text-[#C6A972]">
+                            Total
+                        </th>
+
+                        <th class="w-[220px] text-left px-6 py-4 font-semibold text-[#C6A972]">
+    Status
+</th>
+
+<th class="w-[180px] px-6 py-4 text-center font-semibold text-[#C6A972]">
+    Action
+</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for order in page_obj %}
+
+<tr class="border-b border-[#C6A972]/10 hover:bg-[#1F1F1F] text-gray-200">
+                        <td class="px-6 py-4 font-medium">
+                            {{ order.order_id }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            {{ order.created_at|date:"d M Y" }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            {{ order.user.username }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            {{ order.user.email }}
+                        </td>
+
+                        <td class="px-6 py-4 font-semibold">
+                            ₹{{ order.total_amount }}
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {% if order.status == "PENDING" %}
+                            <span class="px-3 py-1 bg-yellow-500/10 text-yellow-400 rounded-full text-sm border border-yellow-500/20">
+                                Pending
+                            </span>
+
+                            {% elif order.status == "SHIPPED" %}
+                            <span class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm border border-blue-500/20">
+                                Shipped
+                            </span>
+
+                            {% elif order.status == "OUT_FOR_DELIVERY" %}
+                            <span class="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-sm border border-purple-500/20">
+                                Out For Delivery
+                            </span>
+
+                            {% elif order.status == "DELIVERED" %}
+                            <span class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-sm border border-green-500/20">
+                                Delivered
+                            </span>
+
+                            {% else %}
+                            <span class="px-3 py-1 bg-red-500/10 text-red-400 rounded-full text-sm border border-red-500/20">
+                                Cancelled
+                            </span>
+                            {% endif %}
+
+                        </td>
+
+<td class="w-[180px] px-6 py-4 text-center">
+
+    <a
+        href="{% url 'admin_order_detail' order.id %}"
+        class="inline-flex items-center justify-center gold-gradient text-black font-semibold px-4 py-2 rounded-lg hover:opacity-90 transition whitespace-nowrap"
+    >
+        View Details
+    </a>
+
+</td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="7" class="text-center py-12 text-[#C6A972]">
+                            No Orders Found
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Pagination -->
+
+    {% if page_obj.has_other_pages %}
+
+    <div class="flex justify-center mt-6 gap-2">
+
+        {% if page_obj.has_previous %}
+
+        <a
+            href="?page=1"
+            class="px-4 py-2 border rounded-lg"
+        >
+            First
+        </a>
+
+        <a
+            href="?page={{ page_obj.previous_page_number }}"
+            class="px-4 py-2 border rounded-lg"
+        >
+            Previous
+        </a>
+
+        {% endif %}
+
+        <span class="px-4 py-2 bg-black text-white rounded-lg">
+            {{ page_obj.number }}
+        </span>
+
+        {% if page_obj.has_next %}
+
+        <a
+            href="?page={{ page_obj.next_page_number }}"
+            class="px-4 py-2 border rounded-lg"
+        >
+            Next
+        </a>
+
+        <a
+            href="?page={{ page_obj.paginator.num_pages }}"
+            class="px-4 py-2 border rounded-lg"
+        >
+            Last
+        </a>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-10">
+
+    <div>
+
+        <div class="flex items-center gap-3 mb-3">
+
+            <a href="{% url 'admin_inspiration:list' %}"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="w-4 h-4"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 19l-7-7 7-7"/>
+                </svg>
+
+                Back to Inspirations
+
+            </a>
+
+        </div>
+
+        <h2 class="text-3xl font-bold text-white">
+            Inspiration Styles
+        </h2>
+
+        <p class="text-gray-500 mt-1">
+            Manage design styles used in inspiration boards
+        </p>
+
+    </div>
+
+    <a href="{% url 'admin_inspiration:style_create' %}"
+       class="px-6 py-3 rounded-2xl bg-[#D4AF37] text-black font-semibold hover:opacity-90 transition">
+        + Add Style
+    </a>
+
+</div>
+
+<div class="bg-[#111111] border border-white/10 rounded-3xl overflow-hidden shadow-xl">
+
+    <table class="w-full">
+
+        <thead>
+            <tr class="border-b border-white/10 bg-black/30">
+
+                <th class="px-6 py-5 text-left text-xs uppercase tracking-wider text-gray-500">
+                    Style Name
+                </th>
+
+                <th class="px-6 py-5 text-left text-xs uppercase tracking-wider text-gray-500">
+                    Status
+                </th>
+
+                <th class="px-6 py-5 text-right text-xs uppercase tracking-wider text-gray-500">
+                    Actions
+                </th>
+
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for style in styles %}
+
+            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+
+                <td class="px-6 py-5">
+
+                    <div class="font-medium text-white">
+                        {{ style.name }}
+                    </div>
+
+                </td>
+
+                <td class="px-6 py-5">
+
+                    {% if style.is_active %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
+                            ● Active
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                            ● Inactive
+                        </span>
+                    {% endif %}
+
+                </td>
+
+                <td class="px-6 py-5">
+
+                    <div class="flex justify-end gap-2">
+
+                        <a href="{% url 'admin_inspiration:style_edit' style.id %}"
+                           class="px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition">
+                            Edit
+                        </a>
+
+                        <button
+                            onclick="openDeleteModal('{{ style.id }}', '{{ style.name }}')"
+                            class="px-4 py-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition">
+                            Delete
+                        </button>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="3">
+
+                    <div class="py-16 text-center">
+
+                        <div class="text-5xl mb-4">
+                            ✨
+                        </div>
+
+                        <h3 class="text-white text-lg font-semibold mb-2">
+                            No Styles Yet
+                        </h3>
+
+                        <p class="text-gray-500 mb-6">
+                            Create your first inspiration style.
+                        </p>
+
+                        <a href="{% url 'admin_inspiration:style_create' %}"
+                           class="inline-flex px-5 py-3 rounded-xl bg-[#D4AF37] text-black font-semibold">
+                            Add First Style
+                        </a>
+
+                    </div>
+
+                </td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- DELETE MODAL -->
+
+<div id="deleteModal"
+     class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50">
+
+    <div class="bg-[#111111] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+
+        <div class="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mb-5">
+            <span class="text-red-400 text-2xl">
+                🗑
+            </span>
+        </div>
+
+        <h3 class="text-2xl font-bold text-white mb-3">
+            Delete Style
+        </h3>
+
+        <p class="text-gray-400 leading-relaxed">
+            Are you sure you want to delete
+            <span id="styleName" class="text-white font-semibold"></span>?
+        </p>
+
+        <p class="text-gray-500 text-sm mt-2">
+            This action cannot be undone.
+        </p>
+
+        <div class="flex justify-end gap-3 mt-8">
+
+            <button onclick="closeDeleteModal()"
+                    class="px-5 py-3 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition">
+                Cancel
+            </button>
+
+            <a id="deleteBtn"
+               href="#"
+               class="px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white transition">
+                Delete Style
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function openDeleteModal(id, name){
+
+    document.getElementById("styleName").innerText = name;
+
+    document.getElementById("deleteBtn").href =
+        `/admin-panel/inspiration/styles/${id}/delete/`;
+
+    const modal = document.getElementById("deleteModal");
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+function closeDeleteModal(){
+
+    const modal = document.getElementById("deleteModal");
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<div class="p-6 min-h-screen bg-[#0A0A0A] text-white">
+
+    <div class="mb-8">
+
+        <h1 class="text-4xl font-bold text-[#C6A972]">
+            Return Request
+        </h1>
+
+        <p class="text-gray-400 mt-2">
+            Review customer return request
+        </p>
+
+    </div>
+
+    <div class="bg-[#121212] border border-[#C6A972]/15 rounded-xl p-8">
+
+        <div class="grid md:grid-cols-2 gap-8">
+
+            <div>
+
+                <h3 class="text-[#C6A972] font-semibold mb-4">
+                    Order Information
+                </h3>
+
+                <p>
+                    <span class="text-gray-400">
+                        Order ID:
+                    </span>
+
+                    {{ item.order.order_id }}
+                </p>
+
+                <p class="mt-3">
+                    <span class="text-gray-400">
+                        Customer:
+                    </span>
+
+                    {{ item.order.user.username }}
+                </p>
+
+                <p class="mt-3">
+                    <span class="text-gray-400">
+                        Email:
+                    </span>
+
+                    {{ item.order.user.email }}
+                </p>
+
+            </div>
+
+            <div>
+
+                <h3 class="text-[#C6A972] font-semibold mb-4">
+                    Return Status
+                </h3>
+
+                <p>{{ item.get_status_display }}</p>
+
+            </div>
+
+        </div>
+
+        <hr class="my-8 border-[#C6A972]/15">
+
+        <div>
+
+            <h3 class="text-[#C6A972] font-semibold mb-4">
+                Product
+            </h3>
+
+            <div class="flex gap-4 items-center">
+
+                {% if item.variant.variant_image %}
+
+                <img
+                    src="{{ item.variant.variant_image.url }}"
+                    class="w-24 h-24 rounded-lg object-cover"
+                >
+
+                {% endif %}
+
+                <div>
+
+                    <p class="font-semibold">
+                        {{ item.product.name }}
+                    </p>
+
+                    <p class="text-gray-400 mt-1">
+                        Quantity: {{ item.quantity }}
+                    </p>
+
+                    <p class="text-gray-400">
+                        Price: ₹{{ item.price }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr class="my-8 border-[#C6A972]/15">
+
+        <div>
+
+            <h3 class="text-[#C6A972] font-semibold mb-4">
+                Return Reason
+            </h3>
+
+            <div class="bg-black/30 rounded-lg p-4">
+
+                {{ item.return_reason|default:"No reason provided." }}
+
+            </div>
+
+        </div>
+
+  {% if item.status == "RETURN_REQUESTED" %}
+
+<div class="flex gap-4 mt-8">
+
+    <button
+        type="button"
+        onclick="openApproveModal()"
+        class="
+            px-6 py-3
+            bg-green-600
+            rounded-lg
+            text-white
+            font-medium
+            hover:bg-green-700
+        "
+    >
+        Approve Return
+    </button>
+
+    <button
+        type="button"
+        onclick="openRejectModal()"
+        class="
+            px-6 py-3
+            bg-red-600
+            rounded-lg
+            text-white
+            font-medium
+            hover:bg-red-700
+        "
+    >
+        Reject Return
+    </button>
+
+</div>
+
+{% endif %}
+
+    </div>
+
+</div>
+<div
+    id="approveModal"
+    class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center"
+>
+
+    <div class="bg-[#161616] rounded-2xl p-8 w-full max-w-md border border-green-500/20">
+
+        <h2 class="text-2xl font-semibold text-white">
+            Approve Return
+        </h2>
+
+        <p class="text-gray-400 mt-3">
+            Are you sure you want to approve this return request?
+        </p>
+
+        <div class="flex justify-end gap-3 mt-8">
+
+            <button
+                onclick="closeApproveModal()"
+                class="px-5 py-2 border border-gray-600 rounded-lg"
+            >
+                Cancel
+            </button>
+
+            <a
+                href="{% url 'approve_return' item.id %}"
+                class="px-5 py-2 bg-green-600 rounded-lg text-white"
+            >
+                Confirm
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+<div
+    id="rejectModal"
+    class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center"
+>
+
+    <div class="bg-[#161616] rounded-2xl p-8 w-full max-w-md border border-red-500/20">
+
+        <h2 class="text-2xl font-semibold text-white">
+            Reject Return
+        </h2>
+
+        <p class="text-gray-400 mt-3">
+            Are you sure you want to reject this return request?
+        </p>
+
+        <div class="flex justify-end gap-3 mt-8">
+
+            <button
+                onclick="closeRejectModal()"
+                class="px-5 py-2 border border-gray-600 rounded-lg"
+            >
+                Cancel
+            </button>
+
+            <a
+                href="{% url 'reject_return' item.id %}"
+                class="px-5 py-2 bg-red-600 rounded-lg text-white"
+            >
+                Confirm
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+
+function openApproveModal() {
+    document
+        .getElementById("approveModal")
+        .classList
+        .remove("hidden");
+}
+
+function closeApproveModal() {
+    document
+        .getElementById("approveModal")
+        .classList
+        .add("hidden");
+}
+
+function openRejectModal() {
+    document
+        .getElementById("rejectModal")
+        .classList
+        .remove("hidden");
+}
+
+function closeRejectModal() {
+    document
+        .getElementById("rejectModal")
+        .classList
+        .add("hidden");
+}
+
+</script>
+{% endblock %}

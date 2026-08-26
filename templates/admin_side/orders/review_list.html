@@ -1,0 +1,234 @@
+<!-- templates/admin/orders/reviews/review_list.html -->
+
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<style>
+    .container {
+    padding: 24px;
+    color: #F5F5F5;
+}
+
+.page-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: #D4AF37;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+}
+
+.filter-bar {
+    margin-bottom: 20px;
+}
+
+.filter-bar a {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-right: 10px;
+    text-decoration: none;
+    border-radius: 8px;
+    background: #181818;
+    color: #CFCFCF;
+    border: 1px solid #2A2A2A;
+    transition: 0.3s;
+}
+
+.filter-bar a:hover {
+    border-color: #D4AF37;
+    color: #D4AF37;
+}
+
+.filter-bar a.active {
+    background: #D4AF37;
+    color: #111;
+    border-color: #D4AF37;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #181818;
+    border: 1px solid #2A2A2A;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+th {
+    background: #111;
+    color: #D4AF37;
+    padding: 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #2A2A2A;
+}
+
+td {
+    padding: 16px;
+    color: #F5F5F5;
+    border-bottom: 1px solid #2A2A2A;
+}
+
+tr:hover {
+    background: rgba(212, 175, 55, 0.05);
+}
+.badge {
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.approved {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ADE80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.pending {
+    background: rgba(212, 175, 55, 0.15);
+    color: #D4AF37;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+.btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.btn-view {
+    background: #232323;
+    color: #F5F5F5;
+    border: 1px solid #353535;
+}
+
+.btn-view:hover {
+    border-color: #D4AF37;
+    color: #D4AF37;
+}
+
+.btn-approve {
+    background: #D4AF37;
+    color: #111;
+    border: none;
+}
+
+.btn-approve:hover {
+    background: #E5C158;
+}
+
+.btn-hide {
+    background: #7A5C00;
+    color: white;
+}
+
+.btn-delete {
+    background: #7F1D1D;
+    color: white;
+}
+.rating {
+    color: #D4AF37;
+    font-weight: 600;
+}
+.visible {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60A5FA;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.hidden-badge {
+    background: rgba(239, 68, 68, 0.15);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+</style>
+
+<div class="container">
+
+    <div class="page-title">Customer Reviews</div>
+
+    <!-- FILTERS -->
+    <div class="filter-bar">
+        <a href="{% url 'admin_reviews' %}" class="{% if not status %}active{% endif %}">
+            All
+        </a>
+
+        <a href="?status=pending" class="{% if status == 'pending' %}active{% endif %}">
+            Pending
+        </a>
+
+        <a href="?status=approved" class="{% if status == 'approved' %}active{% endif %}">
+            Approved
+        </a>
+    </div>
+
+    <!-- TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Product</th>
+                <th>Rating</th>
+              <th>Status</th>
+<th>Visibility</th>
+<th>Comment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for review in reviews %}
+            <tr>
+                <td>{{ review.user.username }}</td>
+                <td>{{ review.product.name }}</td>
+
+<td class="rating">
+    ⭐ {{ review.rating }}/5
+</td>
+                <td>
+                    {% if review.is_approved %}
+                        <span class="badge approved">Approved</span>
+                    {% else %}
+                        <span class="badge pending">Pending</span>
+                    {% endif %}
+                </td>
+<td>
+    {% if review.is_visible %}
+        <span class="badge visible">
+            Visible
+        </span>
+    {% else %}
+        <span class="badge hidden-badge">
+            Hidden
+        </span>
+    {% endif %}
+</td>
+                <td>
+                    {{ review.comment|truncatechars:60 }}
+                </td>
+
+               <td>
+    <a class="btn btn-view"
+       href="{% url 'admin_review_detail' review.id %}">
+        View Details
+    </a>
+</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" style="text-align:center; padding:20px;">
+                    No reviews found
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

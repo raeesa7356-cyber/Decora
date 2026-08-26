@@ -1,0 +1,640 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+
+.range-slider{
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: none;
+    pointer-events: none;
+    -webkit-appearance: none;
+}
+
+.range-slider::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #D4AF37;
+    border: 2px solid black;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: 0.2s;
+}
+
+.range-slider::-webkit-slider-thumb:hover{
+    transform: scale(1.1);
+}
+
+.range-slider::-moz-range-thumb{
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #D4AF37;
+    border: none;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.range-slider::-webkit-slider-runnable-track{
+    height: 3px;
+    background: transparent;
+}
+
+</style>
+<div class="max-w-[1380px] mx-auto px-6 py-10 flex gap-10">
+    
+    {# --- SIDEBAR FILTERS --- #}
+    <aside class="w-72 hidden lg:block">
+        <form id="filter-form" method="GET" action="{% url 'shop:product-list' %}">
+            <input
+    type="hidden"
+    name="search"
+    value="{{ search_query }}"
+>
+            <h3 class="text-white premium-font text-xl mb-8">Filters</h3>
+
+            {# CATEGORY FILTER #}
+            <div class="mb-10">
+                <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-4">Category</p>
+                <div class="space-y-3">
+                    {% for cat in categories %}
+                    <label class="flex items-center group cursor-pointer">
+                        <input type="checkbox" name="category" value="{{ cat.name }}" 
+                               onchange="this.form.submit()"
+                               {% if cat.name in selected_categories %}checked{% endif %}
+                               class="hidden peer">
+                        <div class="w-4 h-4 border border-white/10 rounded sm peer-checked:bg-[#D4AF37] peer-checked:border-[#D4AF37] transition-all mr-3"></div>
+                        <span class="text-sm text-gray-400 group-hover:text-white {% if cat.name in selected_categories %}text-[#D4AF37]{% endif %}">
+                            {{ cat.name }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                  
+                </div>
+            </div>
+
+            {# ROOM FILTER #}
+            <div class="mb-10">
+                <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-4">Room</p>
+                <div class="space-y-3">
+                    {% for rm in rooms %}
+                    <label class="flex items-center group cursor-pointer">
+                        <input type="checkbox" name="room" value="{{ rm.name }}" 
+                               onchange="this.form.submit()"
+                               {% if rm.name in selected_rooms %}checked{% endif %}
+                               class="hidden peer">
+                        <div class="w-4 h-4 border border-white/10 rounded sm peer-checked:bg-[#D4AF37] peer-checked:border-[#D4AF37] transition-all mr-3"></div>
+                        <span class="text-sm text-gray-400 group-hover:text-white {% if rm.name in selected_rooms %}text-[#D4AF37]{% endif %}">
+                            {{ rm.name }}
+                        </span>
+                    </label>
+                    {% endfor %}
+  <div class="mb-10">
+
+    <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-5">
+        Price Range
+    </p>
+
+    <div class="flex justify-between text-xs text-gray-400 mb-4">
+        <span>
+            ₹<span id="min-price-value">
+                {{ min_price|default:'0' }}
+            </span>
+        </span>
+
+        <span>
+            ₹<span id="max-price-value">
+                {{ max_price|default:'50000' }}
+            </span>
+        </span>
+    </div>
+
+    <div class="relative h-2 mb-6">
+
+        <!-- Background Line -->
+        <div class="absolute top-1/2 left-0 w-full h-[3px] bg-white/10 rounded-full -translate-y-1/2"></div>
+
+        <!-- Active Range -->
+        <div
+            id="slider-range"
+            class="absolute top-1/2 h-[3px] bg-[#D4AF37] rounded-full -translate-y-1/2">
+        </div>
+
+        <!-- Min Slider -->
+        <input
+            type="range"
+            id="min-price-slider"
+            name="min_price"
+            min="0"
+            max="50000"
+            step="500"
+            value="{{ min_price|default:'0' }}"
+            class="range-slider"
+        >
+
+        <!-- Max Slider -->
+        <input
+            type="range"
+            id="max-price-slider"
+            name="max_price"
+            min="0"
+            max="50000"
+            step="500"
+            value="{{ max_price|default:'50000' }}"
+            class="range-slider"
+        >
+
+    </div>
+
+    <button
+        type="submit"
+        class="w-full bg-[#D4AF37] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#c49b24] transition">
+
+        Apply Price Filter
+
+    </button>
+
+</div>
+        </form>
+    </aside>
+
+    {# --- MAIN SHOP AREA --- #}
+    <main class="flex-1">
+<div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 mb-10">
+                <div>
+                <h1 class="premium-font text-4xl text-white">Indoor Sanctuary</h1>
+                <p class="text-gray-500 text-xs mt-2 italic">Showing {{ products.count }} unique pieces</p>
+            </div>
+            <!-- SEARCH -->
+
+<div class="relative w-full lg:max-w-md">
+
+    <input
+        type="text"
+        name="search"
+        form="filter-form"
+        value="{{ search_query }}"
+        placeholder="Search products..."
+        class="w-full bg-[#111]
+               border border-white/10
+               rounded-2xl
+               px-5 py-3 pr-12
+               text-sm text-white
+               focus:outline-none
+               focus:border-[#D4AF37]
+               placeholder:text-gray-600"
+    >
+
+    {% if search_query %}
+
+    <a
+        href="{% url 'shop:product-list' %}"
+        class="absolute right-4 top-1/2 -translate-y-1/2
+               text-gray-500 hover:text-[#D4AF37] transition"
+    >
+        <i class="fa-solid fa-xmark"></i>
+    </a>
+
+    {% else %}
+
+    <button
+        type="submit"
+        form="filter-form"
+        class="absolute right-4 top-1/2 -translate-y-1/2
+               text-gray-500 hover:text-[#D4AF37] transition"
+    >
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+    {% endif %}
+
+</div>
+            {# Active Filter Tags #}
+<div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    <!-- SORT DROPDOWN -->
+    <select
+    name="sort"
+    form="filter-form"
+    onchange="document.getElementById('filter-form').submit()"
+    class="bg-[#111] border border-white/10 text-gray-300 text-xs px-4 py-2 rounded-xl focus:outline-none focus:border-[#D4AF37]"
+>
+    <option value="featured"
+        {% if current_sort == 'featured' %}selected{% endif %}>
+        Featured
+    </option>
+
+
+        <option value="newest"
+            {% if current_sort == 'newest' %}selected{% endif %}>
+            Newest
+        </option>
+
+        <option value="oldest"
+            {% if current_sort == 'oldest' %}selected{% endif %}>
+            Oldest
+        </option>
+
+        <option value="price_low"
+            {% if current_sort == 'price_low' %}selected{% endif %}>
+            Price: Low → High
+        </option>
+
+        <option value="price_high"
+            {% if current_sort == 'price_high' %}selected{% endif %}>
+            Price: High → Low
+        </option>
+
+        <option value="name_az"
+            {% if current_sort == 'name_az' %}selected{% endif %}>
+            A → Z
+        </option>
+
+        <option value="name_za"
+            {% if current_sort == 'name_za' %}selected{% endif %}>
+            Z → A
+        </option>
+
+    </select>
+
+    <!-- ACTIVE TAGS -->
+    <div class="flex gap-2 flex-wrap">
+        {% for s_cat in selected_categories %}
+        <span class="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] px-3 py-1 rounded-full border border-[#D4AF37]/20 uppercase tracking-tighter">
+            {{ s_cat }}
+        </span>
+        {% endfor %}
+    </div>
+
+</div>
+</div>
+        {# PRODUCT GRID #}
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12">
+            {% for product in products %}
+<div class="group relative">
+
+    <!-- IMAGE BLOCK — clicking goes to product detail -->
+    <a href="{% url 'shop:product_detail' product.id %}"
+       class="block relative aspect-square rounded-2xl overflow-hidden bg-[#111] border border-white/5 mb-4">
+
+        {% if product.is_featured %}
+        <div class="absolute top-3 right-3 z-10">
+            <i class="fa-solid fa-star text-[#A8925C] text-sm opacity-80"></i>
+        </div>
+        {% endif %}
+
+{% if product.offer_label %}
+<div class="absolute top-3 left-3 z-10">
+    <span class="bg-red-500 text-white text-[9px] px-2 py-1 font-black rounded">
+        {{ product.offer_label }}
+    </span>
+</div>
+{% endif %}
+
+    {% if product.shop_image %}
+        <img src="{{ product.shop_image.url }}"
+             class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700">
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center text-gray-600">No Image</div>
+        {% endif %}
+
+        <!-- HOVER OVERLAY — stops propagation so clicks don't go to product detail -->
+        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 z-20">
+
+            <button
+                type="button"
+                onclick="event.preventDefault(); event.stopPropagation(); addToCartFromList(this);"
+                data-product-id="{{ product.id }}"
+data-combination-id="{{ product.shop_combination_id }}"                data-add-url="{% url 'cart:add_to_cart' product.id %}"
+                class="w-11 h-11 bg-white rounded-full flex items-center justify-center text-black hover:bg-[#D4AF37] transition-colors shadow-xl"
+                title="Add to Cart"
+            >
+                <i class="fa-solid fa-cart-shopping text-sm"></i>
+            </button>
+
+            <button
+                type="button"
+                onclick="event.preventDefault(); event.stopPropagation(); toggleWishlistFromList(this);"
+                data-product-id="{{ product.id }}"
+data-combination-id="{{ product.shop_combination_id }}"                data-wishlist-url="{% url 'shop:toggle_wishlist' product.id %}"
+class="w-11 h-11 {% if product.is_in_wishlist %}bg-[#D4AF37]{% else %}bg-white{% endif %} rounded-full flex items-center justify-center text-black hover:bg-[#D4AF37] transition-colors shadow-xl"                title="Add to Wishlist"
+            >
+<i class="{% if product.is_in_wishlist %}fa-solid text-red-500{% else %}fa-regular{% endif %} fa-heart text-sm"></i>            </button>
+
+        </div>
+
+    </a>
+
+    <!-- PRODUCT INFO — clicking name goes to product detail -->
+    <div class="flex justify-between items-start px-1">
+        <div class="min-w-0 flex-1">
+            <a href="{% url 'shop:product_detail' product.id %}">
+                <h3 class="text-gray-200 text-sm font-medium group-hover:text-[#D4AF37] transition-colors truncate">
+                    {{ product.name }}
+                </h3>
+            </a>
+
+            {% if product.review_count > 0 %}
+<div class="flex items-center gap-1 mt-1">
+    {% for i in "12345" %}
+        {% if forloop.counter <= product.avg_rating %}
+            <i class="fa-solid fa-star text-[#D4AF37] text-[10px]"></i>
+        {% elif forloop.counter|add:"-1" < product.avg_rating %}
+            <i class="fa-solid fa-star-half-stroke text-[#D4AF37] text-[10px]"></i>
+        {% else %}
+            <i class="fa-regular fa-star text-gray-600 text-[10px]"></i>
+        {% endif %}
+    {% endfor %}
+    <span class="text-[10px] text-gray-500 ml-2">({{ product.avg_rating }})</span>
+</div>
+{% endif %}
+
+            {% with rooms=product.room.all %}
+            {% if rooms %}
+            <p class="text-[10px] text-gray-600 uppercase tracking-widest mt-1">
+                {% for rm in rooms|slice:":2" %}
+                    {{ rm.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% if rooms|length > 2 %}+{{ rooms|length|add:"-2" }}{% endif %}
+            </p>
+            {% else %}
+            <p class="text-[10px] text-gray-700 uppercase tracking-widest mt-1">—</p>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+    <div class="text-right ml-3 shrink-0">
+            <p class="text-[10px] text-gray-500 uppercase tracking-wide">From</p>
+            <p class="text-[#D4AF37] text-sm font-bold">₹{{ product.min_display_price|floatformat:0 }}</p>
+        </div>
+    </div>
+
+</div>
+{% empty %}
+<div class="col-span-full py-32 text-center border border-dashed border-white/10 rounded-3xl">
+    <i class="fa-solid fa-wind text-gray-800 text-4xl mb-4"></i>
+    <p class="text-gray-500 italic">No pieces found matching these filters.</p>
+    <a href="{% url 'shop:product-list' %}" class="text-[#D4AF37] text-xs uppercase mt-4 block underline">Clear all filters</a>
+</div>
+{% endfor %}
+        </div>
+ {% if products.has_other_pages %}
+<div class="flex justify-center mt-16 gap-2">
+
+    {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
+           class="px-4 py-2 bg-[#111] border border-white/10 text-white rounded-lg hover:border-[#D4AF37]">
+            Prev
+        </a>
+    {% endif %}
+
+    {% for num in products.paginator.page_range %}
+
+        {% if products.number == num %}
+            <span class="px-4 py-2 bg-[#D4AF37] text-black rounded-lg font-bold">
+                {{ num }}
+            </span>
+        {% else %}
+            <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}"
+               class="px-4 py-2 bg-[#111] border border-white/10 text-white rounded-lg hover:border-[#D4AF37]">
+                {{ num }}
+            </a>
+        {% endif %}
+
+    {% endfor %}
+
+    {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
+           class="px-4 py-2 bg-[#111] border border-white/10 text-white rounded-lg hover:border-[#D4AF37]">
+            Next
+        </a>
+    {% endif %}
+
+</div>
+{% endif %}
+    </main>
+    
+</div>
+<script>
+/* ── Shop-page toast (self-contained, no reliance on base.html showMessage) ── */
+(function () {
+  const el = document.createElement('div');
+  el.id = 'shop-toast';
+  el.style.cssText = [
+    'position:fixed', 'bottom:2rem', 'left:50%',
+    'transform:translateX(-50%) translateY(16px)',
+    'background:#1a1a1a', 'border:1px solid rgba(255,255,255,0.1)',
+    'color:#fff', 'font-size:12px', 'padding:10px 22px',
+    'border-radius:999px', 'box-shadow:0 8px 32px rgba(0,0,0,0.5)',
+    'opacity:0', 'transition:opacity .3s,transform .3s',
+    'pointer-events:none', 'z-index:9999', 'white-space:nowrap'
+  ].join(';');
+  document.body.appendChild(el);
+ 
+  let timer;
+  window._shopToast = function (msg) {
+    el.textContent = msg;
+    el.style.opacity = '1';
+    el.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(-50%) translateY(16px)';
+    }, 2400);
+  };
+})();
+ 
+ 
+/* ── Helpers ── */
+const CSRF = '{{ csrf_token }}';
+ 
+function _parseVariantIds(btn) {
+  /*
+    Safely parse the data-variant-ids attribute.
+    Returns an array of integers, or [] on any error.
+    Uses dataset.variantIds (camelCase of data-variant-ids).
+  */
+  try {
+    const raw = btn.dataset.variantIds;
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(Number).filter(n => !isNaN(n));
+  } catch (e) {
+    console.error('[shop] Failed to parse variant IDs:', btn.dataset.variantIds, e);
+    return [];
+  }
+}
+ 
+function _updateNavCount(id, delta) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = Math.max(0, parseInt(el.innerText || '0') + delta);
+}
+ 
+ 
+/* ── Add to Cart ── */
+function addToCartFromList(btn) {
+  const combinationId = btn.dataset.combinationId;
+  const url = btn.dataset.addUrl;
+
+  if (!combinationId) {
+    _shopToast('No combination available');
+    return;
+  }
+
+  const icon = btn.querySelector('i');
+  const prevClass = icon.className;
+  icon.className = 'fa-solid fa-spinner fa-spin text-sm';
+  btn.disabled = true;
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': CSRF,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({ combination_id: combinationId, quantity: 1 })
+  })
+  .then(function (res) {
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      throw new Error('Not JSON — possibly redirected to login');
+    }
+    return res.json();
+  })
+  .then(function (data) {
+    if (data.status === 'added' || data.status === 'updated') {
+      icon.className = 'fa-solid fa-check text-sm';
+      setTimeout(() => {
+        icon.className = prevClass;
+        btn.disabled = false;
+      }, 1400);
+
+      _shopToast(data.message || 'Added to cart ✓');
+
+      if (data.cart_count !== undefined) {
+        const cartEl = document.getElementById('cart-count');
+        if (cartEl) cartEl.innerText = data.cart_count;
+      }
+    } else if (data.status === 'out_of_stock') {
+      _shopToast('Out of stock');
+      icon.className = prevClass;
+      btn.disabled = false;
+    } else if (data.status === 'stock_reached') {
+      _shopToast(data.message || 'Stock limit reached');
+      icon.className = prevClass;
+      btn.disabled = false;
+    } else if (data.status === 'limit_reached') {
+      _shopToast(data.message || 'You can only add 5 items');
+      icon.className = prevClass;
+      btn.disabled = false;
+    } else {
+      _shopToast(data.message || 'Could not add to cart');
+      icon.className = prevClass;
+      btn.disabled = false;
+    }
+  })
+  .catch(function (err) {
+    console.error('[shop] Cart fetch error:', err);
+    _shopToast('Something went wrong');
+    icon.className = prevClass;
+    btn.disabled = false;
+  });
+}
+ 
+ 
+/* ── Toggle Wishlist ── */
+function toggleWishlistFromList(btn) {
+  const combinationId = btn.dataset.combinationId;
+  const url = btn.dataset.wishlistUrl;
+
+  if (!combinationId) {
+    _shopToast('No combination available');
+    return;
+  }
+
+  const icon = btn.querySelector('i');
+  const prevClass = icon.className;
+  icon.className = 'fa-solid fa-spinner fa-spin text-sm';
+  btn.disabled = true;
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': CSRF,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({ combination_id: combinationId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    if (data.status === 'added') {
+      icon.className = 'fa-solid fa-heart text-sm text-red-500';
+      btn.classList.add('bg-[#D4AF37]');
+      _shopToast('Added to wishlist ❤️');
+      _updateNavCount('wishlist-count', +1);
+    } else if (data.status === 'removed') {
+      icon.className = 'fa-regular fa-heart text-sm';
+      btn.classList.remove('bg-[#D4AF37]');
+      _shopToast('Removed from wishlist');
+      _updateNavCount('wishlist-count', -1);
+    } else {
+      icon.className = prevClass;
+      _shopToast(data.message || 'Could not update wishlist');
+    }
+  })
+  .catch(() => {
+    _shopToast('Something went wrong');
+    icon.className = prevClass;
+    btn.disabled = false;
+  });
+}
+/* ── Search ── */
+const searchInput = document.querySelector('input[name="search"]');
+if (searchInput) {
+  searchInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('filter-form').submit();
+  });
+}
+ 
+ 
+/* ── Price range slider ── */
+document.addEventListener('DOMContentLoaded', function () {
+  const minSlider = document.getElementById('min-price-slider');
+  const maxSlider = document.getElementById('max-price-slider');
+  const minValue  = document.getElementById('min-price-value');
+  const maxValue  = document.getElementById('max-price-value');
+  const range     = document.getElementById('slider-range');
+  const minGap    = 500;
+  const maxPrice  = 50000;
+ 
+  function updateSlider() {
+    let minVal = parseInt(minSlider.value);
+    let maxVal = parseInt(maxSlider.value);
+    if (maxVal - minVal < minGap) {
+      if (document.activeElement === minSlider) minSlider.value = maxVal - minGap;
+      else maxSlider.value = minVal + minGap;
+      minVal = parseInt(minSlider.value);
+      maxVal = parseInt(maxSlider.value);
+    }
+    minValue.innerText = minVal;
+    maxValue.innerText = maxVal;
+    range.style.left  = (minVal / maxPrice * 100) + '%';
+    range.style.width = ((maxVal - minVal) / maxPrice * 100) + '%';
+  }
+ 
+  if (minSlider && maxSlider) {
+    minSlider.addEventListener('input', updateSlider);
+    maxSlider.addEventListener('input', updateSlider);
+    updateSlider();
+  }
+});
+
+</script>
+
+{% endblock %}

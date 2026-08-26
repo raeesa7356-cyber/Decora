@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="min-h-screen bg-[#0F0F0F] flex items-center justify-center px-4">
+    <div class="max-w-xl w-full text-center">
+
+        <!-- Illustration -->
+
+               <div
+    class="w-40 h-40 mx-auto mb-10
+           rounded-full
+           bg-[#161616]
+           border border-[#D4AF37]/30
+           flex items-center justify-center
+           shadow-[0_0_50px_rgba(212,175,55,0.15)]"
+>
+
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+class="w-20 h-20 text-[#D4AF37]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                />
+            </svg>
+
+        </div>
+
+<div class="mb-6">
+
+    <span
+        class="inline-block
+               text-[#D4AF37]
+               uppercase
+               tracking-[0.35em]
+               text-xs
+               font-medium
+               mb-4"
+    >
+        Order Confirmed
+    </span>
+
+    <h1
+        class="text-3xl
+               md:text-4xl
+               font-light
+               text-white
+               tracking-wide"
+    >
+        Thank you for choosing us
+    </h1>
+
+    <div
+        class="w-20 h-[1px]
+               bg-[#D4AF37]
+               mx-auto
+               mt-5"
+    ></div>
+
+</div>
+<p
+    class="text-gray-400
+           text-lg
+           leading-relaxed
+           mb-10"
+>
+           Your order has been successfully confirmed.
+We're preparing your items and will keep you updated
+throughout the fulfillment process.
+
+        </p>
+
+       <div
+    class="mb-10 p-6 rounded-2xl
+           bg-[#161616]
+           border border-[#D4AF37]/20
+           shadow-[0_0_40px_rgba(212,175,55,0.08)]"
+>
+
+    <p class="text-[#D4AF37] uppercase tracking-[4px] text-xs mb-3">
+        Order Reference
+    </p>
+
+    <p
+        class="text-2xl md:text-3xl
+               font-semibold
+               text-white
+               tracking-wider"
+    >
+        #{{ order.order_id }}
+    </p>
+
+</div>
+
+     <div class="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+
+    <a
+        href="{% url 'order_detail' order.id %}"
+        class="
+        px-8 py-3
+        rounded-full
+        bg-[#D4AF37]
+        text-black
+        font-medium
+        tracking-wide
+        hover:scale-105
+        transition-all duration-300"
+    >
+        View Order
+    </a>
+
+    <a
+        href="{% url 'shop:product-list' %}"
+        class="
+        px-8 py-3
+        rounded-full
+        border border-[#D4AF37]/40
+        text-[#D4AF37]
+        font-medium
+        tracking-wide
+        hover:bg-[#D4AF37]
+        hover:text-black
+        transition-all duration-300"
+    >
+        Continue Shopping
+    </a>
+
+</div>
+
+    </div>
+
+</div>
+
+{% endblock %}

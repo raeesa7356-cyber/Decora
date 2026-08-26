@@ -1,0 +1,162 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-white">Sales Report</h1>
+            <p class="text-gray-500 mt-1 text-sm">{{ start }} → {{ end }}</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'download_sales_excel' %}?period={{ period }}&date_from={{ date_from }}&date_to={{ date_to }}"
+               class="px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase tracking-widest transition">
+                ↓ Excel
+            </a>
+            <a href="{% url 'download_sales_pdf' %}?period={{ period }}&date_from={{ date_from }}&date_to={{ date_to }}"
+               class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-widest transition">
+                ↓ PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <form method="get" class="bg-[#111111] border border-[#D4AF37]/10 rounded-2xl p-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+            <div class="md:col-span-2">
+                <label class="block text-[11px] uppercase tracking-wider text-[#D4AF37] mb-2">Quick Period</label>
+                <div class="flex gap-2 flex-wrap">
+                    {% for p, label in period_options %}
+                    <a href="?period={{ p }}"
+                       class="px-4 py-2 rounded-xl text-xs font-bold uppercase transition
+                              {% if period == p %}bg-[#D4AF37] text-black{% else %}border border-white/10 text-gray-400 hover:text-[#D4AF37]{% endif %}">
+                        {{ label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[11px] uppercase tracking-wider text-[#D4AF37] mb-2">From</label>
+                <input type="date" name="date_from" value="{{ date_from }}"
+                       class="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#D4AF37] focus:outline-none [color-scheme:dark]">
+            </div>
+
+            <div>
+                <label class="block text-[11px] uppercase tracking-wider text-[#D4AF37] mb-2">To</label>
+                <input type="date" name="date_to" value="{{ date_to }}"
+                       class="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#D4AF37] focus:outline-none [color-scheme:dark]">
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit"
+                        class="w-full px-5 py-3 rounded-xl bg-[#D4AF37] text-black font-semibold hover:opacity-90 transition">
+                    Apply
+                </button>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- SUMMARY CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-[#111111] p-6 rounded-2xl border border-white/5">
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-2">Total Orders</p>
+            <h3 class="text-3xl font-bold text-white">{{ total_orders }}</h3>
+        </div>
+        <div class="bg-[#111111] p-6 rounded-2xl border border-white/5">
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-2">Gross Revenue</p>
+            <h3 class="text-3xl font-bold text-[#D4AF37]">₹{{ gross_revenue|floatformat:2 }}</h3>
+        </div>
+        <div class="bg-[#111111] p-6 rounded-2xl border border-white/5">
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-2">Total Discounts</p>
+            <h3 class="text-3xl font-bold text-red-400">₹{{ total_discount|floatformat:2 }}</h3>
+        </div>
+        <div class="bg-[#111111] p-6 rounded-2xl border border-white/5">
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-2">Net Revenue</p>
+            <h3 class="text-3xl font-bold text-green-400">₹{{ net_revenue|floatformat:2 }}</h3>
+        </div>
+    </div>
+
+    <!-- COUPON DEDUCTIONS -->
+    {% if coupon_deductions %}
+    <div class="bg-[#111111] rounded-2xl border border-white/5 overflow-hidden">
+        <div class="p-6 border-b border-white/5">
+            <h3 class="font-bold text-white">Coupon Usage Breakdown</h3>
+        </div>
+        <table class="w-full text-sm">
+            <thead class="bg-black/20 text-[10px] uppercase text-gray-600 font-bold tracking-widest">
+                <tr>
+                    <th class="px-6 py-4 text-left">Coupon Code</th>
+                    <th class="px-6 py-4 text-left">Type</th>
+                    <th class="px-6 py-4 text-right">Discount Value</th>
+                    <th class="px-6 py-4 text-right">Times Used</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-gray-400">
+                {% for c in coupon_deductions %}
+                <tr class="hover:bg-white/[0.02]">
+                    <td class="px-6 py-4 text-[#D4AF37] font-mono font-bold">{{ c.coupon__code }}</td>
+                    <td class="px-6 py-4">{{ c.coupon__discount_type|capfirst }}</td>
+                    <td class="px-6 py-4 text-right">
+                        {% if c.coupon__discount_type == 'percentage' %}
+                            {{ c.coupon__discount_amount }}%
+                        {% else %}
+                            ₹{{ c.coupon__discount_amount }}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right font-bold text-white">{{ c.usage_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- ORDERS TABLE -->
+    <div class="bg-[#111111] rounded-2xl border border-white/5 overflow-hidden">
+        <div class="p-6 border-b border-white/5">
+            <h3 class="font-bold text-white">Order Details</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-black/20 text-[10px] uppercase text-gray-600 font-bold tracking-widest">
+                    <tr>
+                        <th class="px-6 py-4 text-left">Order ID</th>
+                        <th class="px-6 py-4 text-left">Date</th>
+                        <th class="px-6 py-4 text-left">Customer</th>
+                        <th class="px-6 py-4 text-right">Amount</th>
+                        <th class="px-6 py-4 text-right">Discount</th>
+                        <th class="px-6 py-4 text-left">Payment</th>
+                        <th class="px-6 py-4 text-left">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-gray-400">
+                    {% for order in orders %}
+                    <tr class="hover:bg-white/[0.02] transition">
+                        <td class="px-6 py-4 text-white font-mono font-semibold">{{ order.order_id }}</td>
+                        <td class="px-6 py-4">{{ order.created_at|date:"d M Y" }}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-white">{{ order.user.get_full_name|default:order.user.username }}</div>
+                            <div class="text-xs text-gray-600">{{ order.user.email }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-right text-[#D4AF37] font-bold">₹{{ order.total_amount }}</td>
+                        <td class="px-6 py-4 text-right text-red-400">₹{{ order.discount_amount }}</td>
+                        <td class="px-6 py-4">{{ order.get_payment_method_display }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-[9px] font-bold uppercase bg-[#D4AF37]/10 text-[#D4AF37]">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="px-6 py-10 text-center text-gray-600">No orders in this period</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

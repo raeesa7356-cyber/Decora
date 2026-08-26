@@ -1,0 +1,203 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<div class="p-6 bg-[#0A0A0A] min-h-screen text-white">
+
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-[#C6A972]">
+            Return Requests
+        </h1>
+
+        <p class="text-gray-400 mt-2">
+            Manage customer return requests
+        </p>
+    </div>
+
+    <div class="bg-[#121212] rounded-xl overflow-hidden border border-[#C6A972]/15">
+
+        <table class="w-full">
+
+            <thead class="bg-black">
+
+                <tr>
+
+                    <th class="text-left px-6 py-4 text-[#C6A972]">
+                        Order
+                    </th>
+
+                    <th class="text-left px-6 py-4 text-[#C6A972]">
+                        Customer
+                    </th>
+
+                    <th class="text-left px-6 py-4 text-[#C6A972]">
+                        Product
+                    </th>
+
+                    <th class="text-left px-6 py-4 text-[#C6A972]">
+                        Qty
+                    </th>
+
+                    <th class="text-left px-6 py-4 text-[#C6A972]">
+                        Reason
+                    </th>
+<th class="text-left px-6 py-4 text-[#C6A972]">
+    Status
+</th>
+                    <th class="text-center px-6 py-4 text-[#C6A972]">
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+{% for item in page_obj %}
+                <tr class="border-t border-[#C6A972]/10">
+
+                    <td class="px-6 py-4">
+                        {{ item.order.order_id }}
+                    </td>
+
+                    <td class="px-6 py-4">
+                        {{ item.order.user.username }}
+                    </td>
+
+                    <td class="px-6 py-4">
+
+                        <div class="flex items-center gap-3">
+
+                            {% if item.variant.variant_image %}
+                            <img
+                                src="{{ item.variant.variant_image.url }}"
+                                class="w-12 h-12 rounded object-cover"
+                            >
+                            {% endif %}
+
+                            <span>
+                                {{ item.product.name }}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+                    <td class="px-6 py-4">
+                        {{ item.quantity }}
+                    </td>
+
+                    <td class="px-6 py-4">
+                        {{ item.return_reason|default:"No reason provided" }}
+                    </td>
+<td class="px-6 py-4">
+
+    {% if item.status == "RETURN_REQUESTED" %}
+
+        <span class="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-xs">
+            Pending
+        </span>
+
+    {% elif item.status == "RETURNED" %}
+
+        <span class="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs">
+            Approved
+        </span>
+
+    {% elif item.status == "RETURN_REJECTED" %}
+
+        <span class="px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs">
+            Rejected
+        </span>
+
+    {% endif %}
+
+</td>
+<td class="px-6 py-4 text-center">
+
+    <a
+        href="{% url 'return_request_detail' item.id %}"
+        class="
+            inline-flex
+            items-center
+            gap-2
+            px-5
+            py-2.5
+            rounded-xl
+            bg-[#C6A972]/10
+            border
+            border-[#C6A972]/20
+            text-[#C6A972]
+            font-medium
+            text-sm
+            hover:bg-[#C6A972]
+            hover:text-black
+            hover:border-[#C6A972]
+            transition-all
+            duration-200
+        "
+    >
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="w-4 h-4"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke="currentColor">
+            <path stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12H3m0 0l4-4m-4 4l4 4m6-10h5a2 2 0 012 2v8a2 2 0 01-2 2h-5"/>
+        </svg>
+
+        Review Request
+    </a>
+
+</td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center py-10 text-gray-400">
+
+                        No return requests found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center items-center gap-2 mt-6">
+
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="px-4 py-2 bg-[#121212] border border-[#C6A972]/20 rounded text-[#C6A972]">
+            Previous
+        </a>
+    {% endif %}
+
+    <span class="px-4 py-2 text-white">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="px-4 py-2 bg-[#121212] border border-[#C6A972]/20 rounded text-[#C6A972]">
+            Next
+        </a>
+    {% endif %}
+
+</div>
+{% endif %}
+</div>
+
+
+{% endblock %}
