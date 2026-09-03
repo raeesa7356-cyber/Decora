@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Decora | Premium Indoor Aesthetics{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-dark: #B8860B;
+            --bg-dark: #0f0f0f;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .premium-font { font-family: 'Playfair Display', serif; }
+
+        .nav-link { position: relative; transition: color 0.3s ease; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--gold);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover { color: var(--gold); }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        .glow-spot {
+            position: fixed;
+            z-index: 0;
+            pointer-events: none;
+            border-radius: 50%;
+            filter: blur(120px);
+        }
+
+        .toast{
+    min-width:280px;
+    padding:14px 18px;
+    border-radius:14px;
+    background:rgba(212,175,55,.1);
+    border:1px solid rgba(212,175,55,.3);
+    color:#D4AF37;
+    backdrop-filter:blur(12px);
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    animation:slideIn .3s ease;
+}
+
+@keyframes slideIn{
+    from{
+        opacity:0;
+        transform:translateX(100%);
+    }
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+@keyframes slideOut{
+    from{
+        opacity:1;
+        transform:translateX(0);
+    }
+    to{
+        opacity:0;
+        transform:translateX(100%);
+    }
+}
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div class="glow-spot top-[-10%] left-[-5%] w-[500px] h-[500px] bg-yellow-900/10"></div>
+    <div class="glow-spot bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-orange-900/5"></div>
+
+    {% with url_name=request.resolver_match.url_name %}
+    
+    {# --- NAVBAR SECTION --- #}
+    {% if url_name not in 'login,signup,verify_otp,resend_otp' %}
+        <nav class="sticky top-0 z-50 border-b border-white/5 bg-[#0f0f0f]/80 backdrop-blur-xl">
+            <div class="max-w-[1380px] mx-auto px-6 h-20 flex items-center justify-between">
+                
+                <a href="/" class="premium-font text-3xl text-[#D4AF37] tracking-tighter hover:opacity-80 transition-opacity">
+                    Decora
+                </a>
+
+                <div class="hidden md:flex items-center space-x-12">
+                    <a href="{% url 'shop:home'%}" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Home</a>
+                    <a href="{% url 'shop:product-list' %}" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Shop</a>
+                    <a href="{% url 'user_inspiration:list' %}" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Inspiration</a>
+<a href="{% url 'contact' %}" class="nav-link text-[11px] uppercase tracking-[0.2em] text-gray-300">Contact</a>     
+           </div>
+
+                {# --- Replace the old icon section with this --- #}
+<div class="flex items-center space-x-7">
+    {% if user.is_authenticated %}
+        {# --- WISHLIST --- #}
+        {# --- WISHLIST --- #}
+<a href="{% url 'shop:wishlist' %}"
+   class="text-gray-300 hover:text-[#D4AF37] transition-colors relative">
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+         class="h-5 w-5"
+         fill="none"
+         viewBox="0 0 24 24"
+         stroke="currentColor">
+
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+
+    <span id="wishlist-count"
+          class="absolute -top-2 -right-2 bg-[#D4AF37]
+                 text-black text-[9px] font-bold
+                 px-1 rounded-full min-w-[16px]
+                 text-center">
+        {{ wishlist_count|default:0 }}
+    </span>
+</a>
+
+
+{# --- CART --- #}
+<a href="{% url 'cart:cart' %}"
+   class="text-gray-300 hover:text-[#D4AF37] transition-colors relative">
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+         class="h-5 w-5"
+         fill="none"
+         viewBox="0 0 24 24"
+         stroke="currentColor">
+
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+    </svg>
+
+    <span id="cart-count"
+          class="absolute -top-2 -right-2 bg-[#D4AF37]
+                 text-black text-[9px] font-bold
+                 px-1 rounded-full min-w-[16px]
+                 text-center">
+        {{ cart_count|default:0 }}
+    </span>
+</a>
+        {# --- PURE CIRCULAR PROFILE PIC --- #}
+        <a href="{% url 'profile' %}" class="block">
+            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 hover:border-[#D4AF37] transition-all duration-300 shadow-md">
+                {% if user_profile and user_profile.profile_image %}
+                    <img src="{{ user_profile.profile_image.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full bg-gray-800 flex items-center justify-center">
+                        <span class="text-[#D4AF37] text-sm font-bold">{{ user.username|slice:":1"|upper }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </a>
+
+    {% else %}
+        {# --- LOGIN/SIGNUP --- #}
+        <a href="{% url 'user_login' %}" class="text-[11px] uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors">Login</a>
+        <a href="{% url 'signup' %}" class="bg-[#D4AF37] text-black px-7 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-[0.15em] hover:bg-[#B8860B] transition-all transform hover:scale-105">
+            Signup
+        </a>
+    {% endif %}
+</div>
+            </div>
+        </nav>
+    {% endif %}
+
+    {# --- MAIN CONTENT & MESSAGES --- #}
+<main class="flex-grow relative z-10 pt-20">
+            
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {# --- FOOTER SECTION --- #}
+    {% if url_name not in 'login,signup,verify_otp,resend_otp' %}
+    <footer class="bg-[#0a0a0a] border-t border-white/5 pt-24 pb-12 mt-auto relative z-10">
+    <div class="max-w-[1380px] mx-auto px-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
+
+            <!-- Brand -->
+            <div class="space-y-6">
+                <h2 class="premium-font text-3xl text-[#D4AF37]">Decora</h2>
+                <p class="text-gray-500 text-sm leading-relaxed max-w-xs">
+                    Curating exceptional indoor decor and minimal aesthetics
+                    for the modern home. Every piece tells a story.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#"
+                       class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 transition-all">
+                        <i class="fa-brands fa-instagram text-xs"></i>
+                    </a>
+                    <a href="#"
+                       class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 transition-all">
+                        <i class="fa-brands fa-pinterest text-xs"></i>
+                    </a>
+                    <a href="#"
+                       class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 transition-all">
+                        <i class="fa-brands fa-whatsapp text-xs"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Shop -->
+            <div>
+                <h4 class="text-white text-[11px] uppercase tracking-[0.3em] font-semibold mb-8">Shop</h4>
+                <ul class="space-y-4 text-gray-500 text-[13px]">
+                    <li>
+                        <a href="{% url 'shop:product-list' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            All Products
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'shop:product-list' %}?sort=newest"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            New Arrivals
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'shop:product-list' %}?sort=price_low"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            Best Value
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'user_inspiration:list' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            Inspiration
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Account -->
+            <div>
+                <h4 class="text-white text-[11px] uppercase tracking-[0.3em] font-semibold mb-8">Account</h4>
+                <ul class="space-y-4 text-gray-500 text-[13px]">
+                    {% if user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'profile' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'order_list' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            My Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'wallet' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            Wallet
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'shop:wishlist' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            Wishlist
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'manage_addresses' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            Addresses
+                        </a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{% url 'user_login' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            Login
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'signup' %}"
+                           class="hover:text-[#D4AF37] transition-colors">
+                            Create Account
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Help & Newsletter -->
+            <div class="space-y-10">
+                <div>
+                    <h4 class="text-white text-[11px] uppercase tracking-[0.3em] font-semibold mb-8">Help</h4>
+                    <ul class="space-y-4 text-gray-500 text-[13px]">
+                        <li>
+                            <a href="{% url 'contact' %}"
+                               class="hover:text-[#D4AF37] transition-colors">
+                                Contact Us
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'order_list' %}"
+                               class="hover:text-[#D4AF37] transition-colors">
+                                Order Tracking
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'contact' %}"
+                               class="hover:text-[#D4AF37] transition-colors">
+                                Returns & Refunds
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-[11px] uppercase tracking-[0.3em] font-semibold mb-4">Newsletter</h4>
+                    <p class="text-gray-600 text-xs mb-4">Get exclusive offers and new arrivals in your inbox.</p>
+                    <form class="flex border-b border-white/10 focus-within:border-[#D4AF37] transition-colors pb-2">
+                        <input
+                            type="email"
+                            placeholder="Your email address"
+                            class="bg-transparent border-none text-sm text-white w-full outline-none placeholder:text-gray-700"
+                        >
+                        <button
+                            type="submit"
+                            class="text-[#D4AF37] text-[10px] uppercase font-bold tracking-widest ml-2 hover:text-white transition-colors whitespace-nowrap"
+                        >
+                            Join
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom bar -->
+        <div class="flex flex-col md:flex-row justify-between items-center border-t border-white/5 pt-10 gap-6">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-gray-600">
+                &copy; 2026 Decora Interiors. Designed for Elegance.
+            </p>
+            <div class="flex items-center gap-3">
+                <img src="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/flags/4x3/in.svg"
+                     class="w-4 h-3 opacity-40" alt="India">
+                <span class="text-[10px] text-gray-700 uppercase tracking-widest">India</span>
+                <span class="text-gray-800">·</span>
+                <span class="text-[10px] text-gray-700 uppercase tracking-widest">₹ INR</span>
+                <span class="text-gray-800">·</span>
+                <a href="{% url 'contact' %}"
+                   class="text-[10px] text-gray-600 uppercase tracking-[0.2em] hover:text-white transition-colors">
+                    Privacy
+                </a>
+                <span class="text-gray-800">·</span>
+                <a href="{% url 'contact' %}"
+                   class="text-[10px] text-gray-600 uppercase tracking-[0.2em] hover:text-white transition-colors">
+                    Terms
+                </a>
+            </div>
+        </div>
+
+    </div>
+</footer>
+    {% endif %}
+
+    {% endwith %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- TOAST -->
+<div id="toast-container"
+     class="fixed top-24 right-4 z-[9999] flex flex-col gap-3">
+</div>
+
+<script>
+
+function showMessage(text){
+
+    const container =
+        document.getElementById('toast-container');
+
+    const toast =
+        document.createElement('div');
+
+    toast.className = 'toast';
+
+    toast.textContent = text;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+
+        toast.style.animation =
+            'slideOut .3s ease forwards';
+
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+
+    }, 2500);
+}
+</script>
+{% if messages %}
+<script>
+{% for message in messages %}
+showMessage("{{ message|escapejs }}");
+{% endfor %}
+</script>
+{% endif %}
+
+</body>
+</html>

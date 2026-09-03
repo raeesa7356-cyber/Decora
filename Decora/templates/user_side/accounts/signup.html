@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+ 
+{% block title %}Decora | Create Your Account{% endblock %}
+ 
+{% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+    <div class="w-full max-w-[450px] bg-[#1a1a1a] border border-white/5 p-10 rounded-2xl shadow-2xl relative z-10 my-10">
+ 
+        <div class="text-center mb-8">
+            <h1 class="premium-font text-4xl text-[#D4AF37] mb-2">Decora</h1>
+            <p class="text-gray-400 text-[11px] uppercase tracking-[0.2em]">Join our community of premium decor</p>
+        </div>
+ 
+        {% if errors.non_field %}
+        <div class="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg px-4 py-3 mb-5">
+            {{ errors.non_field }}
+        </div>
+        {% endif %}
+ 
+        <form action="{% url 'signup' %}" method="POST" class="space-y-5" novalidate>
+            {% csrf_token %}
+ 
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Full Name</label>
+                <input type="text" name="fullname" required value="{{ old_input.fullname }}"
+                    class="w-full bg-[#252525] border {% if errors.fullname %}border-red-500{% else %}border-white/10{% endif %} rounded-lg px-4 py-3 text-white outline-none transition-all focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30">
+                {% if errors.fullname %}
+                <p class="text-red-400 text-[11px] mt-1.5">{{ errors.fullname }}</p>
+                {% endif %}
+            </div>
+ 
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Email Address</label>
+                <input type="email" name="email" required value="{{ old_input.email }}"
+                    class="w-full bg-[#252525] border {% if errors.email %}border-red-500{% else %}border-white/10{% endif %} rounded-lg px-4 py-3 text-white outline-none transition-all focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30">
+                {% if errors.email %}
+                <p class="text-red-400 text-[11px] mt-1.5">{{ errors.email }}</p>
+                {% endif %}
+            </div>
+ 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Password</label>
+    <div class="relative">
+        <input type="password" name="password" id="password" required value="{{ old_input.password }}"
+            class="w-full bg-[#252525] border {% if errors.password %}border-red-500{% else %}border-white/10{% endif %} rounded-lg px-4 py-3 pr-12 text-white outline-none transition-all focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30">
+        <button type="button" onclick="togglePassword('password', this)"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#D4AF37] transition">
+            <i class="fa-regular fa-eye text-sm"></i>
+        </button>
+    </div>
+    {% if errors.password %}
+    <p class="text-red-400 text-[11px] mt-1.5">{{ errors.password }}</p>
+    {% endif %}
+</div>
+<div>
+    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">Confirm</label>
+    <div class="relative">
+        <input type="password" name="confirm_password" id="confirm_password" required value="{{ old_input.confirm_password }}"
+            class="w-full bg-[#252525] border {% if errors.confirm_password %}border-red-500{% else %}border-white/10{% endif %} rounded-lg px-4 py-3 pr-12 text-white outline-none transition-all focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30">
+        <button type="button" onclick="togglePassword('confirm_password', this)"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#D4AF37] transition">
+            <i class="fa-regular fa-eye text-sm"></i>
+        </button>
+    </div>
+    {% if errors.confirm_password %}
+    <p class="text-red-400 text-[11px] mt-1.5">{{ errors.confirm_password }}</p>
+    {% endif %}
+</div>
+            </div>
+ 
+            <!-- Live password strength checklist: hidden until Password/Confirm field is focused -->
+            <ul id="pwd-checklist" class="hidden text-[11px] space-y-1 pl-1 -mt-2">
+                <li id="chk-length" class="text-gray-500 transition-colors">• At least 8 characters</li>
+                <li id="chk-upper" class="text-gray-500 transition-colors">• One uppercase letter</li>
+                <li id="chk-digit" class="text-gray-500 transition-colors">• One number</li>
+                <li id="chk-special" class="text-gray-500 transition-colors">• One special character (!@#$%^&*()_+-=)</li>
+                <li id="chk-match" class="text-gray-500 transition-colors">• Passwords match</li>
+            </ul>
+ 
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2">
+                    Referral Code <span class="text-gray-600">(optional)</span>
+                </label>
+                <input type="text" name="referral_code" value="{{ old_input.referral_code }}"
+                    class="w-full bg-[#252525] border border-white/10 rounded-lg px-4 py-3 text-white outline-none transition-all focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 uppercase">
+            </div>
+ 
+            <button type="submit"
+                class="w-full bg-gradient-to-r from-[#D4AF37] via-[#F1D27B] to-[#B8860B] text-black font-bold py-3.5 rounded-lg mt-4 hover:opacity-90 transition-opacity uppercase text-xs tracking-widest shadow-lg shadow-[#D4AF37]/10">
+                Create Account
+            </button>
+        </form>
+ 
+        <div class="flex items-center my-8">
+            <div class="flex-grow border-t border-white/5"></div>
+            <span class="mx-4 text-gray-600 text-[10px] uppercase tracking-widest">Or</span>
+            <div class="flex-grow border-t border-white/5"></div>
+        </div>
+ 
+        {% load socialaccount %}
+ 
+        <a href="{% provider_login_url 'google' %}" class="block w-full">
+            <button type="button" class="w-full bg-transparent border border-white/10 text-white py-3 rounded-lg flex items-center justify-center space-x-3 hover:bg-white/5 transition-colors group">
+                <img src="https://www.svgrepo.com/show/355037/google.svg" class="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" alt="Google">
+                <span class="text-xs uppercase tracking-widest">Continue with Google</span>
+            </button>
+        </a>
+ 
+        <p class="text-center text-gray-500 text-xs mt-10 tracking-wide">
+            Already have an account?
+            <a href="{% url 'user_login' %}" class="text-[#D4AF37] hover:text-[#F1D27B] transition-colors font-medium">Login here</a>
+        </p>
+    </div>
+</div>
+ 
+<script>
+    const fullnameInput = document.querySelector('input[name="fullname"]');
+fullnameInput.addEventListener('input', function () {
+    const valid = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/.test(this.value.trim());
+    this.classList.toggle('border-red-500', this.value.length > 0 && !valid);
+    this.classList.toggle('border-white/10', this.value.length === 0 || valid);
+});
+(function () {
+    const pwdInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm_password');
+    const checklist = document.getElementById('pwd-checklist');
+ 
+    const rules = {
+        length:  { el: document.getElementById('chk-length'),  test: v => v.length >= 8 },
+        upper:   { el: document.getElementById('chk-upper'),   test: v => /[A-Z]/.test(v) },
+        digit:   { el: document.getElementById('chk-digit'),   test: v => /[0-9]/.test(v) },
+        special: { el: document.getElementById('chk-special'), test: v => /[!@#$%^&*()_+\-=]/.test(v) },
+    };
+ 
+    function setState(el, ok) {
+        if (ok) {
+            el.classList.remove('text-gray-500');
+            el.classList.add('text-green-500');
+        } else {
+            el.classList.remove('text-green-500');
+            el.classList.add('text-gray-500');
+        }
+    }
+ 
+    function validate() {
+        const pwd = pwdInput.value;
+        const confirm = confirmInput.value;
+ 
+        Object.values(rules).forEach(rule => setState(rule.el, rule.test(pwd)));
+ 
+        const matchEl = document.getElementById('chk-match');
+        setState(matchEl, pwd.length > 0 && pwd === confirm);
+    }
+ 
+    function showChecklist() {
+        checklist.classList.remove('hidden');
+    }
+ 
+    function hideChecklistIfNoFocus() {
+        // slight delay so tabbing between password -> confirm doesn't flicker-hide it
+        setTimeout(() => {
+            if (document.activeElement !== pwdInput && document.activeElement !== confirmInput) {
+                checklist.classList.add('hidden');
+            }
+        }, 100);
+    }
+ 
+    pwdInput.addEventListener('focus', showChecklist);
+    confirmInput.addEventListener('focus', showChecklist);
+    pwdInput.addEventListener('blur', hideChecklistIfNoFocus);
+    confirmInput.addEventListener('blur', hideChecklistIfNoFocus);
+ 
+    pwdInput.addEventListener('input', validate);
+    confirmInput.addEventListener('input', validate);
+})();
+
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}

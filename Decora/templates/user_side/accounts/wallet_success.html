@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+    :root{
+        --luxury-gold:#E3C565;
+    }
+
+    .premium-font{
+        font-family:'Playfair Display',serif;
+    }
+</style>
+
+<div class="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-8">
+
+    <div class="w-full max-w-3xl">
+
+        <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-12 text-center">
+
+            <div class="w-24 h-24 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-8">
+                <i class="fa-solid fa-check text-4xl text-green-400"></i>
+            </div>
+
+            <h1 class="premium-font text-white text-5xl font-bold mb-4">
+                Payment Successful
+            </h1>
+
+            <p class="text-gray-500 mb-10">
+                Your wallet has been credited successfully.
+            </p>
+
+            <div class="bg-[#0d0d0d] rounded-2xl border border-white/5 p-8 mb-8">
+
+                <div class="flex justify-between mb-4">
+                    <span class="text-gray-500">Amount Added</span>
+                    <span class="text-white font-bold">
+                        ₹{{ recharge.amount }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between mb-4">
+                    <span class="text-gray-500">Status</span>
+                    <span class="text-green-400">
+                        SUCCESS
+                    </span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Payment ID</span>
+                    <span class="text-white">
+                        {{ recharge.razorpay_payment_id }}
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+
+                <a href="{% url 'wallet' %}"
+                   class="bg-[#E3C565] text-black px-8 py-4 rounded-full uppercase text-[10px] font-bold tracking-[0.2em]">
+                    View Wallet
+                </a>
+
+                <a href="{% url 'shop:home' %}"
+                   class="border border-[#E3C565]/20 text-[#E3C565] px-8 py-4 rounded-full uppercase text-[10px] font-bold tracking-[0.2em]">
+                    Continue Shopping
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

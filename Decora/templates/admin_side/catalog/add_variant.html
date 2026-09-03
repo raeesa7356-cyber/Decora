@@ -1,0 +1,219 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div class="p-8 max-w-6xl mx-auto space-y-8">
+
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-white italic">Variants & Combinations</h1>
+      <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">{{ product.name }}</p>
+    </div>
+    <a href="{% url 'catalog:admin-product-edit' pk=product.id %}"
+       class="bg-[#D4AF37] hover:bg-white text-black px-6 py-3 rounded-xl transition-all font-bold text-xs uppercase tracking-widest">
+      <i class="fa-solid fa-check mr-2"></i> Finish & View Product
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="space-y-2">
+      {% for message in messages %}
+        <div class="rounded-2xl border px-5 py-3 text-sm
+          {% if message.tags == 'error' %}border-red-500/30 bg-red-500/10 text-red-300
+          {% elif message.tags == 'success' %}border-green-500/30 bg-green-500/10 text-green-300
+          {% else %}border-[#D4AF37]/20 bg-[#D4AF37]/5 text-[#D4AF37]{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Add values -->
+  <div class="bg-[#111111] p-8 rounded-3xl border border-white/5">
+    <h2 class="text-white font-bold mb-6 italic text-sm">● Add Attribute Values</h2>
+    <form method="post" id="variant-form" class="space-y-5">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-5 items-start">
+        <div>
+          <label class="text-[9px] text-gray-500 uppercase tracking-[0.2em] block mb-2 font-bold">Variant Type</label>
+          {{ form.variant_type }}
+        </div>
+        <div>
+          <label class="text-[9px] text-gray-500 uppercase tracking-[0.2em] block mb-2 font-bold">Values</label>
+          <div id="tag-box" class="w-full min-h-[56px] bg-black/40 border border-white/10 rounded-xl p-3 flex flex-wrap gap-2 items-center focus-within:border-[#D4AF37]/50 transition">
+            <input id="tag-input" type="text" placeholder="Type a value and press Enter..."
+                   class="flex-1 min-w-[140px] bg-transparent outline-none text-white placeholder:text-gray-600 py-1" />
+          </div>
+          {{ form.values }}
+          <p class="text-[10px] text-gray-500 mt-2 uppercase tracking-widest">
+            Press Enter or comma to add — you can add several types one after another.
+          </p>
+        </div>
+      </div>
+      <div class="flex justify-end">
+        <button type="submit" class="px-8 py-3 rounded-xl bg-[#D4AF37] hover:bg-white text-black font-bold text-xs uppercase tracking-widest transition-all">
+          <i class="fa-solid fa-plus mr-1"></i> Add Values
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Existing values -->
+  <div class="bg-[#111111] p-8 rounded-3xl border border-white/5">
+    <h2 class="text-white font-bold mb-6 italic text-sm">● Variants</h2>
+    {% regroup existing_variants by variant_type as variant_groups %}
+    {% if variant_groups %}
+      <div class="space-y-5">
+        {% for group in variant_groups %}
+          <div>
+            <p class="text-[9px] text-gray-500 uppercase tracking-[0.2em] mb-2 font-bold">{{ group.grouper }}</p>
+            <div class="flex flex-wrap gap-2">
+              {% for v in group.list %}
+                <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-4 pr-1.5 py-1.5">
+                  <span class="text-xs text-white font-semibold">{{ v.variant_value }}</span>
+             <button type="button"
+                          class="w-6 h-6 rounded-full flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition"
+                          title="Remove"
+                          onclick="openVariantDeleteModal('{% url 'catalog:toggle_variant_status' pk=v.pk %}', '{{ v.variant_value|escapejs }}', {{ v.combinations.count }})">
+                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-gray-600 text-xs italic">No values added yet — add Color, Size, or Material above.</p>
+    {% endif %}
+  </div>
+
+<!-- Generate combinations -->
+  <div class="bg-[#111111] p-8 rounded-3xl border border-white/5">
+    <h2 class="text-white font-bold mb-2 italic text-sm">● Generate Combination</h2>
+    <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-6">
+      Pick one value from every attribute type, then generate.
+    </p>
+
+    {% if existing_variants %}
+    <form method="post" action="{% url 'catalog:generate_combinations' product_id=product.id %}">
+      {% csrf_token %}
+      {% regroup existing_variants by variant_type as gen_groups %}
+      <div class="flex flex-wrap gap-x-10 gap-y-5">
+        {% for group in gen_groups %}
+          <div>
+            <p class="text-[9px] text-gray-500 uppercase tracking-[0.2em] mb-2 font-bold">{{ group.grouper }}</p>
+            <div class="flex flex-wrap gap-2">
+              {% for v in group.list %}
+                <label class="cursor-pointer">
+                  <input type="checkbox" name="generate_variants" value="{{ v.pk }}" class="hidden peer" />
+                  <span class="px-3 py-1.5 rounded-full border border-white/10 text-xs text-gray-300 peer-checked:bg-[#D4AF37] peer-checked:text-black peer-checked:border-[#D4AF37] transition inline-block">
+                    {{ v.variant_value }}
+                  </span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="flex justify-end mt-6">
+        <button type="submit" class="px-8 py-3 rounded-xl bg-[#D4AF37] hover:bg-white text-black font-bold text-xs uppercase tracking-widest transition-all">
+          <i class="fa-solid fa-bolt mr-1"></i> Generate Combination
+        </button>
+      </div>
+    </form>
+    {% else %}
+      <p class="text-gray-600 text-xs italic">Add attribute values above first.</p>
+    {% endif %}
+  </div>
+
+</div>
+<div id="variant-delete-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+  <div class="bg-[#111] border border-white/10 rounded-3xl p-8 w-full max-w-md">
+    <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mb-5">
+      <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl"></i>
+    </div>
+    <h3 class="text-white font-bold text-lg mb-2">Remove <span id="vd-value-name"></span>?</h3>
+    <p class="text-gray-400 text-sm leading-relaxed mb-2" id="vd-warning">
+      Removing this value will also permanently delete every combination that includes it.
+    </p>
+    <div class="flex gap-3 mt-6">
+      <button type="button" onclick="closeVariantDeleteModal()" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 py-3 rounded-2xl text-xs uppercase tracking-widest font-bold transition-all">Cancel</button>
+      <form id="vd-form" method="post" class="flex-1">
+        {% csrf_token %}
+        <button type="submit" class="w-full bg-red-500 hover:bg-red-400 text-white py-3 rounded-2xl text-xs uppercase tracking-widest font-black transition-all">Remove</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+
+function openVariantDeleteModal(url, valueName, comboCount) {
+  document.getElementById('vd-value-name').textContent = valueName;
+  document.getElementById('vd-form').action = url;
+  document.getElementById('vd-warning').textContent = comboCount > 0
+    ? `Removing this value will also permanently delete ${comboCount} combination(s) that include it.`
+    : `This value isn't used in any combination yet.`;
+  document.getElementById('variant-delete-modal').classList.remove('hidden');
+  document.getElementById('variant-delete-modal').classList.add('flex');
+}
+function closeVariantDeleteModal() {
+  document.getElementById('variant-delete-modal').classList.add('hidden');
+  document.getElementById('variant-delete-modal').classList.remove('flex');
+}
+
+
+(function () {
+  const hiddenInput = document.getElementById('id_values_hidden');
+  const tagInput = document.getElementById('tag-input');
+  const tagBox = document.getElementById('tag-box');
+  let tags = [];
+
+  function render() {
+    tagBox.querySelectorAll('.tag-pill').forEach(el => el.remove());
+    tags.forEach((tag, i) => {
+      const pill = document.createElement('div');
+      pill.className = 'tag-pill flex items-center gap-2 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] rounded-full pl-3 pr-1 py-1 text-sm';
+      pill.innerHTML = `<span>${tag}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'w-5 h-5 rounded-full flex items-center justify-center hover:bg-[#D4AF37]/20';
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', () => { tags.splice(i, 1); render(); });
+      pill.appendChild(removeBtn);
+      tagBox.insertBefore(pill, tagInput);
+    });
+    hiddenInput.value = tags.join(',');
+  }
+
+  function addTag(raw) {
+    const value = raw.trim();
+    if (!value) return;
+    if (!tags.some(t => t.toLowerCase() === value.toLowerCase())) tags.push(value);
+    tagInput.value = '';
+    render();
+  }
+
+  tagInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag(tagInput.value);
+    } else if (e.key === 'Backspace' && !tagInput.value && tags.length) {
+      tags.pop();
+      render();
+    }
+  });
+
+  tagBox.addEventListener('click', () => tagInput.focus());
+
+  document.getElementById('variant-form').addEventListener('submit', (e) => {
+    if (tagInput.value.trim()) addTag(tagInput.value);
+    if (!tags.length) {
+      e.preventDefault();
+      alert('Add at least one value.');
+    }
+  });
+})();
+</script>
+
+
+
+{% endblock %}

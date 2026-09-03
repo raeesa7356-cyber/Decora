@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto py-12">
+
+    <div class="bg-[#161616] p-6 rounded-xl">
+
+        <h2 class="text-2xl text-[#D4AF37] mb-6">
+            Write Review
+        </h2>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="mb-4">
+
+                <label class="block mb-2">
+                    Rating
+                </label>
+
+                <select
+                    name="rating"
+                    class="w-full p-3 rounded bg-black text-white"
+                >
+
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★</option>
+                    <option value="3">★★★</option>
+                    <option value="2">★★</option>
+                    <option value="1">★</option>
+
+                </select>
+
+            </div>
+
+            <div class="mb-5">
+
+                <label class="block mb-2">
+                    Comment
+                </label>
+
+                <textarea
+                    name="comment"
+                    rows="5"
+                    class="w-full p-3 rounded bg-black text-white"
+                ></textarea>
+
+            </div>
+
+            <button
+                class="w-full bg-[#D4AF37] text-black py-3 rounded-lg font-semibold"
+            >
+                Submit Review
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact — Decora{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+    .premium-font { font-family: 'Playfair Display', serif; }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(32px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.7s cubic-bezier(0.23,1,0.32,1) both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+
+    .luxury-input {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        transition: border-color 0.3s, box-shadow 0.3s;
+        color: white;
+    }
+    .luxury-input:focus {
+        border-color: rgba(212,175,55,0.5);
+        box-shadow: 0 0 0 4px rgba(212,175,55,0.06);
+        outline: none;
+    }
+    .luxury-input::placeholder { color: rgba(255,255,255,0.2); }
+</style>
+
+<div class="min-h-screen bg-[#0A0A0A] relative overflow-hidden">
+
+    <!-- Background glows -->
+    <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[150px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#D4AF37]/3 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-[1200px] mx-auto px-6 py-24">
+
+        <!-- Header -->
+        <div class="text-center mb-20 fade-up">
+            <p class="text-[10px] uppercase tracking-[0.5em] text-[#D4AF37]/60 font-bold mb-5">
+                Get In Touch
+            </p>
+            <h1 class="premium-font text-6xl md:text-7xl text-white font-bold leading-tight mb-6">
+                Let's <span class="text-[#D4AF37]">Talk</span>
+            </h1>
+            <div class="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto mb-6"></div>
+            <p class="text-gray-500 text-lg max-w-xl mx-auto font-light leading-relaxed">
+                Whether you have a question about our collections, need design advice,
+                or simply want to say hello — we're here for you.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
+
+            <!-- LEFT: Info cards -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <div class="fade-up delay-1 bg-[#111111] border border-white/5 rounded-[2rem] p-8 hover:border-[#D4AF37]/20 transition-all duration-500 group">
+                    <div class="w-12 h-12 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center mb-6 group-hover:bg-[#D4AF37]/20 transition-colors">
+                        <i class="fa-solid fa-location-dot text-[#D4AF37]"></i>
+                    </div>
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-2">Our Studio</p>
+                    <p class="text-white font-medium">Decora Design Studio</p>
+                    <p class="text-gray-400 text-sm mt-1 leading-relaxed">
+                        123 Luxury Lane, Design District<br>
+                        Mumbai, Maharashtra 400001
+                    </p>
+                </div>
+
+                <div class="fade-up delay-2 bg-[#111111] border border-white/5 rounded-[2rem] p-8 hover:border-[#D4AF37]/20 transition-all duration-500 group">
+                    <div class="w-12 h-12 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center mb-6 group-hover:bg-[#D4AF37]/20 transition-colors">
+                        <i class="fa-solid fa-envelope text-[#D4AF37]"></i>
+                    </div>
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-2">Email Us</p>
+                    <p class="text-white font-medium">decora4567@gmail.com</p>
+                    <p class="text-gray-400 text-sm mt-1">We reply within 24 hours</p>
+                </div>
+
+                <div class="fade-up delay-3 bg-[#111111] border border-white/5 rounded-[2rem] p-8 hover:border-[#D4AF37]/20 transition-all duration-500 group">
+                    <div class="w-12 h-12 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center mb-6 group-hover:bg-[#D4AF37]/20 transition-colors">
+                        <i class="fa-solid fa-clock text-[#D4AF37]"></i>
+                    </div>
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-2">Studio Hours</p>
+                    <div class="space-y-1 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Monday – Friday</span>
+                            <span class="text-white">10am – 7pm</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Saturday</span>
+                            <span class="text-white">11am – 5pm</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Sunday</span>
+                            <span class="text-[#D4AF37]">Closed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social links -->
+                <div class="fade-up delay-4 flex gap-4">
+                    <a href="#"
+                       class="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-white/5 bg-[#111111] text-gray-500 hover:text-[#D4AF37] hover:border-[#D4AF37]/20 transition-all text-sm font-medium">
+                        <i class="fa-brands fa-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                    <a href="#"
+                       class="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-white/5 bg-[#111111] text-gray-500 hover:text-[#D4AF37] hover:border-[#D4AF37]/20 transition-all text-sm font-medium">
+                        <i class="fa-brands fa-pinterest"></i>
+                        <span>Pinterest</span>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Contact form -->
+            <div class="lg:col-span-3 fade-up delay-2">
+                <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-10 md:p-12 relative overflow-hidden">
+
+                    <!-- Gold shimmer top line -->
+                    <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent"></div>
+
+                    <h2 class="premium-font text-3xl text-white font-bold mb-2">Send a Message</h2>
+                    <p class="text-gray-500 text-sm mb-10">Fill out the form below and we'll be in touch.</p>
+
+                    <form method="POST" action="{% url 'contact' %}" class="space-y-6">
+                        {% csrf_token %}
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-3">
+                                    Your Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Raheesa Thasni"
+                                    required
+                                    value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}"
+                                    class="luxury-input w-full rounded-2xl px-5 py-4 text-sm"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-3">
+                                    Email Address
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="you@example.com"
+                                    required
+                                    value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
+                                    class="luxury-input w-full rounded-2xl px-5 py-4 text-sm"
+                                >
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-3">
+                                Subject
+                            </label>
+                            <input
+                                type="text"
+                                name="subject"
+                                placeholder="How can we help you?"
+                                required
+                                class="luxury-input w-full rounded-2xl px-5 py-4 text-sm"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-3">
+                                Message
+                            </label>
+                            <textarea
+                                name="message"
+                                rows="6"
+                                placeholder="Tell us more about your enquiry..."
+                                required
+                                class="luxury-input w-full rounded-2xl px-5 py-4 text-sm resize-none"
+                            ></textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="w-full py-5 rounded-full bg-[#D4AF37] text-black font-bold text-[11px] uppercase tracking-[0.3em] hover:bg-white transition-all duration-300 relative overflow-hidden group"
+                        >
+                            <span class="absolute inset-0 bg-white/20 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 skew-x-12"></span>
+                            <span class="relative z-10">Send Message</span>
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

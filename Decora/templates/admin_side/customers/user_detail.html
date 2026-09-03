@@ -1,0 +1,185 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}User Details | Decora Admin{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-[#0A0A0A] text-gray-400 p-8">
+    <!-- Breadcrumbs -->
+    <nav class="flex mb-8 text-[10px] uppercase tracking-[0.2em] font-bold">
+        <a href="{% url 'admin-dashboard' %}" class="hover:text-[#D4AF37]">Admin</a>
+        <span class="mx-2">/</span>
+        <a href="{% url 'user-management' %}" class="hover:text-[#D4AF37]">Users</a>
+        <span class="mx-2">/</span>
+        <span class="text-white">User Details</span>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="flex justify-between items-end mb-10">
+        <div>
+            <h1 class="text-4xl text-white font-serif mb-2">User Details</h1>
+            <p class="text-xs text-gray-500 uppercase tracking-widest">Manage information and activity history</p>
+        </div>
+        <div class="text-right">
+            <p class="text-[10px] text-gray-600 uppercase tracking-widest">Customer ID</p>
+            <p class="text-white font-mono">#DEC-{{ customer.id|add:"1000" }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+        
+        <!-- LEFT COLUMN: Profile & Status -->
+        <div class="col-span-12 lg:col-span-4 space-y-8">
+            
+            <!-- Main Profile Card -->
+            <div class="bg-[#111111] border border-white/5 rounded-3xl p-8 text-center">
+                <div class="relative w-32 h-32 mx-auto mb-6">
+    <img src="{{ customer.profile.get_avatar }}" 
+         class="w-full h-full rounded-2xl object-cover grayscale hover:grayscale-0 transition-all duration-500"
+         alt="Profile Image">
+    <div class="absolute -bottom-2 -right-2 bg-[#D4AF37] text-black text-[8px] px-2 py-1 rounded-full font-bold uppercase">
+        Gold Member
+    </div>
+</div>
+                <h2 class="text-2xl text-white font-serif mb-1">{{ customer.first_name }}</h2>
+                <p class="text-gray-500 text-sm mb-6">{{ customer.email }}</p>
+                
+                <div class="space-y-3 text-left border-t border-white/5 pt-6">
+                    <div class="flex items-center text-xs">
+                        <i class="fa-solid fa-phone w-6 text-[#D4AF37]"></i>
+                        <span>{{ customer.profile.phone|default:"+0 000 000 000" }}</span>
+                    </div>
+                    <div class="flex items-center text-xs">
+                        <i class="fa-solid fa-location-dot w-6 text-[#D4AF37]"></i>
+                        <span>Brooklyn, NY</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Status Card -->
+            <div class="bg-[#111111] border border-white/5 rounded-3xl p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold">Account Status</h3>
+                    <span class="{% if customer.is_active %}text-emerald-500{% else %}text-red-500{% endif %} text-[10px] uppercase font-bold tracking-widest">
+                        {% if customer.is_active %}Active{% else %}Blocked{% endif %}
+                    </span>
+                </div>
+                <form action="{% url 'toggle-user-status' customer.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-4 rounded-xl border border-white/10 text-white text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all">
+                        {% if customer.is_active %}Block User{% else %}Unblock User{% endif %}
+                    </button>
+                </form>
+            </div>
+
+            <!-- Customer Insights -->
+            <div class="bg-[#111111] border border-white/5 rounded-3xl p-8">
+                <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Customer Insights</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-white/5">
+                        <p class="text-[10px] text-gray-500 uppercase mb-1">Total Orders</p>
+                        <p class="text-xl text-white font-serif">12</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-white/5">
+                        <p class="text-[10px] text-gray-500 uppercase mb-1">Total Spent</p>
+                        <p class="text-xl text-[#D4AF37] font-serif">$1,420</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Orders, Addresses, Reviews -->
+        <div class="col-span-12 lg:col-span-8 space-y-8">
+            
+            <!-- Recent Orders -->
+            <div class="bg-[#111111] border border-white/5 rounded-3xl p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold text-white">Recent Orders</h3>
+                    <a href="#" class="text-[10px] text-[#D4AF37] uppercase tracking-[0.2em]">View All Orders</a>
+                </div>
+                <div class="space-y-4">
+                    <!-- Order Item Loop -->
+                    {% for i in "123" %}
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#D4AF37]">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm font-bold">#DEC-9021</p>
+                                <p class="text-[10px] text-gray-500">Oct 24, 2024</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-white text-sm">$340.00</p>
+                            <p class="text-[10px] text-emerald-500 uppercase font-bold tracking-widest">Delivered</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:col-cols-2 gap-8">
+                <!-- Address Section -->
+                <div class="bg-[#111111] border border-white/5 rounded-3xl p-8">
+                    <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold text-white mb-6">Addresses</h3>
+                    {% for address in customer.addresses.all|slice:":2" %}
+                    <div class="mb-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <p class="text-[8px] uppercase tracking-widest text-[#D4AF37] mb-2">{% if address.is_primary %}Primary Residence{% else %}Office{% endif %}</p>
+                        <p class="text-white text-sm leading-relaxed">
+                            {{ address.house_no }}, {{ address.city }}<br>
+                            {{ address.state }}, {{ address.pincode }}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p class="text-xs text-gray-600 italic">No addresses saved yet.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Wishlist Preview -->
+                <div class="bg-[#111111] border border-white/5 rounded-3xl p-8 flex flex-col justify-between">
+    <div>
+        <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold text-white mb-6">Wishlist Item</h3>
+        <div class="flex gap-4 mb-8">
+            <div class="w-20 h-20 bg-white/5 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
+                <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=200" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <p class="text-white text-sm font-serif">Minimalist Lamp</p>
+                <p class="text-[#D4AF37] text-sm">$120</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Manage Wishlist Button -->
+    <a href="#" class="group flex items-center justify-between w-full p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:border-[#D4AF37]/50 transition-all duration-300">
+        <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 group-hover:text-white">Manage Wishlist</span>
+        <div class="text-[#D4AF37] opacity-50 group-hover:opacity-100 transition-all">
+            <i class="fa-solid fa-arrow-right-long text-xs"></i>
+        </div>
+    </a>
+</div>
+
+            <!-- Recent Reviews -->
+            <div class="bg-[#111111] border border-white/5 rounded-3xl p-8">
+                <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold text-white mb-8">Recent Reviews</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <div class="flex text-[#D4AF37] text-[8px] gap-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-white text-sm italic">"Stunning Quality"</p>
+                        <p class="text-[10px] text-gray-500 leading-relaxed">The ceramic finish is otherworldly, fits perfectly in my minimalist living room.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex text-[#D4AF37] text-[8px] gap-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                        <p class="text-white text-sm italic">"Great, but small"</p>
+                        <p class="text-[10px] text-gray-500 leading-relaxed">The mirror looks high-end, although it was a bit smaller than I imagined.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

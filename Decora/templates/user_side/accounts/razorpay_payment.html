@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+    :root{
+        --luxury-gold:#E3C565;
+    }
+
+    .premium-font{
+        font-family:'Playfair Display',serif;
+    }
+</style>
+
+<div class="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-8">
+
+    <div class="w-full max-w-2xl">
+
+        <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-12 text-center">
+
+            <h1 class="premium-font text-white text-5xl font-bold mb-4">
+                Complete Payment
+            </h1>
+
+            <p class="text-gray-500 mb-10">
+                Secure Razorpay checkout for your wallet recharge.
+            </p>
+
+            <div class="bg-[#0d0d0d] rounded-2xl border border-white/5 p-8 mb-8">
+
+                <p class="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-3">
+                    Recharge Amount
+                </p>
+
+                <h2 class="text-5xl text-white premium-font">
+                    ₹{{ amount }}
+                </h2>
+
+            </div>
+
+            <button
+                id="rzp-button"
+                class="w-full bg-[#E3C565] text-black py-5 rounded-full uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white transition"
+            >
+                Pay ₹{{ amount }}
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<form
+    id="razorpay-form"
+    action="{% url 'verify_wallet_payment' %}"
+    method="POST"
+    style="display:none;"
+>
+    {% csrf_token %}
+
+    <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+    <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+    <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+</form>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+var options = {
+
+    "key": "{{ razorpay_key }}",
+
+    "amount": "{{ amount|floatformat:0 }}00",
+
+    "currency": "INR",
+
+    "name": "Decora",
+
+    "description": "Wallet Recharge",
+
+    "order_id": "{{ razorpay_order_id }}",
+
+    // 🔑 THE FIX: forces a full-page redirect for bank/UPI flows
+    // instead of relying on a popup window, which breaks on
+    // http://127.0.0.1 with non-standard ports.
+    "redirect": true,
+    "callback_url": "{{ request.scheme }}://{{ request.get_host }}{% url 'verify_wallet_payment' %}",
+
+    "config": {
+        "display": {
+            "preferences": {
+                "show_default_blocks": true
+            }
+        }
+    },
+
+    handler: function (response){
+
+        document.getElementById("razorpay_order_id").value = response.razorpay_order_id;
+        document.getElementById("razorpay_payment_id").value = response.razorpay_payment_id;
+        document.getElementById("razorpay_signature").value = response.razorpay_signature;
+
+        document.getElementById("razorpay-form").submit();
+    },
+
+    "prefill": {
+        "name": "{{ user.first_name }}",
+        "email": "{{ user.email }}"
+    },
+
+    "theme": {
+        "color": "#E3C565"
+    }
+
+};
+
+var rzp = new Razorpay(options);
+
+document.getElementById("rzp-button").onclick = function(e){
+    rzp.open();
+    e.preventDefault();
+};
+
+rzp.on('payment.failed', function () {
+    window.location.href = "{% url 'wallet_payment_failed' %}";
+});
+</script>
+
+{% endblock %}

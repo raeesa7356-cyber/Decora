@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="min-h-screen bg-[#0A0A0A]">
+
+    <!-- Hero Header -->
+    <section class="border-b border-white/5">
+
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+
+            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-600 mb-4">
+                Account / Orders
+            </p>
+
+            <h1 class="text-5xl md:text-6xl text-white font-bold premium-font tracking-tight">
+                My Orders
+            </h1>
+
+            <div class="w-20 h-[2px] bg-[#E3C565] mt-6"></div>
+
+            <p class="text-gray-500 mt-6 max-w-xl">
+                View and manage all your purchases, track order progress,
+                and access detailed invoices.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-16">
+
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+
+            <!-- Stats Row -->
+            <div class="mb-10">
+
+                <div class="inline-flex items-center gap-3 bg-[#111111] border border-white/5 rounded-full px-6 py-3">
+
+                    <span class="w-2 h-2 rounded-full bg-[#E3C565]"></span>
+
+                    <span class="text-gray-400 text-sm">
+                        {{ orders.count }} Order{{ orders.count|pluralize }}
+                    </span>
+
+                </div>
+
+            </div>
+<div class="mb-8 flex flex-wrap gap-3">
+
+<a href="{% url 'order_list' %}"
+   class="
+   px-5 py-2 rounded-full border transition
+   {% if not status %}
+   bg-[#E3C565] text-black border-[#E3C565]
+   {% else %}
+   bg-[#111111] text-gray-300 border-[#E3C565]/20 hover:text-[#E3C565]
+   {% endif %}
+   ">
+   All
+</a>
+<a href="?status=PENDING"
+   class="
+   px-5 py-2 rounded-full border transition
+   {% if status == 'PENDING' %}
+   bg-[#E3C565] text-black border-[#E3C565]
+   {% else %}
+   bg-[#111111] text-gray-300 border-[#E3C565]/20 hover:text-[#E3C565]
+   {% endif %}
+   ">
+   Pending
+</a>
+<a href="?status=SHIPPED"
+   class="
+   px-5 py-2 rounded-full border transition
+   {% if status == 'SHIPPED' %}
+   bg-[#E3C565] text-black border-[#E3C565]
+   {% else %}
+   bg-[#111111] text-gray-300 border-[#E3C565]/20 hover:text-[#E3C565]
+   {% endif %}
+   ">
+   Shipped
+</a>
+<a href="?status=OUT_FOR_DELIVERY"
+   class="
+   px-5 py-2 rounded-full border transition
+   {% if status == 'OUT_FOR_DELIVERY' %}
+   bg-[#E3C565] text-black border-[#E3C565]
+   {% else %}
+   bg-[#111111] text-gray-300 border-[#E3C565]/20 hover:text-[#E3C565]
+   {% endif %}
+   ">
+   Out For Delivery
+</a>
+
+    <a href="?status=DELIVERED"
+   class="
+   px-5 py-2 rounded-full border transition
+   {% if status == 'DELIVERED' %}
+   bg-[#E3C565] text-black border-[#E3C565]
+   {% else %}
+   bg-[#111111] text-gray-300 border-[#E3C565]/20 hover:text-[#E3C565]
+   {% endif %}
+   ">
+   Delivered
+</a>
+   <a href="?status=CANCELLED"
+   class="
+   px-5 py-2 rounded-full border transition
+   {% if status == 'CANCELLED' %}
+   bg-[#E3C565] text-black border-[#E3C565]
+   {% else %}
+   bg-[#111111] text-gray-300 border-[#E3C565]/20 hover:text-[#E3C565]
+   {% endif %}
+   ">
+   Cancelled
+</a>
+
+   <a href="?status=RETURNED"
+   class="
+   px-5 py-2 rounded-full border transition
+   {% if status == 'RETURNED' %}
+   bg-[#E3C565] text-black border-[#E3C565]
+   {% else %}
+   bg-[#111111] text-gray-300 border-[#E3C565]/20 hover:text-[#E3C565]
+   {% endif %}
+   ">
+   Returned
+</a>
+</div>
+            <!-- Orders -->
+            <div class="space-y-5">
+
+                {% for order in orders %}
+
+                <div class="group relative overflow-hidden rounded-[28px] bg-[#111111] border border-white/5 hover:border-[#E3C565]/30 transition-all duration-500">
+
+                    <!-- Top Gold Line -->
+                    <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#E3C565]/50 to-transparent"></div>
+
+                    <div class="p-8 lg:p-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+
+                        <!-- Left -->
+                        <div class="flex items-center gap-6">
+
+                            <div class="w-20 h-20 rounded-3xl bg-[#0B0B0B] border border-[#E3C565]/10 flex items-center justify-center">
+
+                                <i class="fa-solid fa-box-open text-[#E3C565] text-2xl"></i>
+
+                            </div>
+
+                            <div>
+
+<p class="text-[10px] uppercase tracking-[0.25em] text-gray-600 mb-2">
+    Order ID
+</p>
+
+<h3 class="text-white text-xl font-semibold tracking-wide">
+    #{{ order.order_id }}
+</h3>
+                                <div class="flex flex-wrap items-center gap-3 mt-3">
+
+                                    <span class="text-gray-500 text-sm">
+                                        {{ order.created_at|date:"d M Y" }}
+                                    </span>
+
+                                    <span class="w-1 h-1 rounded-full bg-gray-700"></span>
+
+                                    <span class="text-[#E3C565] font-medium">
+                                        ₹{{ order.total_amount }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Right -->
+                        <div class="flex flex-wrap items-center gap-4">
+
+                            <span class="px-5 py-2 rounded-full bg-[#E3C565]/10 border border-[#E3C565]/20 text-[#E3C565] text-[10px] uppercase tracking-[0.2em] font-bold">
+
+                                {{ order.get_status_display }}
+
+                            </span>
+
+                            <a href="{% url 'order_detail' order.id %}"
+                               class="px-7 py-3 rounded-full bg-[#E3C565] text-black text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all duration-300">
+
+                                View Details
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="bg-[#111111] border border-white/5 rounded-[32px] p-20 text-center">
+
+                    <div class="w-24 h-24 mx-auto rounded-full border border-[#E3C565]/20 flex items-center justify-center mb-8">
+
+                        <i class="fa-solid fa-box-open text-[#E3C565] text-3xl"></i>
+
+                    </div>
+
+                    <h3 class="text-3xl text-white premium-font mb-4">
+                        No Orders Yet
+                    </h3>
+
+                    <p class="text-gray-500 max-w-md mx-auto">
+                        Once you place your first order, it will appear here.
+                    </p>
+
+                    <a href="{% url 'shop:product-list' %}"
+                       class="inline-flex mt-8 px-8 py-4 rounded-full bg-[#E3C565] text-black text-xs uppercase tracking-[0.2em] font-bold">
+
+                        Continue Shopping
+
+                    </a>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

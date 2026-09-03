@@ -1,0 +1,208 @@
+{% extends "admin_base.html" %}
+{% block title %}{% if coupon %}Edit Coupon{% else %}Create Coupon{% endif %}{% endblock %}
+
+{% block content %}
+<div class="px-6 py-8 max-w-4xl mx-auto">
+
+  <div class="mb-8">
+    <p class="text-xs uppercase tracking-[0.25em] text-yellow-500/70 mb-1">Decora · Promotions</p>
+    <h1 class="text-2xl font-semibold text-white">{% if coupon %}Edit Coupon{% else %}Create Coupon{% endif %}</h1>
+  </div>
+ 
+  <!-- Messages -->
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="px-4 py-3 rounded-md text-sm border
+          {% if message.tags == 'success' %} bg-green-900/30 border-green-600/40 text-green-300
+          {% elif message.tags == 'error' %} bg-red-900/30 border-red-600/40 text-red-300
+          {% else %} bg-zinc-800 border-zinc-700 text-zinc-300 {% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+ 
+  <form method="post"
+      action="{% if coupon %}{% url 'coupon_edit' coupon.id %}{% else %}{% url 'coupon_create' %}{% endif %}"
+      class="space-y-8">
+  {% csrf_token %}
+ 
+    <!-- Basic details -->
+    <div class="bg-zinc-900 border border-yellow-500/15 rounded-xl p-6 shadow-lg shadow-black/40">
+      <h2 class="text-sm font-semibold text-yellow-400 uppercase tracking-wider mb-5">Basic Details</h2>
+ 
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+ 
+        <!-- Coupon code + generate -->
+        <div class="md:col-span-2">
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_code">Coupon Code <span class="text-red-400">*</span></label>
+          <div class="flex gap-2">
+          <input type="text" id="id_code" name="code" required maxlength="20" placeholder="e.g. DECORA20"
+       value="{{ coupon.code|default:'' }}"
+       class="flex-1 bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white placeholder-zinc-600 text-sm uppercase tracking-wide outline-none transition-colors">
+            <button type="button" id="generate-code-btn"
+                    class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium border border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span id="generate-code-label">Generate</span>
+            </button>
+          </div>
+          <p class="text-xs text-zinc-600 mt-1">Will be saved in uppercase automatically. Click "Generate" for a random unique code.</p>
+        </div>
+ 
+        <!-- Discount type -->
+        <div class="md:col-span-2">
+          <label class="block text-sm text-zinc-400 mb-2">Discount Type <span class="text-red-400">*</span></label>
+          <div class="flex gap-3">
+            <label class="flex-1 cursor-pointer">
+  <input type="radio" name="discount_type" value="flat"
+         {% if not coupon or coupon.discount_type == 'flat' %}checked{% endif %}
+         class="peer hidden" id="type-flat">
+  <div class="peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400
+              border border-zinc-700 text-zinc-400 rounded-md px-4 py-2.5 text-sm font-medium text-center transition-colors">
+    Flat Amount (₹)
+  </div>
+</label>
+<label class="flex-1 cursor-pointer">
+  <input type="radio" name="discount_type" value="percentage"
+         {% if coupon.discount_type == 'percentage' %}checked{% endif %}
+         class="peer hidden" id="type-percentage">
+  <div class="peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400
+              border border-zinc-700 text-zinc-400 rounded-md px-4 py-2.5 text-sm font-medium text-center transition-colors">
+    Percentage (%)
+  </div>
+</label>
+          </div>
+        </div>
+ 
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_discount_amount">
+            <span id="discount-amount-label">Discount Amount (₹)</span> <span class="text-red-400">*</span>
+          </label>
+<input type="number" id="id_discount_amount" name="discount_amount" required min="0.01" step="0.01" placeholder="e.g. 200"
+       value="{{ coupon.discount_amount|default:'' }}"
+       class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white placeholder-zinc-600 text-sm outline-none transition-colors">
+        </div>
+ 
+       <div id="max-discount-wrapper" class="{% if not coupon or coupon.discount_type == 'flat' %}hidden{% endif %}">
+  <label class="block text-sm text-zinc-400 mb-1.5" for="id_max_discount_amount">Max Discount Cap (₹)</label>
+  <input type="number" id="id_max_discount_amount" name="max_discount_amount" min="0" step="0.01" placeholder="Optional"
+         value="{{ coupon.max_discount_amount|default:'' }}"
+         class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white placeholder-zinc-600 text-sm outline-none transition-colors">
+  <p class="text-xs text-zinc-600 mt-1">Caps the discount when % off is applied to large orders.</p>
+</div>
+ 
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_min_order_value">Minimum Order Value (₹)</label>
+         <input type="number" id="id_min_order_value" name="min_order_value" min="0" step="0.01" placeholder="0"
+       value="{{ coupon.min_order_value|default:'' }}"
+       class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white placeholder-zinc-600 text-sm outline-none transition-colors">
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Validity & limits -->
+    <div class="bg-zinc-900 border border-yellow-500/15 rounded-xl p-6 shadow-lg shadow-black/40">
+      <h2 class="text-sm font-semibold text-yellow-400 uppercase tracking-wider mb-5">Validity &amp; Usage Limits</h2>
+ 
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_valid_from">Valid From <span class="text-red-400">*</span></label>
+<input type="datetime-local" id="id_valid_from" name="valid_from" required
+       value="{{ coupon.valid_from|date:'Y-m-d\TH:i' }}"
+       class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors [color-scheme:dark]">
+        </div>
+ 
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_valid_until">Valid Until <span class="text-red-400">*</span></label>
+<input type="datetime-local" id="id_valid_until" name="valid_until" required
+       value="{{ coupon.valid_until|date:'Y-m-d\TH:i' }}"
+       class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors [color-scheme:dark]">
+        </div>
+ 
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_usage_limit_per_user">Usage Limit Per User</label>
+         <input type="number" id="id_usage_limit_per_user" name="usage_limit_per_user" min="1" placeholder="Unlimited"
+       value="{{ coupon.usage_limit_per_user|default:'' }}"
+       class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white placeholder-zinc-600 text-sm outline-none transition-colors">
+        </div>
+ 
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_total_usage_limit">Total Usage Limit</label>
+         <input type="number" id="id_total_usage_limit" name="total_usage_limit" min="1" placeholder="Unlimited"
+       value="{{ coupon.total_usage_limit|default:'' }}"
+       class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white placeholder-zinc-600 text-sm outline-none transition-colors">
+        </div>
+      </div>
+    </div>
+ 
+ 
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-3 pb-4">
+      <a href="{% url 'coupon_list' %}"
+         class="px-5 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 transition-colors">
+        Cancel
+      </a>
+    <button type="submit"
+        class="px-6 py-2.5 rounded-md text-sm font-medium bg-yellow-500 hover:bg-yellow-400 text-black transition-colors">
+  {% if coupon %}Update Coupon{% else %}Create Coupon{% endif %}
+</button>
+    </div>
+  </form>
+</div>
+ 
+<script>
+  (function () {
+    const flatRadio = document.getElementById('type-flat');
+    const percentRadio = document.getElementById('type-percentage');
+    const amountLabel = document.getElementById('discount-amount-label');
+    const amountInput = document.getElementById('id_discount_amount');
+    const maxDiscountWrapper = document.getElementById('max-discount-wrapper');
+ 
+    function updateDiscountUI() {
+      if (percentRadio.checked) {
+        amountLabel.textContent = 'Discount Percentage (%)';
+        amountInput.setAttribute('max', '100');
+        amountInput.setAttribute('placeholder', 'e.g. 10');
+        maxDiscountWrapper.classList.remove('hidden');
+      } else {
+        amountLabel.textContent = 'Discount Amount (₹)';
+        amountInput.removeAttribute('max');
+        amountInput.setAttribute('placeholder', 'e.g. 200');
+        maxDiscountWrapper.classList.add('hidden');
+      }
+    }
+ 
+    flatRadio.addEventListener('change', updateDiscountUI);
+    percentRadio.addEventListener('change', updateDiscountUI);
+    updateDiscountUI();
+ 
+    const generateBtn = document.getElementById('generate-code-btn');
+    const generateLabel = document.getElementById('generate-code-label');
+    const codeInput = document.getElementById('id_code');
+ 
+    generateBtn.addEventListener('click', async function () {
+      generateLabel.textContent = '...';
+      generateBtn.disabled = true;
+      try {
+        const response = await fetch("{% url 'coupon_generate_code' %}", {
+          method: 'GET',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (data.code) {
+          codeInput.value = data.code;
+        }
+      } catch (err) {
+        console.error('Failed to generate code', err);
+      } finally {
+        generateLabel.textContent = 'Generate';
+        generateBtn.disabled = false;
+      }
+    });
+  })();
+</script>
+{% endblock %}
+ 

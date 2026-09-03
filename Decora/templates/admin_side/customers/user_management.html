@@ -1,0 +1,271 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<!-- Custom CSS to hide scrollbar but allow scrolling -->
+<style>
+    * {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+    *::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, and Opera */
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Custom styling for the Django Form Search Input */
+    .search-input-field {
+        background: transparent;
+        border: none;
+        font-size: 0.875rem;
+        outline: none;
+        width: 100%;
+        color: #d1d5db;
+    }
+    .search-input-field::placeholder {
+        color: #4b5563;
+    }
+</style>
+
+<!-- Main Filter & Search Form -->
+<form id="filter-form" method="GET" action="{% url 'user-management' %}">
+    <!-- Hidden fields to store current state for the Django Form -->
+    <input type="hidden" name="status" id="id_status" value="{{ current_status|default:'' }}">
+    <input type="hidden" name="sort" id="id_sort" value="{{ current_sort|default:'' }}">
+
+    <header class="h-20 bg-[#0A0A0A] border-b border-white/5 flex items-center justify-between px-10 shrink-0">
+        <div class="bg-white/5 px-5 py-2.5 rounded-full w-96 flex items-center border border-white/10">
+            <i class="fa-solid fa-magnifying-glass text-[#D4AF37] text-sm mr-3"></i>
+            <!-- Rendering the search field from your Django form -->
+            {{ form.search }}
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <button type="submit" class="text-[10px] bg-[#D4AF37] text-black px-6 py-2 rounded-full font-bold uppercase tracking-widest hover:bg-white transition">Search</button>
+        </div>
+    </header>
+
+    <div class="w-full max-w-[1400px] mx-auto p-8">
+        <!-- Header Section -->
+        <div class="mb-8 space-y-6">
+            <div>
+                <h2 class="text-4xl font-light text-white tracking-tight">User <span class="font-bold text-[#D4AF37]">Management</span></h2>
+                <p class="text-gray-500 text-xs mt-2 uppercase tracking-widest">Manage your curated community</p>
+            </div>
+            
+            {% if messages %}
+            <div class="pt-2">
+                {% for message in messages %}
+                    <div class="bg-red-500/5 border border-red-500/20 py-3 rounded-xl">
+                        <p class="text-red-500 text-[10px] uppercase text-center font-bold tracking-widest">
+                            {{ message }}
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="flex flex-wrap gap-4 items-center border-t border-white/5 pt-6">
+                <!-- Status Filter Buttons -->
+                <div class="flex bg-[#111111] p-1 rounded-xl border border-white/10">
+                    <button type="button" onclick="setFilter('status', 'active')" 
+                        class="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg {% if current_status == 'active' %} bg-[#D4AF37] text-black {% else %} text-gray-500 hover:text-white {% endif %} transition-all">Active</button>
+                    <button type="button" onclick="setFilter('status', 'blocked')" 
+                        class="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg {% if current_status == 'blocked' %} bg-[#D4AF37] text-black {% else %} text-gray-500 hover:text-white {% endif %} transition-all">Blocked</button>
+                </div>
+
+                <!-- Sort Filter Buttons -->
+                <div class="flex bg-[#111111] p-1 rounded-xl border border-white/10">
+                    <button type="button" onclick="setFilter('sort', 'new')" 
+                        class="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg {% if current_sort == 'new' %} bg-[#D4AF37] text-black {% else %} text-gray-500 hover:text-white {% endif %} transition-all">Newest First</button>
+                    <button type="button" onclick="setFilter('sort', 'old')" 
+                        class="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg {% if current_sort == 'old' %} bg-[#D4AF37] text-black {% else %} text-gray-500 hover:text-white {% endif %} transition-all">Oldest First</button>
+                </div>
+
+                <a href="{% url 'user-management' %}" class="text-[10px] text-gray-600 hover:text-[#D4AF37] uppercase font-bold tracking-widest ml-auto transition">Reset All Filters</a>
+            </div>
+        </div>
+</form>
+
+    <!-- Table Section -->
+    <div id="table-container" class="bg-[#111111] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto no-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[1000px]">
+                <thead class="bg-black/40 text-[10px] uppercase text-gray-500 font-bold tracking-[0.2em]">
+                    <tr>
+                        <th class="px-8 py-6">Customer Details</th>
+                        <th class="px-8 py-6">Contact Info</th>
+                        <th class="px-8 py-6">Joined Date</th>
+                        <th class="px-8 py-6 text-center">Orders</th>
+                        <th class="px-8 py-6">Status</th>
+                        <th class="px-8 py-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-sm text-gray-400">
+                    {% for user in users %}
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <td class="px-8 py-5">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/5 flex items-center justify-center text-[#D4AF37] font-bold border border-[#D4AF37]/20">
+                                    {% if user.first_name %}{{ user.first_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold tracking-tight">{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</p>
+                                    <p class="text-[10px] text-gray-600">ID: #{{ user.id }} | User: {{ user.username }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5"><p class="text-xs text-gray-300">{{ user.email }}</p></td>
+                        <td class="px-8 py-5 text-xs">{{ user.date_joined|date:"M d, Y" }}</td>
+                        <td class="px-8 py-5 text-center font-mono text-[#D4AF37]">0</td>
+                        <td class="px-8 py-5">
+                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter {% if user.is_active %} bg-green-500/10 text-green-500 {% else %} bg-red-500/10 text-red-500 {% endif %}">
+                                {% if user.is_active %}Active{% else %}Blocked{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-8 py-5 text-right">
+                            <div class="flex justify-end items-center space-x-6">
+                                <a href="{% url 'user-detail' user_id=user.id %}" class="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-[#D4AF37] transition-all duration-300 group">
+                                    <span>View</span>
+                                    <div class="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center group-hover:border-[#D4AF37]/30 group-hover:bg-[#D4AF37]/5 transition-all">
+                                        <i class="fa-solid fa-eye text-[10px]"></i>
+                                    </div>
+                                </a>
+                                <span class="h-4 w-px bg-white/5"></span>
+                                
+                                <!-- Toggle Form remains separate for POST action -->
+                                <form id="toggle-form-{{ user.id }}" action="{% url 'toggle-user-status' user.id %}" method="POST" class="hidden">
+                                    {% csrf_token %}
+                                </form>
+                                <button type="button" 
+                                        onclick="openModal('{{ user.id }}', '{{ user.username }}', '{{ user.is_active|yesno:'true,false' }}')"
+                                        class="w-20 text-right text-[10px] font-bold uppercase tracking-[0.2em] transition-colors {% if user.is_active %} text-gray-600 hover:text-red-500 {% else %} text-green-500 hover:text-green-400 {% endif %}">
+                                    {% if user.is_active %}Block{% else %}Unblock{% endif %}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="px-8 py-20 text-center text-gray-600 italic tracking-widest uppercase text-xs">No users found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Section -->
+        {% if users.has_other_pages %}
+        <div class="p-6 bg-black/20 border-t border-white/5 flex justify-between items-center">
+            <p class="text-[10px] text-gray-600 uppercase font-bold tracking-widest">Showing Page {{ users.number }} of {{ users.paginator.num_pages }}</p>
+            <div class="flex space-x-3">
+                {% if users.has_previous %}
+                    <a href="?page={{ users.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" 
+                       class="pagination-link px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] text-white uppercase font-bold tracking-widest hover:bg-[#D4AF37] hover:text-black transition">
+                        Previous
+                    </a>
+                {% endif %}
+                
+                {% if users.has_next %}
+                    <a href="?page={{ users.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" 
+                       class="pagination-link px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] text-white uppercase font-bold tracking-widest hover:bg-[#D4AF37] hover:text-black transition">
+                        Next
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Confirm Action Modal -->
+<div id="confirmModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-[#111111] border border-white/10 w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl">
+        <div id="modalIconContainer" class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+        </div>
+        <h3 class="text-white text-xl font-bold mb-2">Confirm Action</h3>
+        <p class="text-gray-500 text-sm mb-8" id="modalMessage">Are you sure?</p>
+        <div class="flex space-x-3">
+            <button type="button" onclick="closeModal()" class="flex-1 px-6 py-3 rounded-xl bg-white/5 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition">Cancel</button>
+            <button type="button" id="modalConfirmBtn" onclick="executeToggle()" class="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // JS Helper for Filters
+    function setFilter(name, value) {
+        const form = document.getElementById('filter-form');
+        const input = document.getElementById(`id_${name}`);
+        
+        // Toggle: if clicking active filter, clear it. Otherwise set it.
+        if (input.value === value) {
+            input.value = "";
+        } else {
+            input.value = value;
+        }
+        form.submit();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('table-container');
+
+        // Handle AJAX Pagination
+        container.addEventListener('click', function(e) {
+            const link = e.target.closest('.pagination-link');
+            
+            if (link) {
+                e.preventDefault();
+                const url = link.getAttribute('href');
+
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('table-container').innerHTML;
+                    
+                    container.innerHTML = newContent;
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+
+    let currentUserId = null;
+
+    function openModal(userId, username, isActive) {
+        currentUserId = userId;
+        const modal = document.getElementById('confirmModal');
+        const message = document.getElementById('modalMessage');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        
+        const action = (isActive === 'true') ? 'block' : 'unblock';
+        message.innerText = `Are you sure you want to ${action} ${username}?`;
+        
+        if (isActive === 'true') {
+            confirmBtn.className = "flex-1 px-6 py-3 rounded-xl bg-red-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition";
+        } else {
+            confirmBtn.className = "flex-1 px-6 py-3 rounded-xl bg-green-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-green-700 transition";
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+        document.getElementById('confirmModal').classList.remove('flex');
+        currentUserId = null;
+    }
+
+    function executeToggle() {
+        if (currentUserId) {
+            const form = document.getElementById(`toggle-form-${currentUserId}`);
+            if (form) form.submit();
+        }
+    }
+</script>
+{% endblock %}

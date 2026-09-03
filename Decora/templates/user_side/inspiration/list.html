@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+ 
+{% block title %}Inspiration | Decora{% endblock %}
+ 
+{% block content %}
+ 
+<div class="max-w-[1380px] mx-auto px-6 py-16">
+ 
+    <!-- HEADER -->
+    <div class="mb-14 text-center max-w-2xl mx-auto">
+        <span class="text-[11px] uppercase tracking-[0.3em] text-[#D4AF37]">Curated Spaces</span>
+        <h1 class="premium-font text-5xl text-white mt-4">Inspiration</h1>
+        <p class="text-gray-500 text-sm mt-4 leading-relaxed">
+            Real rooms, styled by our team, built entirely from pieces you can shop today.
+        </p>
+    </div>
+ 
+    <!-- FILTER BAR -->
+    <div class="flex flex-wrap items-center justify-center gap-2 mb-16">
+ 
+        <a href="{% url 'user_inspiration:list' %}"
+           class="px-5 py-2.5 rounded-full text-[11px] uppercase tracking-[0.15em] transition-all
+                  {% if not active_style and not active_room and not active_tag %}
+                      bg-[#D4AF37] text-black font-semibold
+                  {% else %}
+                      border border-white/10 text-gray-400 hover:border-[#D4AF37]/40 hover:text-white
+                  {% endif %}">
+            All
+        </a>
+ 
+        {% for style in styles %}
+        <a href="?style={{ style.id }}"
+           class="px-5 py-2.5 rounded-full text-[11px] uppercase tracking-[0.15em] transition-all
+                  {% if active_style == style.id %}
+                      bg-[#D4AF37] text-black font-semibold
+                  {% else %}
+                      border border-white/10 text-gray-400 hover:border-[#D4AF37]/40 hover:text-white
+                  {% endif %}">
+            {{ style.name }}
+        </a>
+        {% endfor %}
+ 
+        {% for room in rooms %}
+        <a href="?room={{ room.id }}"
+           class="px-5 py-2.5 rounded-full text-[11px] uppercase tracking-[0.15em] transition-all
+                  {% if active_room == room.id %}
+                      bg-[#D4AF37] text-black font-semibold
+                  {% else %}
+                      border border-white/10 text-gray-400 hover:border-[#D4AF37]/40 hover:text-white
+                  {% endif %}">
+            {{ room.name }}
+        </a>
+        {% endfor %}
+ 
+    </div>
+ 
+    {% if featured_board %}
+    <!-- FEATURED HERO -->
+    <a href="{% url 'user_inspiration:detail' featured_board.id %}"
+       class="group block relative rounded-3xl overflow-hidden border border-white/5 mb-16 h-[460px]">
+ 
+        {% if featured_board.cover_image %}
+            <img src="{{ featured_board.cover_image.url }}"
+                 class="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-out">
+        {% endif %}
+ 
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
+ 
+        <div class="absolute bottom-0 left-0 p-10 max-w-xl">
+            <span class="inline-block px-4 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] uppercase tracking-[0.2em] mb-4">
+                Featured{% if featured_board.style %} · {{ featured_board.style.name }}{% endif %}
+            </span>
+            <h2 class="premium-font text-4xl text-white mb-3">
+                {{ featured_board.title }}
+            </h2>
+            <p class="text-gray-300 text-sm leading-relaxed line-clamp-2">
+                {{ featured_board.description|default:"" }}
+            </p>
+        </div>
+ 
+    </a>
+    {% endif %}
+ 
+    {% if boards %}
+    <!-- MASONRY GRID -->
+    <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-fill:_balance]">
+ 
+        {% for board in boards %}
+        <a href="{% url 'user_inspiration:detail' board.id %}"
+           class="group block mb-6 break-inside-avoid rounded-3xl overflow-hidden border border-white/5 hover:border-[#D4AF37]/40 transition-all relative">
+ 
+            {% if board.cover_image %}
+                <img src="{{ board.cover_image.url }}"
+                     class="w-full h-auto object-cover group-hover:scale-110 transition duration-500 ease-out">
+            {% else %}
+                <div class="w-full h-56 flex items-center justify-center text-gray-600 bg-[#111111] text-xs uppercase">
+                    No Image
+                </div>
+            {% endif %}
+ 
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+ 
+            <div class="absolute bottom-0 left-0 right-0 p-5 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                {% if board.style %}
+                <span class="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">{{ board.style.name }}</span>
+                {% endif %}
+                <h3 class="text-white font-semibold text-lg leading-snug">
+                    {{ board.title }}
+                </h3>
+            </div>
+ 
+        </a>
+        {% endfor %}
+ 
+    </div>
+ 
+    {% elif not featured_board %}
+    <div class="text-center py-24">
+        <p class="text-gray-600 text-sm">No inspiration boards found for this filter.</p>
+    </div>
+    {% endif %}
+ 
+</div>
+ 
+{% endblock %}

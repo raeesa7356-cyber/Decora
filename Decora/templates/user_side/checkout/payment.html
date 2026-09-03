@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-8">
+
+    <div class="w-full max-w-2xl">
+
+        <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-12 text-center">
+
+            <h1 class="text-white text-5xl mb-4">
+                Complete Payment
+            </h1>
+
+            <p class="text-gray-500 mb-10">
+                Secure payment for your order.
+            </p>
+
+            <div class="bg-[#0d0d0d] rounded-2xl p-8 mb-8">
+
+                <p class="text-gray-500 mb-2">
+                    Order ID
+                </p>
+
+                <p class="text-white">
+                    {{ order.order_id }}
+                </p>
+
+                <h2 class="text-5xl text-white mt-4">
+                    ₹{{ order.total_amount }}
+                </h2>
+
+            </div>
+
+            <button
+                id="rzp-button"
+                class="w-full bg-[#E3C565] text-black py-5 rounded-full"
+            >
+                Pay ₹{{ order.total_amount }}
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+var options = {
+
+    key: "{{ razorpay_key }}",
+
+    amount: "{{ razorpay_amount }}",
+
+    currency: "INR",
+
+    name: "Decora",
+
+    description: "Order Payment",
+
+    order_id: "{{ razorpay_order_id }}",
+
+    redirect: true,
+
+    callback_url:
+    "{{ request.scheme }}://{{ request.get_host }}{% url 'verify_order_payment' %}",
+
+    prefill: {
+        name: "{{ request.user.first_name }}",
+        email: "{{ request.user.email }}"
+    },
+
+    theme: {
+        color: "#E3C565"
+    }
+};
+
+var rzp = new Razorpay(options);
+
+document.getElementById("rzp-button")
+.addEventListener("click", function(e){
+
+    rzp.open();
+
+    e.preventDefault();
+
+});
+
+</script>
+
+{% endblock %}
