@@ -1,0 +1,91 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<div class="p-6 bg-[#0F0F0F] min-h-screen">
+
+    <div class="max-w-2xl mx-auto">
+
+        <div class="bg-[#161616] border border-[#C6A972]/20 rounded-2xl p-8">
+
+            <h1 class="text-3xl font-bold text-[#C6A972] mb-8">
+                Update Stock
+            </h1>
+
+            <div class="space-y-5 text-white">
+
+                <div>
+                    <p class="text-gray-400 text-sm">
+                        Product
+                    </p>
+
+                    <p class="font-medium">
+                        {{ variant.product.name }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-gray-400 text-sm">
+                        Variant
+                    </p>
+
+                    <p class="font-medium">
+                        {{ variant.variant_value }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-gray-400 text-sm">
+                        SKU
+                    </p>
+
+                    <p class="font-medium">
+                        {{ variant.sku|default:"-" }}
+                    </p>
+                </div>
+
+            </div>
+
+            <form method="POST" class="mt-8">
+
+                {% csrf_token %}
+
+                <label class="block text-[#C6A972] mb-3">
+                    Stock Quantity
+                </label>
+
+                <input
+                    type="number"
+                    min="0"
+                    name="stock"
+                    value="{{ variant.stock_quantity }}"
+                    class="w-full h-12 bg-black border border-[#C6A972]/20 rounded-xl px-4 text-white focus:outline-none focus:border-[#C6A972]"
+                >
+
+                <div class="flex gap-3 mt-6">
+
+                    <button
+                        type="submit"
+                        class="bg-[#C6A972] text-black px-6 py-3 rounded-xl font-semibold"
+                    >
+                        Save Changes
+                    </button>
+
+                    <a
+                        href="{% url 'inventory_list' %}"
+                        class="border border-[#C6A972] text-[#C6A972] px-6 py-3 rounded-xl"
+                    >
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "admin_base.html" %}
+{% block title %}Coupons{% endblock %}
+ 
+{% block content %}
+<div class="px-6 py-8">
+ 
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <p class="text-xs uppercase tracking-[0.25em] text-yellow-500/70 mb-1">Decora · Promotions</p>
+      <h1 class="text-2xl font-semibold text-white">Coupons</h1>
+    </div>
+    <a href="{% url 'coupon_create' %}"
+       class="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black font-medium text-sm px-5 py-2.5 rounded-md transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      New Coupon
+    </a>
+  </div>
+ 
+  <!-- Messages -->
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="px-4 py-3 rounded-md text-sm border
+          {% if message.tags == 'success' %} bg-green-900/30 border-green-600/40 text-green-300
+          {% elif message.tags == 'error' %} bg-red-900/30 border-red-600/40 text-red-300
+          {% else %} bg-zinc-800 border-zinc-700 text-zinc-300 {% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+ 
+  <!-- Table card -->
+  <div class="bg-zinc-900 border border-yellow-500/15 rounded-xl overflow-hidden shadow-lg shadow-black/40">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-zinc-950/60 text-zinc-400 uppercase text-xs tracking-wider">
+            <th class="text-left px-5 py-3 font-medium">Code</th>
+            <th class="text-left px-5 py-3 font-medium">Discount</th>
+            <th class="text-left px-5 py-3 font-medium">Min. Order</th>
+            <th class="text-left px-5 py-3 font-medium">Validity</th>
+            <th class="text-left px-5 py-3 font-medium">Usage</th>
+            <th class="text-left px-5 py-3 font-medium">Status</th>
+            <th class="text-right px-5 py-3 font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800">
+          {% for coupon in coupons %}
+          <tr class="hover:bg-zinc-800/40 transition-colors">
+            <td class="px-5 py-4">
+              <span class="font-mono font-semibold text-yellow-400 tracking-wide">{{ coupon.code }}</span>
+            </td>
+            <td class="px-5 py-4 text-zinc-200">
+              {% if coupon.discount_type == 'percentage' %}
+                <span class="font-medium">{{ coupon.discount_amount }}% off</span>
+                {% if coupon.max_discount_amount %}
+                  <div class="text-xs text-zinc-500">up to ₹{{ coupon.max_discount_amount }}</div>
+                {% endif %}
+              {% else %}
+                <span class="font-medium">₹{{ coupon.discount_amount }} off</span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-4 text-zinc-400">₹{{ coupon.min_order_value }}</td>
+            <td class="px-5 py-4 text-zinc-400">
+              <div class="flex flex-col">
+                <span>{{ coupon.valid_from|date:"d M Y" }}</span>
+                <span class="text-zinc-600">to {{ coupon.valid_until|date:"d M Y" }}</span>
+              </div>
+            </td>
+            <td class="px-5 py-4 text-zinc-400">
+              {{ coupon.total_used_count }}{% if coupon.total_usage_limit %} / {{ coupon.total_usage_limit }}{% endif %}
+              {% if coupon.usage_limit_per_user %}
+                <div class="text-xs text-zinc-600">{{ coupon.usage_limit_per_user }} per user</div>
+              {% endif %}
+            </td>
+<td class="px-5 py-4">
+  {% if coupon.is_expired %}
+    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-900/30 text-red-400 border border-red-600/30">
+      <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Expired
+    </span>
+  {% elif coupon.is_active %}
+    <form method="post" action="{% url 'coupon_toggle_active' coupon.id %}" class="inline">
+      {% csrf_token %}
+      <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-900/30 text-green-400 border border-green-600/30 hover:bg-green-900/50 transition-colors">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Active
+      </button>
+    </form>
+  {% else %}
+    <form method="post" action="{% url 'coupon_toggle_active' coupon.id %}" class="inline">
+      {% csrf_token %}
+      <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-500 border border-zinc-700 hover:bg-zinc-700/50 transition-colors">
+        <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> Inactive
+      </button>
+    </form>
+  {% endif %}
+</td>
+<td class="px-5 py-4 text-right">
+  <div class="inline-flex items-center gap-2">
+    <a href="{% url 'coupon_edit' coupon.id %}"
+       class="text-yellow-400 hover:text-yellow-300 text-xs font-medium px-3 py-1.5 rounded-md border border-yellow-500/20 hover:border-yellow-500/40 transition-colors">
+      Edit
+    </a>
+    <form method="post" action="{% url 'coupon_delete' coupon.id %}"
+          onsubmit="return confirm('Delete coupon {{ coupon.code }}? This cannot be undone.');"
+          class="inline">
+      {% csrf_token %}
+      <button type="submit"
+              class="text-red-400 hover:text-red-300 text-xs font-medium px-3 py-1.5 rounded-md border border-red-500/20 hover:border-red-500/40 transition-colors">
+        Delete
+      </button>
+    </form>
+  </div>
+</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-5 py-16 text-center">
+              <p class="text-zinc-500 text-sm mb-3">No coupons yet.</p>
+              <a href="{% url 'coupon_create' %}" class="text-yellow-400 hover:text-yellow-300 text-sm font-medium underline">
+                Create your first coupon
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

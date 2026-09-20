@@ -1,0 +1,258 @@
+<!-- templates/admin/orders/reviews/review_detail.html -->
+
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<style>
+.container {
+    padding: 30px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #D4AF37;
+    margin-bottom: 25px;
+    letter-spacing: 0.5px;
+}
+
+.card {
+    background: linear-gradient(
+        145deg,
+        #141414,
+        #1d1d1d
+    );
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 850px;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.4),
+        0 0 0 1px rgba(212,175,55,.05);
+}
+
+.row {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.label {
+    width: 140px;
+    color: #D4AF37;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: .4px;
+}
+
+.value {
+    color: #F5F5F5;
+    font-size: 14px;
+}
+
+.rating {
+    color: #D4AF37;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.badge {
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.approved {
+    background: rgba(34,197,94,.15);
+    color: #4ADE80;
+    border: 1px solid rgba(34,197,94,.25);
+}
+
+.pending {
+    background: rgba(212,175,55,.12);
+    color: #D4AF37;
+    border: 1px solid rgba(212,175,55,.25);
+}
+
+.comment-box {
+    margin-top: 10px;
+    background: #111111;
+    border: 1px solid #2c2c2c;
+    border-left: 3px solid #D4AF37;
+    border-radius: 10px;
+    padding: 18px;
+    color: #E5E5E5;
+    line-height: 1.8;
+}
+
+.action-buttons {
+    margin-top: 25px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .25s ease;
+}
+
+.btn-approve {
+    background: #D4AF37;
+    color: #111;
+    border: 1px solid #D4AF37;
+}
+
+.btn-approve:hover {
+    background: #e5c158;
+    transform: translateY(-1px);
+}
+
+.btn-hide {
+    background: #232323;
+    color: #F5F5F5;
+    border: 1px solid #444;
+}
+
+.btn-hide:hover {
+    border-color: #D4AF37;
+    color: #D4AF37;
+}
+
+.btn-delete {
+    background: #3A1111;
+    color: #ffb4b4;
+    border: 1px solid #6b1c1c;
+}
+
+.btn-delete:hover {
+    background: #511818;
+}
+
+.btn-back {
+    display: inline-block;
+    margin-top: 25px;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: transparent;
+    color: #D4AF37;
+    border: 1px solid #D4AF37;
+    font-weight: 600;
+    transition: .25s;
+}
+
+.btn-back:hover {
+    background: #D4AF37;
+    color: #111;
+}
+.btn-unhide {
+    background: #D4AF37;
+    color: #111;
+    border: 1px solid #D4AF37;
+}
+
+.btn-unhide:hover {
+    background: #e5c158;
+}
+
+.hidden-badge {
+    background: rgba(220, 38, 38, .15);
+    color: #f87171;
+    border: 1px solid rgba(220, 38, 38, .25);
+}
+</style>
+
+<div class="container">
+
+<div class="page-title">
+    Customer Review Details
+</div>
+    <div class="card">
+
+        <div class="row">
+            <span class="label">User:</span>
+            <span class="value">{{ review.user.username }}</span>
+        </div>
+
+        <div class="row">
+            <span class="label">Product:</span>
+            <span class="value">{{ review.product.name }}</span>
+        </div>
+
+     <div class="row">
+    <span class="label">Rating:</span>
+    <span class="value rating">
+        ⭐ {{ review.rating }}/5
+    </span>
+</div>
+        <div class="row">
+            <span class="label">Status:</span>
+
+            {% if review.is_approved %}
+                <span class="badge approved">Approved</span>
+            {% else %}
+                <span class="badge pending">Pending</span>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <span class="label">Date:</span>
+            <span class="value">{{ review.created_at }}</span>
+        </div>
+
+        <div class="row">
+            <span class="label">Comment:</span>
+        </div>
+
+       <div class="comment-box">
+    {{ review.comment }}
+</div>
+
+<div class="action-buttons">
+
+    {% if not review.is_approved %}
+        <a href="{% url 'approve_review' review.id %}"
+           class="btn btn-approve">
+            Approve Review
+        </a>
+    {% endif %}
+
+   {% if review.is_visible %}
+
+    <a href="{% url 'hide_review' review.id %}"
+       class="btn btn-hide">
+        Hide Review
+    </a>
+
+{% else %}
+
+    <a href="{% url 'unhide_review' review.id %}"
+       class="btn btn-unhide">
+        Unhide Review
+    </a>
+
+{% endif %}
+    <a href="{% url 'delete_review' review.id %}"
+       class="btn btn-delete"
+       onclick="return confirm('Are you sure you want to delete this review?');">
+        Delete Review
+    </a>
+
+</div>
+
+<a href="{% url 'admin_reviews' %}" class="btn-back">
+    ← Back to Reviews
+</a>
+
+    </div>
+
+</div>
+
+{% endblock %}

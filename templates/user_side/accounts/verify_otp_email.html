@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decora | Verify OTP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --matte-black: #1a1a1a;
+            --deep-black: #0f0f0f;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .otp-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--matte-black);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+
+        .icon-lock {
+            font-size: 40px;
+            color: var(--primary-gold);
+            margin-bottom: 20px;
+        }
+
+        .theme-title {
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .otp-input-group {
+            margin-bottom: 25px;
+        }
+
+        .otp-input-group input {
+            width: 100%;
+            padding: 15px;
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: var(--primary-gold);
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 10px;
+            font-weight: bold;
+            outline: none;
+        }
+
+        .otp-input-group input:focus {
+            border-color: var(--primary-gold);
+        }
+
+        .btn-verify {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-gold);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-verify:hover {
+            background: #b8952e;
+            transform: translateY(-2px);
+        }
+
+        .resend-text {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .resend-link {
+            color: var(--primary-gold);
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="otp-container">
+
+    <div class="icon-lock">🔐</div>
+    <h2 class="theme-title">Verify OTP</h2>
+    <p class="subtitle">Enter the code sent to your new email.</p>
+{% if messages %}
+    {% for message in messages %}
+        <div style="padding: 10px; margin-bottom: 20px; border-radius: 5px; font-size: 0.9rem; 
+                    background: {% if message.tags == 'error' %}#ff4d4d{% else %}#28a745{% endif %}; color: white;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        <div class="otp-input-group">
+            <input type="text" name="otp" maxlength="6" placeholder="000000" required>
+        </div>
+        <button type="submit" class="btn-verify">Verify & Update</button>
+    </form>
+
+    <p class="resend-text">
+        <span id="timer-text">Resend code in <span id="timer">60</span>s</span>
+        <a href="{% url 'resend_email_otp' %}" id="resend-link" class="resend-link" style="display: none;">Resend OTP</a>
+    </p>
+</div>
+</body>
+</html>
+<script>
+    let timeLeft = 60;
+    const timerElement = document.getElementById('timer');
+    const timerText = document.getElementById('timer-text');
+    const resendLink = document.getElementById('resend-link');
+
+    const countdown = setInterval(() => {
+        timeLeft--;
+        timerElement.innerText = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            timerText.style.display = 'none'; // Hide "Resend in..."
+            resendLink.style.display = 'inline'; // Show "Resend OTP"
+        }
+    }, 1000);
+</script>

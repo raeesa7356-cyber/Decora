@@ -1,0 +1,210 @@
+{% extends "admin_base.html" %}
+{% block title %}Create Offer{% endblock %}
+ 
+{% block content %}
+<div class="px-6 py-8 max-w-2xl mx-auto">
+ 
+  <!-- Header -->
+  <div class="mb-8">
+    <p class="text-xs uppercase tracking-[0.25em] text-yellow-500/70 mb-1">Decora · Promotions</p>
+<h1 class="text-2xl font-semibold text-white">{% if offer %}Edit Offer{% else %}Create Offer{% endif %}</h1>
+  </div>
+ 
+  <!-- Messages -->
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for message in messages %}
+        <div class="px-4 py-3 rounded-md text-sm border
+          {% if message.tags == 'success' %} bg-green-900/30 border-green-600/40 text-green-300
+          {% elif message.tags == 'error' %} bg-red-900/30 border-red-600/40 text-red-300
+          {% else %} bg-zinc-800 border-zinc-700 text-zinc-300 {% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+ 
+  <form method="post"
+      action="{% if offer %}{% url 'offer_edit' offer.offer_kind offer.id %}{% else %}{% url 'offer_create' %}{% endif %}"
+      class="space-y-8">
+
+    {% csrf_token %}
+ 
+    <div class="bg-zinc-900 border border-yellow-500/15 rounded-xl p-6 shadow-lg shadow-black/40">
+ <div class="mb-5">
+  <label class="block text-sm text-zinc-400 mb-1.5" for="id_name">Offer Name <span class="text-red-400">*</span></label>
+  <input type="text" id="id_name" name="name" required value="{{ offer.name|default:'' }}"
+         placeholder="e.g. Diwali Special"
+         class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors">
+</div>
+
+<div class="mb-5">
+  <label class="block text-sm text-zinc-400 mb-1.5" for="id_description">Description</label>
+  <textarea id="id_description" name="description" rows="3"
+            class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors">{{ offer.description|default:'' }}</textarea>
+</div>
+      <!-- Offer type toggle -->
+      <div class="mb-6">
+        <label class="block text-sm text-zinc-400 mb-2">Offer Applies To <span class="text-red-400">*</span></label>
+        <div class="flex gap-3">
+          <label class="flex-1 cursor-pointer">
+<input type="radio" name="offer_type" value="product" id="type-product"
+  {% if not offer or offer.offer_kind == 'product' %}checked{% endif %} class="peer hidden">
+            <div class="peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400
+                        border border-zinc-700 text-zinc-400 rounded-md px-4 py-2.5 text-sm font-medium text-center transition-colors">
+              Specific Product
+            </div>
+          </label>
+          <label class="flex-1 cursor-pointer">
+<input type="radio" name="offer_type" value="category" id="type-category"
+  {% if offer and offer.offer_kind == 'category' %}checked{% endif %} class="peer hidden">          
+    <div class="peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400
+                        border border-zinc-700 text-zinc-400 rounded-md px-4 py-2.5 text-sm font-medium text-center transition-colors">
+              Entire Category
+            </div>
+          </label>
+        </div>
+      </div>
+ 
+      <!-- Product select -->
+      <div id="product-field" class="mb-5">
+        <label class="block text-sm text-zinc-400 mb-1.5" for="id_product">Product <span class="text-red-400">*</span></label>
+        <select id="id_product" name="product"
+                class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors">
+          <option value="">Select a product</option>
+          {% for product in products %}
+<option value="{{ product.id }}" {% if offer and offer.offer_kind == 'product' and offer.product_id == product.id %}selected{% endif %}>{{ product.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+ 
+      <!-- Category select -->
+      <div id="category-field" class="mb-5 hidden">
+        <label class="block text-sm text-zinc-400 mb-1.5" for="id_category">Category <span class="text-red-400">*</span></label>
+        <select id="id_category" name="category"
+                class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors">
+          <option value="">Select a category</option>
+          {% for category in categories %}
+<option value="{{ category.id }}" {% if offer and offer.offer_kind == 'category' and offer.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+ 
+      <!-- Discount + validity -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="mb-5">
+  <label class="block text-sm text-zinc-400 mb-2">Discount Type <span class="text-red-400">*</span></label>
+  <div class="flex gap-3">
+    <label class="flex-1 cursor-pointer">
+      <input type="radio" name="discount_type" value="percent" class="peer hidden" id="dtype-percent"
+        {% if not offer or offer.discount_type == 'percent' %}checked{% endif %}>
+      <div class="peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400
+                  border border-zinc-700 text-zinc-400 rounded-md px-4 py-2.5 text-sm font-medium text-center transition-colors">
+        Percentage (%)
+      </div>
+    </label>
+    <label class="flex-1 cursor-pointer">
+      <input type="radio" name="discount_type" value="fixed" class="peer hidden" id="dtype-fixed"
+        {% if offer and offer.discount_type == 'fixed' %}checked{% endif %}>
+      <div class="peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400
+                  border border-zinc-700 text-zinc-400 rounded-md px-4 py-2.5 text-sm font-medium text-center transition-colors">
+        Fixed Amount (₹)
+      </div>
+    </label>
+  </div>
+</div>
+
+<div class="md:col-span-2 mb-5">
+  <label class="block text-sm text-zinc-400 mb-1.5" for="id_discount_percent">
+    Discount Value <span id="discount-unit-label">(%)</span> <span class="text-red-400">*</span>
+  </label>
+  <input type="number" id="id_discount_percent" name="discount_percent" required min="0.01" step="0.01"
+         value="{{ offer.discount_percent|default:'' }}" placeholder="e.g. 15"
+         class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white placeholder-zinc-600 text-sm outline-none transition-colors">
+</div>
+ 
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_valid_from">Valid From <span class="text-red-400">*</span></label>
+          <input type="datetime-local" id="id_valid_from" value="{{ offer.valid_from|date:'Y-m-d\TH:i' }}"
+name="valid_from" required
+                 class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors [color-scheme:dark]">
+        </div>
+ 
+        <div>
+          <label class="block text-sm text-zinc-400 mb-1.5" for="id_valid_until">Valid Until <span class="text-red-400">*</span></label>
+          <input type="datetime-local" id="id_valid_until" value="{{ offer.valid_until|date:'Y-m-d\TH:i' }}"
+ name="valid_until" required
+                 class="w-full bg-zinc-950 border border-zinc-700 focus:border-yellow-500 rounded-md px-3.5 py-2.5 text-white text-sm outline-none transition-colors [color-scheme:dark]">
+        </div>
+        <div class="md:col-span-2 flex items-center gap-3">
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input type="checkbox" name="is_active" id="id_is_active" class="peer sr-only"
+      {% if not offer or offer.is_active %}checked{% endif %}>
+    <span class="w-10 h-5 flex items-center bg-zinc-700 peer-checked:bg-yellow-500 rounded-full p-0.5 transition-colors duration-300">
+      <span class="bg-white w-4 h-4 rounded-full shadow-md transform peer-checked:translate-x-5 transition-transform duration-300"></span>
+    </span>
+    <span class="text-sm text-zinc-300">Active</span>
+  </label>
+</div>
+      </div>
+    </div>
+ 
+    <!-- Actions -->
+    <a href="{% url 'offer_list' %}" class="px-5 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 transition-colors">
+  ← Back to Offers
+</a>
+<button type="submit" class="px-6 py-2.5 rounded-md text-sm font-medium bg-yellow-500 hover:bg-yellow-400 text-black transition-colors">
+  {% if offer %}Update Offer{% else %}Create Offer{% endif %}
+</button>
+
+    </div>
+  </form>
+</div>
+ 
+<script>
+  const percentRadio = document.getElementById('dtype-percent');
+const fixedRadio = document.getElementById('dtype-fixed');
+const unitLabel = document.getElementById('discount-unit-label');
+const valueInput = document.getElementById('id_discount_percent');
+
+function updateUnit() {
+  if (fixedRadio.checked) {
+    unitLabel.textContent = '(₹)';
+    valueInput.removeAttribute('max');
+  } else {
+    unitLabel.textContent = '(%)';
+    valueInput.setAttribute('max', '100');
+  }
+}
+percentRadio.addEventListener('change', updateUnit);
+fixedRadio.addEventListener('change', updateUnit);
+updateUnit();
+  (function () {
+    const productRadio = document.getElementById('type-product');
+    const categoryRadio = document.getElementById('type-category');
+    const productField = document.getElementById('product-field');
+    const categoryField = document.getElementById('category-field');
+    const productSelect = document.getElementById('id_product');
+    const categorySelect = document.getElementById('id_category');
+ 
+    function updateFields() {
+      if (categoryRadio.checked) {
+        productField.classList.add('hidden');
+        categoryField.classList.remove('hidden');
+        productSelect.removeAttribute('required');
+        categorySelect.setAttribute('required', 'required');
+      } else {
+        categoryField.classList.add('hidden');
+        productField.classList.remove('hidden');
+        categorySelect.removeAttribute('required');
+        productSelect.setAttribute('required', 'required');
+      }
+    } 
+    productRadio.addEventListener('change', updateFields);
+    categoryRadio.addEventListener('change', updateFields);
+    updateFields();
+  })();
+</script>
+
+{% endblock %}
+ 

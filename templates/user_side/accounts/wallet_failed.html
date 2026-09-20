@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+    :root{
+        --luxury-gold:#E3C565;
+    }
+
+    .premium-font{
+        font-family:'Playfair Display',serif;
+    }
+</style>
+
+<div class="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-8">
+
+    <div class="w-full max-w-3xl">
+
+        <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-12 text-center">
+
+            <div class="w-24 h-24 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-8">
+                <i class="fa-solid fa-xmark text-4xl text-red-400"></i>
+            </div>
+
+            <h1 class="premium-font text-white text-5xl font-bold mb-4">
+                Payment Failed
+            </h1>
+
+            <p class="text-gray-500 mb-10">
+                We couldn't process your payment. Please try again.
+            </p>
+
+            <div class="bg-[#0d0d0d] rounded-2xl border border-white/5 p-8 mb-8">
+
+                <p class="text-gray-500">
+                    No amount has been deducted from your wallet.
+                </p>
+
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+
+                <a href="{% url 'add_money' %}"
+                   class="bg-[#E3C565] text-black px-8 py-4 rounded-full uppercase text-[10px] font-bold tracking-[0.2em]">
+                    Retry Payment
+                </a>
+
+                <a href="{% url 'wallet' %}"
+                   class="border border-[#E3C565]/20 text-[#E3C565] px-8 py-4 rounded-full uppercase text-[10px] font-bold tracking-[0.2em]">
+                    Back To Wallet
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<div class="space-y-8">
+
+<div class="flex items-center justify-between">
+
+    <div>
+        <h1 class="text-3xl font-bold text-white">
+            Transactions
+        </h1>
+
+        <p class="text-gray-500 mt-2">
+            Wallet transaction history
+        </p>
+    </div>
+
+    <div class="h-px flex-1 mx-8 bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent"></div>
+
+</div>
+<form method="get"
+      class="bg-[#111111] border border-[#D4AF37]/10 rounded-2xl p-6">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+        <!-- Purpose -->
+
+        <div>
+            <label class="block text-[11px] uppercase tracking-wider text-[#D4AF37] mb-2">
+                Purpose
+            </label>
+
+<select name="purpose" class="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#D4AF37] focus:outline-none">
+    <option value="" {% if not purpose %}selected{% endif %}>All Purposes</option>
+    <option value="wallet_recharge" {% if purpose == 'wallet_recharge' %}selected{% endif %}>Wallet Recharge</option>
+    <option value="order_payment" {% if purpose == 'order_payment' %}selected{% endif %}>Order Payment</option>
+    <option value="return_refund" {% if purpose == 'return_refund' %}selected{% endif %}>Return Refund</option>
+    <option value="cancellation_refund" {% if purpose == 'cancellation_refund' %}selected{% endif %}>Cancellation Refund</option>
+    <option value="referral_bonus" {% if purpose == 'referral_bonus' %}selected{% endif %}>Referral Bonus</option>
+    <option value="cashback" {% if purpose == 'cashback' %}selected{% endif %}>Cashback</option>
+</select>
+        </div>
+
+        <!-- Type -->
+
+        <div>
+            <label class="block text-[11px] uppercase tracking-wider text-[#D4AF37] mb-2">
+                Type
+            </label>
+
+<select name="type" class="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#D4AF37] focus:outline-none">
+    <option value="" {% if not transaction_type %}selected{% endif %}>All Types</option>
+    <option value="credit" {% if transaction_type == 'credit' %}selected{% endif %}>Credit</option>
+    <option value="debit" {% if transaction_type == 'debit' %}selected{% endif %}>Debit</option>
+</select>
+        </div>
+
+        <!-- Search -->
+
+        <div>
+            <label class="block text-[11px] uppercase tracking-wider text-[#D4AF37] mb-2">
+                Search User
+            </label>
+
+<input type="text" name="search" value="{{ search }}" placeholder="Name or Email"
+       class="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#D4AF37] focus:outline-none">
+        </div>
+
+        <!-- Buttons -->
+
+        <div class="flex items-end gap-3">
+
+            <button type="submit"
+                    class="flex-1 px-5 py-3 rounded-xl bg-[#D4AF37] text-black font-semibold hover:opacity-90 transition">
+                Filter
+            </button>
+
+            <a href="{% url 'wallet_transaction_list' %}"
+               class="px-5 py-3 rounded-xl border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10 transition">
+                Clear
+            </a>
+
+        </div>
+
+    </div>
+
+</form>
+    <div class="bg-[#111111] border border-white/5 rounded-2xl overflow-hidden">
+
+        <table class="w-full">
+
+<thead class="bg-gradient-to-r from-[#D4AF37]/10 via-[#D4AF37]/5 to-transparent">
+                <tr class="text-left">
+
+                    <th class="px-6 py-4 text-xs uppercase text-gray-400">
+                        ID
+                    </th>
+
+                    <th class="px-6 py-4 text-xs uppercase text-gray-400">
+                        Date
+                    </th>
+
+                    <th class="px-6 py-4 text-xs uppercase text-gray-400">
+                        User
+                    </th>
+
+                    <th class="px-6 py-4 text-xs uppercase text-gray-400">
+                        Amount
+                    </th>
+
+                    <th class="px-6 py-4 text-xs uppercase text-gray-400">
+                        Type
+                    </th>
+
+                    <th class="px-6 py-4 text-xs uppercase text-gray-400">
+                        Purpose
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for transaction in transactions %}
+
+<tr class="border-t border-white/5 hover:bg-[#D4AF37]/5 transition">
+                    <td class="px-6 py-5 text-white">
+                        #{{ transaction.id }}
+                    </td>
+
+                    <td class="px-6 py-5 text-gray-400">
+                        {{ transaction.created_at|date:"d M Y" }}
+                    </td>
+
+                    <td class="px-6 py-5">
+
+                        <div class="text-white">
+                            {{ transaction.wallet.user.get_full_name|default:transaction.wallet.user.username }}
+                        </div>
+
+                        <div class="text-xs text-gray-500">
+                            {{ transaction.wallet.user.email }}
+                        </div>
+
+                    </td>
+
+                  <td class="px-6 py-5 font-semibold">
+
+    {% if transaction.transaction_type == 'credit' %}
+        <span class="text-green-400">
+            + ₹{{ transaction.amount }}
+        </span>
+    {% else %}
+        <span class="text-red-400">
+            - ₹{{ transaction.amount }}
+        </span>
+    {% endif %}
+
+</td>
+                    <td class="px-6 py-5">
+
+                        {% if transaction.transaction_type == 'credit' %}
+                        <span class="px-3 py-1 rounded-full text-xs bg-green-500/10 text-green-400">
+                            Credit
+                        </span>
+                        {% else %}
+                        <span class="px-3 py-1 rounded-full text-xs bg-red-500/10 text-red-400">
+                            Debit
+                        </span>
+                        {% endif %}
+
+                    </td>
+
+                   <td class="px-6 py-5">
+
+    <span class="px-3 py-1 rounded-full text-xs bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20">
+        {{ transaction.get_purpose_display }}
+    </span>
+
+</td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center py-10 text-gray-500">
+                        No transactions found
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+{% if transactions.has_other_pages %}
+<div class="flex justify-center items-center gap-2 mt-6">
+    {% if transactions.has_previous %}
+    <a href="?page={{ transactions.previous_page_number }}&purpose={{ purpose }}&type={{ transaction_type }}&search={{ search }}"
+       class="px-4 py-2 bg-[#111] border border-white/10 text-white rounded-lg hover:border-[#D4AF37]">Prev</a>
+    {% endif %}
+
+    <span class="px-4 py-2 text-gray-400 text-sm">
+        Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}
+    </span>
+
+    {% if transactions.has_next %}
+    <a href="?page={{ transactions.next_page_number }}&purpose={{ purpose }}&type={{ transaction_type }}&search={{ search }}"
+       class="px-4 py-2 bg-[#111] border border-white/10 text-white rounded-lg hover:border-[#D4AF37]">Next</a>
+    {% endif %}
+</div>
+{% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

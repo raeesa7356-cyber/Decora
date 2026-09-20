@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Decora | Verify OTP{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+    <div class="w-full max-w-[420px] bg-[#1a1a1a] border border-white/5 p-10 rounded-2xl shadow-2xl relative z-10 text-center">
+        
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#D4AF37]/10 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        </div>
+
+        <h2 class="premium-font text-3xl text-[#D4AF37] mb-3">Verification</h2>
+        <p class="text-gray-400 text-sm mb-8 leading-relaxed">
+            We've sent a 6-digit code to <br>
+<span class="text-white font-medium">{{ request.session.signup_data.email }}</span>        </p>
+
+        <form action="{% url 'verify_otp' %}" method="POST" class="space-y-8">
+            {% csrf_token %}
+            
+            <div class="flex justify-center gap-3">
+                <input type="text" name="otp_code" maxlength="6" required
+                    placeholder="······"
+                    class="w-full tracking-[1em] text-center text-2xl bg-[#252525] border border-white/10 rounded-lg py-4 text-[#D4AF37] outline-none focus:border-[#D4AF37] transition-all font-mono uppercase">
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-gradient-to-r from-[#D4AF37] via-[#F1D27B] to-[#B8860B] text-black font-bold py-4 rounded-lg hover:opacity-90 transition-opacity uppercase text-xs tracking-widest">
+                Verify & Join
+            </button>
+        </form>
+
+        <div class="mt-10">
+    <div id="timer-container" class="text-gray-600 text-[10px] uppercase tracking-widest mb-2">
+        Didn't receive code? <br>
+        <span class="text-[#D4AF37]/50 normal-case mt-2 block">
+            Resend available in <span id="timer-seconds" class="font-mono text-white">60</span>s
+        </span>
+    </div>
+    
+  <a href="{% url 'resend_otp' %}" id="resend-link"
+   onclick="localStorage.removeItem('otp_timer_expiry_{{ request.session.signup_data.email }}')"
+   class="hidden text-[#D4AF37] text-xs hover:text-white font-bold uppercase tracking-widest transition-colors">
+   Resend New OTP
+</a>
+</div>
+        
+        <a href="{% url 'signup' %}" class="block mt-6 text-gray-500 text-[10px] uppercase tracking-tighter hover:text-white transition-colors">
+            Use a different email address
+        </a>
+    </div>
+</div>
+
+<script>
+    const OTP_EMAIL = "{{ request.session.signup_data.email }}";
+    const STORAGE_KEY = "otp_timer_expiry_" + OTP_EMAIL;
+    const DURATION = 60; // seconds
+
+    const timerSeconds = document.getElementById('timer-seconds');
+    const timerContainer = document.getElementById('timer-container');
+    const resendLink = document.getElementById('resend-link');
+
+    // Get or create the expiry timestamp for THIS email's OTP session
+    let expiryTime = localStorage.getItem(STORAGE_KEY);
+
+    if (!expiryTime) {
+        expiryTime = Date.now() + DURATION * 1000;
+        localStorage.setItem(STORAGE_KEY, expiryTime);
+    } else {
+        expiryTime = parseInt(expiryTime, 10);
+    }
+
+    function tick() {
+        const remaining = Math.max(0, Math.ceil((expiryTime - Date.now()) / 1000));
+        timerSeconds.textContent = remaining;
+
+        if (remaining <= 0) {
+            clearInterval(countdown);
+            timerContainer.classList.add('hidden');
+            resendLink.classList.remove('hidden');
+            localStorage.removeItem(STORAGE_KEY);
+        }
+    }
+
+    tick(); // run immediately so it doesn't show "60" for a flash before the first tick
+    const countdown = setInterval(tick, 1000);
+</script>
+{% endblock %}

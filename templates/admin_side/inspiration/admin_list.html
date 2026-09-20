@@ -1,0 +1,125 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<div class="flex justify-between items-center mb-8">
+
+    <div>
+        <h1 class="text-3xl font-bold text-white">
+            Inspiration Boards
+        </h1>
+
+        <p class="text-gray-400 mt-1">
+            Manage inspiration collections for your customers
+        </p>
+    </div>
+
+   <div class="flex gap-3">
+
+    <a href="{% url 'admin_inspiration:style_list' %}"
+       class="bg-white/10 text-white px-4 py-3 rounded-xl">
+        Styles
+    </a>
+
+    <a href="{% url 'admin_inspiration:tag_list' %}"
+       class="bg-white/10 text-white px-4 py-3 rounded-xl">
+        Tags
+    </a>
+
+    <a href="{% url 'admin_inspiration:create' %}"
+       class="bg-[#D4AF37] text-black px-5 py-3 rounded-xl">
+        + Add Inspiration
+    </a>
+
+</div>
+
+</div>
+
+{% if boards %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+    {% for board in boards %}
+
+    <div class="bg-[#111111] rounded-3xl overflow-hidden border border-white/10">
+
+        <!-- Image -->
+        <div class="h-56 overflow-hidden">
+
+            {% if board.cover_image %}
+                <img src="{{ board.cover_image.url }}"
+                     class="w-full h-full object-cover">
+            {% else %}
+                <div class="w-full h-full flex items-center justify-center text-gray-500">
+                    No Image
+                </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Content -->
+        <div class="p-5">
+
+            <h3 class="text-white text-xl font-semibold mb-2">
+                {{ board.title }}
+            </h3>
+
+            <p class="text-gray-400 text-sm mb-4">
+                {{ board.description|truncatechars:100 }}
+            </p>
+
+            <div class="text-xs text-gray-500 mb-5">
+                Created:
+                {{ board.created_at|date:"d M Y" }}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+
+                <a href="{% url 'admin_inspiration:edit' board.id %}"
+                   class="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl transition">
+                    Edit
+                </a>
+
+                <a href="{% url 'admin_inspiration:delete' board.id %}"
+                   onclick="return confirm('Delete this inspiration board?')"
+                   class="flex-1 text-center bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl transition">
+                    Delete
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="bg-[#111111] border border-white/10 rounded-3xl p-12 text-center">
+
+    <div class="text-6xl mb-4">
+        📸
+    </div>
+
+    <h3 class="text-white text-xl font-semibold mb-2">
+        No Inspiration Boards Yet
+    </h3>
+
+    <p class="text-gray-400 mb-6">
+        Create your first inspiration board to showcase styled rooms and products.
+    </p>
+
+    <a href="{% url 'admin_inspiration:create' %}"
+       class="inline-block bg-[#D4AF37] text-black px-6 py-3 rounded-xl font-semibold">
+        Create First Inspiration
+    </a>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+ 
+<div class="p-6 bg-[#0F0F0F] min-h-screen flex items-center justify-center">
+ 
+    <div class="bg-[#161616] border border-[#C6A972]/20 rounded-2xl p-8 w-full max-w-md">
+ 
+        <a
+            href="{% url 'inventory_detail' combination.product.id %}"
+            class="inline-flex items-center gap-2 text-[#C6A972] hover:text-[#E5D3AE] transition mb-6"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+        </a>
+ 
+        <h1 class="text-2xl font-bold text-[#C6A972] mb-1">
+            Update Stock
+        </h1>
+ 
+        <p class="text-gray-400 text-sm mb-6">
+            {{ combination.product.name }} — {{ combination.label }}
+        </p>
+ 
+        <div class="bg-black/40 border border-[#C6A972]/10 rounded-xl p-4 mb-6 text-sm text-gray-300">
+            <div class="flex justify-between mb-1">
+                <span>SKU</span>
+                <span class="text-white font-mono">{{ combination.sku|default:"-" }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Current Stock</span>
+                <span class="text-white font-semibold">{{ combination.stock_quantity }}</span>
+            </div>
+        </div>
+ 
+        <form method="POST">
+            {% csrf_token %}
+ 
+            <label class="text-[10px] text-gray-500 uppercase tracking-widest block mb-2">
+                New Stock Quantity
+            </label>
+ 
+            <input
+                type="number"
+                name="stock"
+                min="0"
+                value="{{ combination.stock_quantity }}"
+                required
+                class="w-full h-12 bg-black border border-[#C6A972]/20 rounded-xl px-4 text-white mb-6 focus:outline-none focus:border-[#C6A972]"
+            >
+ 
+            <button
+                type="submit"
+                class="w-full h-12 bg-[#C6A972] text-black rounded-xl font-semibold hover:bg-[#E5D3AE] transition"
+            >
+                Save Stock
+            </button>
+        </form>
+ 
+    </div>
+ 
+</div>
+{% endblock %}

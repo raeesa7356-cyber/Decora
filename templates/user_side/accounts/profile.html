@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load cloudinary %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+    
+    :root {
+        --luxury-gold: #E3C565;
+        --luxury-gold-muted: rgba(227, 197, 101, 0.2);
+    }
+
+    .premium-font {
+        font-family: 'Playfair+Display', serif;
+    }
+
+    /* Dynamic Border Animation for a "Living" Premium Feel */
+    @keyframes goldShimmer {
+        0% { border-color: rgba(227, 197, 101, 0.1); }
+        50% { border-color: rgba(227, 197, 101, 0.4); }
+        100% { border-color: rgba(227, 197, 101, 0.1); }
+    }
+
+    .shimmer-border {
+        animation: goldShimmer 4s infinite ease-in-out;
+    }
+
+    #logoutModal { z-index: 99999 !important; }
+
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #0A0A0A; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--luxury-gold); }
+</style>
+
+<div class="min-h-screen bg-[#0A0A0A] text-gray-400 p-8 md:p-12 custom-scroll">
+    <div class="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-12">
+        
+        <!-- Sidebar -->
+        <aside>
+            <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-10 flex flex-col items-center text-center shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#E3C565]/30 to-transparent"></div>
+
+                <div class="w-36 h-36 rounded-full border-[1px] shimmer-border p-2 mb-6 mt-4 relative">
+    <div class="w-full h-full rounded-full overflow-hidden border border-white/10">
+        <img src="{{ profile.get_avatar }}" 
+             alt="{{ user.username }}" 
+             class="w-full h-full object-cover">
+    </div>
+</div>
+                <h2 class="text-white text-3xl font-bold premium-font tracking-tight mb-1">{{ user.first_name|title }}</h2>
+                <p class="text-[#E3C565]/60 text-[9px] uppercase tracking-[0.3em] mb-10 font-bold">Premium Member</p>
+                
+                <a href="{% url 'edit_profile' %}" class="w-full py-4 rounded-full border border-[#E3C565]/20 text-[#E3C565] text-[10px] uppercase font-bold tracking-[0.2em] transition-all hover:bg-[#E3C565] hover:text-black hover:border-[#E3C565]">
+                    Edit Profile
+                </a>
+                
+                <div class="w-full border-t border-white/5 mt-10 pt-8 text-left">
+                    <p class="text-[9px] text-gray-600 uppercase tracking-widest mb-1">Member Since</p>
+                    <p class="text-sm text-gray-400 font-light">{{ user.date_joined|date:"F Y" }}</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="space-y-12">
+            
+            <!-- Orders Section -->
+            <section>
+                <div class="flex items-end justify-between mb-8">
+                    <div>
+                        <h3 class="premium-font text-white text-4xl font-bold tracking-tight">My Orders</h3>
+                        <div class="h-1 w-12 bg-[#E3C565] mt-2 opacity-50"></div>
+                    </div>
+<a href="{% url 'order_list' %}"
+   class="text-[10px] text-gray-500 hover:text-[#E3C565] uppercase font-bold tracking-widest transition">
+    View All
+</a>                </div>
+                
+<div class="space-y-5">
+
+{% if latest_order %}
+
+<div class="bg-[#111111] border border-white/5 p-8 rounded-[1.5rem] flex items-center justify-between transition hover:border-[#E3C565]/30 group">
+
+    <div class="flex items-center space-x-8">
+
+        <div class="w-20 h-20 rounded-2xl bg-[#0d0d0d] border border-white/5 flex items-center justify-center text-[#E3C565]/40 group-hover:text-[#E3C565] transition-colors">
+            <i class="fa-solid fa-box-open text-2xl"></i>
+        </div>
+
+        <div>
+            <p class="text-[9px] text-gray-600 font-bold tracking-widest uppercase">
+                Order #{{ latest_order.order_number }}
+            </p>
+
+            <p class="text-white text-lg font-medium mt-1">
+                {{ latest_order.created_at|date:"d M Y" }}
+            </p>
+
+            <p class="text-[#E3C565]/80 font-light text-sm mt-1">
+                ₹{{ latest_order.total_amount }}
+            </p>
+        </div>
+
+    </div>
+    
+
+    <div class="flex items-center space-x-8">
+
+        <span class="px-4 py-1.5 bg-[#E3C565]/5 text-[#E3C565] border border-[#E3C565]/10 rounded-full text-[9px] font-bold uppercase tracking-widest">
+            {{ latest_order.status }}
+        </span>
+
+        <a href="{% url 'order_detail' latest_order.id %}"
+           class="text-[10px] text-gray-400 hover:text-white uppercase font-bold tracking-widest transition">
+            Details
+        </a>
+
+    </div>
+
+</div>
+
+{% else %}
+
+<div class="bg-[#111111] border border-white/5 rounded-[1.5rem] p-12 text-center">
+    <p class="text-gray-500">No orders found.</p>
+</div>
+
+{% endif %}
+
+</div>
+            </section>
+
+            <!-- Saved Addresses restored and updated -->
+            <!-- Saved Addresses -->
+<section>
+    <div class="flex items-end justify-between mb-8">
+        <div>
+            <h3 class="premium-font text-white text-4xl font-bold tracking-tight">Saved Addresses</h3>
+            <div class="h-1 w-12 bg-[#E3C565] mt-2 opacity-50"></div>
+        </div>
+        <a href="{% url 'manage_addresses' %}" class="text-[10px] text-gray-500 hover:text-[#E3C565] uppercase font-bold tracking-widest transition">Manage</a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {# Show up to 2 addresses #}
+        {% for address in addresses|slice:":2" %}
+            <div class="bg-[#111111] border border-white/5 p-8 rounded-[1.5rem] relative transition hover:border-[#E3C565]/20 group">
+                {% if address.is_primary %}
+                    <span class="absolute top-6 right-6 text-[8px] font-black text-[#E3C565] tracking-[0.2em] uppercase bg-[#E3C565]/10 px-3 py-1 rounded-full border border-[#E3C565]/20">Primary</span>
+                {% endif %}
+                
+                <h4 class="text-white font-medium text-xl premium-font mb-4 group-hover:text-[#E3C565] transition-colors">{{ address.address_type|title }}</h4>
+<p class="text-sm text-gray-500 leading-relaxed font-light line-clamp-2" title="{{ address.house_no }}, {{ address.city }}, {{ address.state }} {{ address.pincode }}">
+    {{ address.house_no }}<br>
+    {{ address.city }}, {{ address.state }} {{ address.pincode }}
+</p>
+            </div>
+        {% endfor %}
+
+        {# If there are fewer than 2 addresses, show the "Add New" button in the remaining slot(s) #}
+        {% if addresses.count < 2 %}
+            <a href="{% url 'manage_addresses' %}" class="group bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[1.5rem] flex flex-col items-center justify-center text-center p-8 min-h-[160px] transition-all duration-500 hover:border-[#E3C565]/30 hover:bg-[#E3C565]/5">
+                <div class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:border-[#E3C565] group-hover:rotate-90">
+                    <i class="fa-solid fa-plus text-gray-600 group-hover:text-[#E3C565]"></i>
+                </div>
+                <p class="text-[9px] text-gray-500 uppercase font-bold tracking-[0.2em] group-hover:text-white transition-colors">Add Address</p>
+            </a>
+        {% endif %}
+
+        {# If there are NO addresses at all, show a second ghost slot for visual balance #}
+        {% if not addresses %}
+            <div class="hidden md:flex bg-white/[0.01] border border-white/5 rounded-[1.5rem] items-center justify-center opacity-20">
+                <p class="text-[9px] uppercase tracking-widest">Slot Empty</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+            <!-- Wallet Section -->
+        <!-- Wallet Section -->
+<!-- Wallet Section -->
+<section>
+    <div class="bg-gradient-to-br from-[#111111] to-[#0d0d0d] border border-white/5 p-12 rounded-[2rem] relative overflow-hidden shadow-2xl">
+
+<div class="absolute top-0 right-0 w-64 h-64 bg-[#E3C565]/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+       <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+
+    <div>
+        <p class="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-bold mb-3">
+            Wallet
+        </p>
+
+        <h3 class="premium-font text-white text-4xl font-bold">
+            Decora Wallet
+        </h3>
+
+        <p class="text-gray-500 mt-2 text-sm">
+            View wallet balance and transaction history.
+        </p>
+    </div>
+
+    <div class="flex flex-wrap gap-4">
+
+        <a href="{% url 'wallet' %}"
+           class="bg-[#E3C565] text-black px-8 py-4 rounded-full text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-white transition-all">
+            View Wallet
+        </a>
+
+        <a href="{% url 'add_money' %}"
+           class="border border-[#E3C565]/20 text-[#E3C565] px-8 py-4 rounded-full text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-[#E3C565] hover:text-black transition-all">
+            Add Money
+        </a>
+
+    </div>
+
+</div>
+
+    </div>
+</section>
+<section>
+    <div class="bg-gradient-to-br from-[#111111] to-[#0d0d0d] border border-white/5 p-10 md:p-12 rounded-[2rem] relative overflow-hidden shadow-2xl">
+
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#E3C565]/5 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#E3C565]/30 to-transparent"></div>
+
+        <div class="relative z-10">
+
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-bold mb-3">
+                        Refer &amp; Earn
+                    </p>
+                    <h3 class="premium-font text-white text-4xl font-bold tracking-tight">
+                        Invite Friends
+                    </h3>
+                    <p class="text-gray-500 mt-3 text-sm max-w-md">
+                        Earn <span class="text-[#E3C565] font-medium">₹{{ my_referral.reward_amount }}</span>
+                        in your Decora wallet when a friend signs up using your code or link.
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+
+                <!-- Referral Code Row -->
+                <div class="bg-[#0d0d0d] border border-white/5 hover:border-[#E3C565]/20 rounded-2xl px-6 py-5 flex items-center justify-between gap-4 transition-colors">
+                    <div class="min-w-0">
+                        <p class="text-[9px] text-gray-600 uppercase tracking-[0.25em] font-bold mb-2">
+                            Referral Code
+                        </p>
+                        <p id="referral-code-text" class="text-[#E3C565] font-mono font-bold text-xl tracking-[0.15em] truncate">
+                            {{ my_referral.referral_code }}
+                        </p>
+                    </div>
+
+                    <button type="button" onclick="copyReferralValue('referral-code-text', this)"
+                            class="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#E3C565]/20 text-[#E3C565] text-[10px] uppercase font-bold tracking-[0.15em] hover:bg-[#E3C565] hover:text-black transition-all">
+                        <i class="fa-regular fa-copy text-xs copy-icon"></i>
+                        <span class="copy-label">Copy</span>
+                    </button>
+                </div>
+
+                <!-- Referral Link Row -->
+                <div class="bg-[#0d0d0d] border border-white/5 hover:border-[#E3C565]/20 rounded-2xl px-6 py-5 flex items-center justify-between gap-4 transition-colors">
+                    <div class="min-w-0">
+                        <p class="text-[9px] text-gray-600 uppercase tracking-[0.25em] font-bold mb-2">
+                            Referral Link
+                        </p>
+                        <p id="referral-link-text" class="text-gray-300 text-sm font-light truncate">
+                            {{ request.scheme }}://{{ request.get_host }}{% url 'referral_redirect' my_referral.token %}
+                        </p>
+                    </div>
+
+                    <button type="button" onclick="copyReferralValue('referral-link-text', this)"
+                            class="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#E3C565]/20 text-[#E3C565] text-[10px] uppercase font-bold tracking-[0.15em] hover:bg-[#E3C565] hover:text-black transition-all">
+                        <i class="fa-regular fa-copy text-xs copy-icon"></i>
+                        <span class="copy-label">Copy</span>
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+            <!-- Account Actions -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <a href="{% url 'change_password' %}" class="bg-[#111111] border border-white/5 p-8 rounded-2xl flex items-center justify-between transition hover:bg-white/[0.02] hover:border-[#E3C565]/20 group">
+                    <div class="flex items-center space-x-6">
+                        <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-[#E3C565] transition">
+                            <i class="fa-solid fa-lock text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 font-medium group-hover:text-white transition">Security Settings</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-xs text-gray-800 group-hover:text-[#E3C565] transition-all"></i>
+                </a>
+
+                <button onclick="toggleLogoutModal()" class="bg-[#111111] border border-white/5 p-8 rounded-2xl flex items-center justify-between transition hover:bg-red-500/5 hover:border-red-500/20 group">
+                    <div class="flex items-center space-x-6">
+                        <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-gray-500 group-hover:text-red-500 transition">
+                            <i class="fa-solid fa-power-off text-sm"></i>
+                        </div>
+                        <span class="text-gray-300 font-medium group-hover:text-red-500 transition">Sign Out</span>
+                    </div>
+                </button>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="logoutModal" class="fixed inset-0 hidden items-center justify-center bg-black/95 backdrop-blur-xl p-4">
+    <div class="bg-[#111111] border border-white/10 w-full max-w-sm rounded-[2rem] p-10 shadow-2xl text-center">
+        <h3 class="premium-font text-white text-3xl font-bold mb-4">Logout?</h3>
+        <p class="text-gray-500 text-[10px] mb-10 uppercase tracking-[0.2em]">You will need to sign back in to access your decora dashboard.</p>
+        <div class="flex flex-col space-y-4">
+            <a href="{% url 'user_logout' %}" class="w-full bg-red-600 text-white py-4 rounded-full text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-red-700 transition">Confirm</a>
+            <button onclick="toggleLogoutModal()" class="w-full bg-white/5 text-gray-400 py-4 rounded-full text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-white/10 transition">Dismiss</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('logoutModal');
+        document.body.appendChild(modal);
+    });
+
+    function toggleLogoutModal() {
+        const modal = document.getElementById('logoutModal');
+        const body = document.body;
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            body.style.overflow = 'hidden';
+        } else {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            body.style.overflow = '';
+        }
+    }
+function copyReferralValue(elementId, btn) {
+    const text = document.getElementById(elementId).innerText.trim();
+
+    navigator.clipboard.writeText(text).then(() => {
+        const icon = btn.querySelector('.copy-icon');
+        const label = btn.querySelector('.copy-label');
+
+        const originalIconClass = icon.className;
+        const originalLabel = label.innerText;
+
+        icon.className = 'fa-solid fa-check text-xs copy-icon';
+        label.innerText = 'Copied';
+        btn.classList.add('bg-[#E3C565]', 'text-black');
+
+        setTimeout(() => {
+            icon.className = originalIconClass;
+            label.innerText = originalLabel;
+            btn.classList.remove('bg-[#E3C565]', 'text-black');
+        }, 1500);
+    });
+}
+</script>
+{% endblock %}

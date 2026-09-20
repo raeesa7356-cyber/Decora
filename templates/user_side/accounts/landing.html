@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<section class="relative h-[90vh] flex items-center px-12 bg-[#050505] overflow-hidden">
+    <div class="max-w-2xl z-10">
+        <h1 class="text-7xl font-serif text-white mb-6 leading-[1.1]">Elevate Your <span class="text-[#D4AF37]">Space</span></h1>
+        <p class="text-gray-400 mb-10 text-lg font-light leading-relaxed max-w-md">Discover curated high-end decor that transforms your home into a sanctuary of style and elegance.</p>
+        
+        <div class="flex gap-4">
+            <a href="{% url 'signup' %}" class="bg-[#D4AF37] text-black px-10 py-4 text-xs uppercase tracking-widest font-bold hover:bg-white transition-all">Explore Collection</a>
+            <a href="{% url 'signup' %}" class="border border-[#D4AF37] text-[#D4AF37] px-10 py-4 text-xs uppercase tracking-widest font-bold hover:bg-[#D4AF37] hover:text-black transition-all">Sign Up Now</a>
+        </div>
+    </div>
+    
+    <div class="absolute right-0 top-0 w-[65%] h-full">
+        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80" 
+             class="w-full h-full object-cover opacity-60" alt="Decora Interior">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/40 to-transparent"></div>
+    </div>
+</section>
+
+<section id="category" class="py-20 px-12 bg-[#050505]">
+    <div class="mb-12">
+        <h2 class="text-3xl font-serif text-white tracking-wide">Shop by <span class="text-[#D4AF37]">Category</span></h2>
+        <div class="w-16 h-0.5 bg-[#D4AF37] mt-4"></div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="group relative cursor-pointer overflow-hidden rounded-sm border border-gray-900">
+            <div class="aspect-[4/5] relative">
+                <img src="https://images.unsplash.com/photo-1540932239986-30128078f3c5?q=80&w=600" 
+                     alt="Lighting" 
+                     class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105">
+                
+                <div class="absolute inset-0 bg-black/50 transition-opacity duration-500 group-hover:opacity-0 flex flex-col justify-end p-6">
+                    <h3 class="text-white text-xs uppercase tracking-[0.3em] font-bold">Lighting</h3>
+                    <p class="text-[#D4AF37] text-[10px] mt-1 opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest">Explore</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="group relative cursor-pointer overflow-hidden rounded-sm border border-gray-900">
+            <div class="aspect-[4/5] relative">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz-YIsTBQ3SJ2dDPN2xeoZ_e21rN19IYRQYw&s&w=600" 
+                     alt="Wall Decor" 
+                     class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105">
+                
+                <div class="absolute inset-0 bg-black/50 transition-opacity duration-500 group-hover:opacity-0 flex flex-col justify-end p-6">
+                    <h3 class="text-white text-xs uppercase tracking-[0.2em] font-bold">Wall Decor</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="group relative cursor-pointer overflow-hidden rounded-sm border border-gray-900">
+            <div class="aspect-[4/5] relative">
+                <img src="https://images.unsplash.com/photo-1485955900006-10f4d324d411?q=80&w=600" 
+                     alt="Plants" 
+                     class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105">
+                
+                <div class="absolute inset-0 bg-black/50 transition-opacity duration-500 group-hover:opacity-0 flex flex-col justify-end p-6">
+                    <h3 class="text-white text-xs uppercase tracking-[0.2em] font-bold">Pots & Plants</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="group relative cursor-pointer overflow-hidden rounded-sm border border-gray-900">
+            <div class="aspect-[4/5] relative">
+                <img src="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSOnxZtTf2lmAKZDadcLraW56setrB0ELNlVohHP6jtrqgyU-5wzKU-MsJTEoZnly83WsqI-Tq0c3Ssz1BVoA--mlJC7O36&w=600" 
+                     alt="Candles" 
+                     class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105">
+                
+                <div class="absolute inset-0 bg-black/50 transition-opacity duration-500 group-hover:opacity-0 flex flex-col justify-end p-6">
+                    <h3 class="text-white text-xs uppercase tracking-[0.2em] font-bold">Candles</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+<section id="featured" class="py-24 px-12 bg-[#050505]">
+    <div class="flex justify-between items-end mb-16">
+        <h2 class="text-4xl font-serif text-white">Featured <span class="text-[#D4AF37]">Pieces</span></h2>
+        <a href="{% url 'signup' %}" class="text-[#D4AF37] text-[10px] uppercase tracking-widest border-b border-[#D4AF37] pb-1 hover:text-white transition-all">View All</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="group">
+            <div class="relative aspect-[3/4] bg-[#111] overflow-hidden mb-4 border border-gray-900">
+                <img src="https://images.unsplash.com/photo-1627331044029-41208d6e4fe1?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                <div class="absolute top-4 right-4 bg-black/80 text-[#D4AF37] text-[10px] px-3 py-1 font-bold">NEW</div>
+            </div>
+            <h3 class="text-gray-300 text-sm uppercase tracking-wider mb-2">Modern Gold Lamp</h3>
+            <p class="text-[#D4AF37] font-bold text-lg">$185.00</p>
+        </div>
+
+        <div class="group">
+            <div class="relative aspect-[3/4] bg-[#111] overflow-hidden mb-4 border border-gray-900">
+                <img src="https://images.unsplash.com/photo-1640191233947-eb3dd51ae299?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                <div class="absolute top-4 right-4 bg-black/80 text-[#D4AF37] text-[10px] px-3 py-1 font-bold">BESTSELLER</div>
+            </div>
+            <h3 class="text-gray-300 text-sm uppercase tracking-wider mb-2">Sunburst Wall Mirror</h3>
+            <p class="text-[#D4AF37] font-bold text-lg">$210.00</p>
+        </div>
+
+        <div class="group">
+            <div class="relative aspect-[3/4] bg-[#111] overflow-hidden mb-4 border border-gray-900">
+                <img src="https://images.unsplash.com/photo-1631125915902-d8abe9225ff2?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+            </div>
+            <h3 class="text-gray-300 text-sm uppercase tracking-wider mb-2">Textured Ceramic Vase</h3>
+            <p class="text-[#D4AF37] font-bold text-lg">$95.00</p>
+        </div>
+
+        <div class="group">
+            <div class="relative aspect-[3/4] bg-[#111] overflow-hidden mb-4 border border-gray-900">
+                <img src="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQdjFuzYHU9tXB0xGmxNNQvu7E1xS79l4v1IKGO_qyEItkyGvRbXrK7fUwzjElUMC1luvQzmebsQzOSLkGJjkLj0-MNlDcHMF1WsgWGt39lnaGMbg7-p_m0Ug" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+            </div>
+            <h3 class="text-gray-300 text-sm uppercase tracking-wider mb-2">Abstract Metal Sculpture</h3>
+            <p class="text-[#D4AF37] font-bold text-lg">$145.00</p>
+        </div>
+    </div>
+</section>
+
+<section class="py-24 px-12 bg-[#000] border-t border-gray-900">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+        <div class="relative">
+            <img src="https://images.unsplash.com/photo-1765745518673-b562b7304a53?q=80&w=1160&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="w-full h-[500px] object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-1000" alt="Decor Inspiration">
+            <div class="absolute -bottom-6 -right-6 w-48 h-48 border-2 border-[#D4AF37] hidden md:block"></div>
+        </div>
+        <div>
+            <span class="text-[#D4AF37] text-xs uppercase tracking-[0.5em] mb-6 block">The Art of Decor</span>
+            <h2 class="text-5xl font-serif text-white mb-8 leading-tight">Details That <span class="italic">Define</span></h2>
+            <p class="text-gray-400 font-light leading-loose mb-10">
+                At Decora, we believe the smallest accents make the largest impact. Our curated decor pieces are designed to be the finishing touches that bring a room's story to life.
+            </p>
+            <a href="{% url 'signup' %}" class="inline-block border-b-2 border-[#D4AF37] text-white pb-2 hover:text-[#D4AF37] transition-colors">View the Full Lookbook</a>
+        </div>
+    </div>
+</section>
+
+
+
+{% endblock %}

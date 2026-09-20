@@ -1,0 +1,210 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+<div class="p-8 space-y-10">
+    <!-- Header with Search -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 class="text-white text-4xl font-bold premium-font">Category <span class="text-[#E3C565]">Management</span></h1>
+            <p class="text-gray-500 mt-2">Manage your decor collection's aesthetic structure and spatial scopes.</p>
+        </div>
+
+        <!-- Search Form -->
+        <form method="GET" action="{% url 'catalog:category-list' %}" class="relative group">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-[#E3C565] transition-colors"></i>
+            <input type="text" name="search" value="{{ search_query|default:'' }}" 
+                   placeholder="Search categories..." 
+                   class="bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-gray-300 focus:outline-none focus:border-[#E3C565] focus:bg-white/[0.08] transition-all w-full md:w-80">
+            {% if search_query %}
+                <a href="{% url 'catalog:category-list' %}" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            {% endif %}
+        </form>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- SECTION 1: PRODUCT CATEGORIES -->
+        <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-8 shadow-2xl flex flex-col min-h-[600px]">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-white text-xl font-semibold">Product Categories</h2>
+                    <p class="text-[10px] text-gray-600 uppercase tracking-widest mt-1">Total: {{ categories.paginator.count }}</p>
+                </div>
+                <a href="{% url 'catalog:category-add' %}" class="bg-[#E3C565] text-black px-6 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-white transition-all shadow-lg shadow-[#E3C565]/10">
+                    + Add New
+                </a>
+            </div>
+
+            <div class="space-y-4 flex-grow">
+                {% for cat in categories %}
+                <div class="flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 
+                    {% if cat.is_active %}
+                        bg-white/[0.03] border-white/5 hover:border-[#E3C565]/30 
+                    {% else %}
+                        bg-black/40 border-white/5 opacity-60
+                    {% endif %}">
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            {% if cat.cover_image %}
+                                <img src="{{ cat.cover_image.url }}" class="w-14 h-14 rounded-xl object-cover border border-white/10">
+                            {% else %}
+                                <div class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center border border-white/5">
+                                    <i class="fa-solid fa-image text-gray-700"></i>
+                                </div>
+                            {% endif %}
+                            {% if not cat.is_active %}
+                                <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-[#111111]"></div>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex flex-col"> 
+                            <span class="text-gray-200 font-medium tracking-tight">
+                                {{ cat.name }}
+                            </span>
+                            <span class="text-[10px] {% if cat.is_active %}text-gray-500{% else %}text-red-500/70{% endif %} font-bold uppercase tracking-tighter">
+                                {% if cat.is_active %}Active Visibility{% else %}Hidden from Catalog{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        {% if not cat.is_active %}
+                            <a href="{% url 'catalog:category-restore' cat.pk %}" class="text-[#E3C565] text-[10px] font-bold uppercase tracking-widest hover:underline">Restore</a>
+                        {% endif %}
+                        <a href="{% url 'catalog:category-edit' cat.pk %}" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-500 hover:text-[#E3C565] hover:bg-white/10 transition-all">
+                            <i class="fa-solid {% if cat.is_active %}fa-pen-to-square{% else %}fa-gear{% endif %}"></i>
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="flex flex-col items-center justify-center py-20 border border-dashed border-white/5 rounded-[2rem]">
+                    <i class="fa-solid fa-folder-open text-gray-800 text-4xl mb-4"></i>
+                    <p class="text-gray-600 text-sm italic">No categories match your criteria.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Category Pagination -->
+            <!-- Category Pagination -->
+{% if categories.has_other_pages %}
+<div class="mt-10 pt-6 border-t border-white/5 flex items-center justify-between">
+    <p class="text-[10px] text-gray-600 uppercase font-bold tracking-[0.2em]">
+        Page {{ categories.number }} <span class="mx-1 text-gray-800">/</span> {{ categories.paginator.num_pages }}
+    </p>
+    <div class="flex space-x-2">
+        {% if categories.has_previous %}
+        <a href="?page={{ categories.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if rooms.number %}&room_page={{ rooms.number }}{% endif %}" 
+           class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-[#E3C565] hover:text-black transition-all">
+            <i class="fa-solid fa-chevron-left text-xs"></i>
+        </a>
+        {% endif %}
+
+        {% if categories.has_next %}
+        <a href="?page={{ categories.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if rooms.number %}&room_page={{ rooms.number }}{% endif %}" 
+           class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-[#E3C565] hover:text-black transition-all">
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+        </div>
+
+        <!-- SECTION 2: ROOM TYPES -->
+<!-- SECTION 2: ROOM TYPES -->
+<div class="bg-[#111111] border border-white/5 rounded-[2rem] p-8 shadow-2xl flex flex-col min-h-[600px]">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-white text-xl font-semibold">Room Types</h2>
+            <p class="text-[10px] text-gray-600 uppercase tracking-widest mt-1">Total: {{ rooms.paginator.count }}</p>
+        </div>
+        <a href="{% url 'catalog:room-add' %}" class="bg-[#E3C565] text-black px-6 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-white transition-all shadow-lg shadow-[#E3C565]/10">
+            + Add Room
+        </a>
+    </div>
+
+    <div class="space-y-6 flex-grow">
+        <!-- Active Rooms Sub-section -->
+        <div>
+            <p class="text-[9px] text-gray-600 uppercase tracking-widest font-bold mb-4 ml-2">Active Scopes</p>
+            <div class="space-y-3">
+                {% for room in rooms %}
+                    {% if room.is_active %}
+                    <div class="flex items-center justify-between p-5 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-[#E3C565]/20 transition-all">
+                        <span class="text-gray-300 font-medium">{{ room.name }}</span>
+                        <div class="flex items-center space-x-6">
+                            <span class="text-[9px] uppercase font-black text-green-500 tracking-tighter bg-green-500/10 px-2 py-1 rounded-md">Live</span>
+                            <a href="{% url 'catalog:room-edit' room.pk %}" class="text-gray-500 hover:text-[#E3C565] transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <p class="text-gray-700 text-xs text-center py-10 border border-dashed border-white/5 rounded-2xl italic">No rooms created yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Inactive Rooms Sub-section -->
+        <div class="mt-8 pt-8 border-t border-white/5">
+            <p class="text-[9px] text-gray-600 uppercase tracking-widest font-bold mb-4 ml-2">Archived Scopes</p>
+            <div class="space-y-3">
+                {% for room in rooms %}
+                    {% if not room.is_active %}
+                    <div class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5 opacity-60">
+                        <span class="text-gray-500 text-sm italic">{{ room.name }}</span>
+                        <a href="{% url 'catalog:room-edit' room.pk %}" class="flex items-center space-x-2 text-gray-600 hover:text-white transition-all group">
+                            <i class="fa-solid fa-gear text-xs transition-transform group-hover:rotate-90"></i>
+                            <span class="text-[10px] uppercase font-bold tracking-widest">Manage</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Pagination -->
+    {% if rooms.has_other_pages %}
+    <div class="mt-10 pt-6 border-t border-white/5 flex items-center justify-between">
+        <p class="text-[10px] text-gray-600 uppercase font-bold tracking-[0.2em]">
+            Page {{ rooms.number }} <span class="mx-1 text-gray-800">/</span> {{ rooms.paginator.num_pages }}
+        </p>
+        <div class="flex space-x-2">
+            {% if rooms.has_previous %}
+            <a href="?room_page={{ rooms.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if categories.number %}&page={{ categories.number }}{% endif %}" 
+               class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-[#E3C565] hover:text-black transition-all">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </a>
+            {% endif %}
+
+            {% if rooms.has_next %}
+            <a href="?room_page={{ rooms.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if categories.number %}&page={{ categories.number }}{% endif %}" 
+               class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-[#E3C565] hover:text-black transition-all">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div><!-- Custom Scrollbar Styling (Internal) -->
+<style>
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0A0A0A;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #222;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #E3C565;
+    }
+</style>
+{% endblock %}
