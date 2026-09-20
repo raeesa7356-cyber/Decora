@@ -7,6 +7,7 @@ from django.utils import timezone
 
 
 class Coupon(models.Model):
+    
     DISCOUNT_TYPE_CHOICES = (
         ('flat', 'Flat Amount'),
         ('percentage', 'Percentage'),
@@ -23,7 +24,6 @@ class Coupon(models.Model):
 
     usage_limit_per_user = models.PositiveIntegerField(null=True, blank=True)
     total_usage_limit = models.PositiveIntegerField(null=True, blank=True)
-
     
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
@@ -35,16 +35,20 @@ class Coupon(models.Model):
     @property
     def total_used_count(self):
         return self.usages.count()
+    
     @property
     def is_expired(self):
         return timezone.now() > self.valid_until
+    
 class CouponUsage(models.Model):
+    
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name='usages')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     order = models.ForeignKey(
     Order,
     on_delete=models.SET_NULL,blank=True,null=True)
-    used_at = models.DateTimeField(auto_now_add=True)
+    used_at = models.DateTimeField(auto_now_add=True
+    )
 
     def __str__(self):
         return f"{self.coupon.code} - {self.user.username}"

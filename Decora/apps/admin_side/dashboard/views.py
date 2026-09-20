@@ -37,14 +37,14 @@ def admin_dashboard_view(request):
     now = timezone.now()
     period = request.GET.get('period', 'monthly')
 
-    # ✅ include PENDING so test orders appear
     valid_statuses = ['PENDING', 'ACTIVE', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED']
 
-    # ─── STATS CARDS ───────────────────────────────────────────────
     total_orders = Order.objects.count()
+    
     total_revenue = Order.objects.filter(
         status__in=valid_statuses
     ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
+    
     total_users = User.objects.filter(is_staff=False).count()
     total_products = Product.objects.filter(is_active=True).count()
 
@@ -55,7 +55,6 @@ def admin_dashboard_view(request):
         {'title': 'Total Products', 'value': total_products, 'growth': 'Active', 'icon': 'clipboard-check'},
     ]
 
-    # ─── CHART DATA ────────────────────────────────────────────────
     if period == 'daily':
         labels, data = [], []
         for i in range(6, -1, -1):
@@ -91,7 +90,7 @@ def admin_dashboard_view(request):
             labels.append(str(year))
             data.append(float(revenue))
 
-    else:  # monthly
+    else: 
         labels, data = [], []
         for i in range(11, -1, -1):
             month_date = now - timedelta(days=30 * i)
@@ -103,7 +102,6 @@ def admin_dashboard_view(request):
             labels.append(month_date.strftime('%b %Y'))
             data.append(float(revenue))
 
-            # ─── TOP PRODUCTS ──────────────────────────────────────────────
     top_products = (
         OrderItem.objects
         .filter(order__status__in=valid_statuses)
@@ -112,7 +110,6 @@ def admin_dashboard_view(request):
         .order_by('-total_qty')[:5]
     )
 
-            # ─── TOP CATEGORIES ────────────────────────────────────────────
     top_categories = (
         OrderItem.objects
         .filter(order__status__in=valid_statuses)
@@ -121,7 +118,6 @@ def admin_dashboard_view(request):
         .order_by('-total_qty')[:5]
     )
 
-            # ─── RECENT ORDERS ─────────────────────────────────────────────
     recent_orders = Order.objects.select_related('user').order_by('-created_at')[:8]
 
     context = {
@@ -132,7 +128,6 @@ def admin_dashboard_view(request):
         'top_products': top_products,
         'top_categories': top_categories,
         'recent_orders': recent_orders,
-                # ✅ THIS WAS MISSING — caused template error
         'period_options': [
             ('daily', 'Daily'),
             ('weekly', 'Weekly'),
@@ -140,4 +135,5 @@ def admin_dashboard_view(request):
             ('yearly', 'Yearly'),
         ],
     }
+    
     return render(request, 'admin_side/dashboard/dashboard.html', context)

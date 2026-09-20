@@ -11,6 +11,12 @@ from django.contrib.auth.decorators import login_required
 from apps.admin_side.coupons.models import CouponUsage
 from apps.admin_side.orders.models import Order, OrderItem, OrderPayment   
 from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
+
+
+
+
+
 
 def _get_order_coupon_discount(order): 
     diff = (order.subtotal + order.shipping_charge) - order.total_amount

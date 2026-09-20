@@ -36,7 +36,6 @@ def coupon_list(request):
 
 
 def _parse_and_save_coupon(request, coupon=None):
-    """Shared logic for create + edit. Returns (success: bool, redirect_name: str)."""
     code = request.POST.get("code", "").strip().upper()
     discount_type = request.POST.get("discount_type", "flat")
 

@@ -7,8 +7,6 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
         if sociallogin.is_existing and not sociallogin.user.is_active:
             messages.error(request, "This account has been blocked by the admin. Please contact support.")
-            
-            
             raise ImmediateHttpResponse(redirect('signup'))
 
     def save_user(self, request, sociallogin, form=None):

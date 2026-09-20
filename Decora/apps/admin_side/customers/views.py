@@ -60,4 +60,3 @@ def toggle_user_status(request, user_id):
         customer.save()
         messages.success(request, f"Status for {customer.username} updated.")
     return redirect('user-management')
-# Create your views here.

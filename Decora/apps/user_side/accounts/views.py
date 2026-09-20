@@ -11,16 +11,42 @@ from .models import Profile,OTP,Address,Wallet,WalletTransaction,WalletRecharge
 from django.views.decorators.cache import never_cache
 from apps.admin_side.orders.models import Order
 from django.views.decorators.csrf import csrf_exempt
-
-from .models import (
-    Wallet,
-    WalletTransaction,
-    WalletRecharge
-)
+from django.core.exceptions import ValidationError
 import razorpay
 from django.conf import settings
 from django.db import transaction
 import re
+from django.utils import timezone
+
+MAX_OTP_ATTEMPTS = 5
+OTP_LOCK_SECONDS = 15
+
+def _otp_lock_status(request, prefix):
+    locked_until = request.session.get(f'{prefix}_otp_locked_until')
+    
+    if not locked_until:
+        return 0
+    remaining = locked_until - timezone.now().timestamp()
+    if remaining <= 0:
+        request.session.pop(f'{prefix}_otp_locked_until', None)
+        request.session[f'{prefix}_otp_attempts'] = 0
+        return 0
+    return int(remaining)
+
+
+def _register_failed_otp_attempt(request, prefix):
+    attempts = request.session.get(f'{prefix}_otp_attempts', 0) + 1
+    request.session[f'{prefix}_otp_attempts'] = attempts
+    if attempts >= MAX_OTP_ATTEMPTS:
+        request.session[f'{prefix}_otp_locked_until'] = timezone.now().timestamp() + OTP_LOCK_SECONDS
+        request.session[f'{prefix}_otp_attempts'] = 0
+        return True
+    return False
+
+
+def _clear_otp_attempts(request, prefix):
+    request.session.pop(f'{prefix}_otp_attempts', None)
+    request.session.pop(f'{prefix}_otp_locked_until', None)
 def landing(request):    
     if request.user.is_authenticated:
         return redirect('shop:home')
@@ -110,36 +136,46 @@ def signup_view(request):
 def verify_otp_view(request):
     if 'signup_data' not in request.session:
         return redirect('signup')
+
+    lock_remaining = _otp_lock_status(request, 'signup')
+
     if request.method == "POST":
+        if lock_remaining > 0:
+            messages.error(request, "Too many attempts. Please check your email and try again.")
+            return render(request, 'user_side/accounts/verify_otp.html', {'lock_remaining': lock_remaining})
+
         user_otp = request.POST.get('otp_code')
         session_data = request.session.get('signup_data')
         if user_otp == session_data['otp']:
             if User.objects.filter(username=session_data['email']).exists():
                 messages.info(request, "Account already verified. Please log in.")
                 request.session.pop('signup_data', None)
+                _clear_otp_attempts(request, 'signup')
                 return redirect('user_login')
-
             else:
                 user = User.objects.create_user(
-                username=session_data['email'],
-                email=session_data['email'],
-                password=session_data['password'],
-                first_name=session_data['fullname']
+                    username=session_data['email'],
+                    email=session_data['email'],
+                    password=session_data['password'],
+                    first_name=session_data['fullname']
                 )
-
                 referral_code = session_data.get('referral_code')
                 if referral_code:
                     apply_referral_code(referral_code, user)
 
             request.session.pop('signup_data', None)
-
+            _clear_otp_attempts(request, 'signup')
             messages.success(request, "Registration successful! Please log in to continue.")
             return redirect('user_login')
         else:
+            just_locked = _register_failed_otp_attempt(request, 'signup')
+            if just_locked:
+                messages.error(request, "Too many attempts. Please check your email and try again.")
+                return render(request, 'user_side/accounts/verify_otp.html', {'lock_remaining': OTP_LOCK_SECONDS})
             messages.error(request, "Invalid OTP. Please try again.")
             return redirect('verify_otp')
 
-    return render(request, 'user_side/accounts/verify_otp.html')
+    return render(request, 'user_side/accounts/verify_otp.html', {'lock_remaining': lock_remaining})
 
 def resend_otp(request):
     if 'reset_email' in request.session:
@@ -221,18 +257,28 @@ def verify_reset_otp_view(request):
     if 'reset_email' not in request.session:
         return redirect('forgot_password')
 
+    lock_remaining = _otp_lock_status(request, 'reset')
+
     if request.method == "POST":
+        if lock_remaining > 0:
+            messages.error(request, "Too many attempts. Please check your email and try again.")
+            return render(request, 'user_side/accounts/verify_reset_otp.html', {'lock_remaining': lock_remaining})
+
         user_otp = request.POST.get('otp_code')
         session_otp = request.session.get('reset_otp')
 
         if user_otp == session_otp:
+            _clear_otp_attempts(request, 'reset')
             return redirect('set_new_password')
         else:
+            just_locked = _register_failed_otp_attempt(request, 'reset')
+            if just_locked:
+                messages.error(request, "Too many attempts. Please check your email and try again.")
+                return render(request, 'user_side/accounts/verify_reset_otp.html', {'lock_remaining': OTP_LOCK_SECONDS})
             messages.error(request, "Invalid reset code. Please try again.")
             return redirect('verify_reset_otp')
 
-    return render(request, 'user_side/accounts/verify_reset_otp.html')
-
+    return render(request, 'user_side/accounts/verify_reset_otp.html', {'lock_remaining': lock_remaining})
 
 def set_new_password_view(request):
     if 'reset_email' not in request.session:
@@ -411,14 +457,21 @@ def change_email(request):
         return redirect('otp_verify')
     return render(request, 'user_side/accounts/change_email.html')
 def verify_otp_email(request):
-    new_email=request.session.get('pending_email')
-    
+    new_email = request.session.get('pending_email')
+
     if not new_email:
-        messages.error(request,'sessiom expires ,please restart the process')
+        messages.error(request, 'sessiom expires ,please restart the process')
         return redirect('change_email')
-    if request.method=='POST':
-        entered_otp=request.POST.get('otp')
-        otp_record=OTP.objects.filter(email=new_email,otp=entered_otp).first()
+
+    lock_remaining = _otp_lock_status(request, 'email')
+
+    if request.method == 'POST':
+        if lock_remaining > 0:
+            messages.error(request, "Too many attempts. Please check your email and try again.")
+            return render(request, 'user_side/accounts/verify_otp_email.html', {'lock_remaining': lock_remaining})
+
+        entered_otp = request.POST.get('otp')
+        otp_record = OTP.objects.filter(email=new_email, otp=entered_otp).first()
         if otp_record:
             user = request.user
             user.username = new_email
@@ -429,17 +482,20 @@ def verify_otp_email(request):
             profile.is_verified = True
             profile.save()
 
-            
-            OTP.objects.filter(email=new_email).delete()   
+            OTP.objects.filter(email=new_email).delete()
             if 'pending_email' in request.session:
-                del request.session['pending_email']            
+                del request.session['pending_email']
+            _clear_otp_attempts(request, 'email')
             messages.success(request, f"Identity updated to {new_email}")
             return redirect('email_success')
         else:
+            just_locked = _register_failed_otp_attempt(request, 'email')
+            if just_locked:
+                messages.error(request, "Too many attempts. Please check your email and try again.")
+                return render(request, 'user_side/accounts/verify_otp_email.html', {'lock_remaining': OTP_LOCK_SECONDS})
             messages.error(request, "Invalid OTP code. Please try again.")
 
-    return render(request, 'user_side/accounts/verify_otp_email.html')
-
+    return render(request, 'user_side/accounts/verify_otp_email.html', {'lock_remaining': lock_remaining})
 def resend_email_otp(request):
     new_email = request.session.get('pending_email')
     if not new_email:
@@ -475,17 +531,23 @@ def manage_addresses(request):
         if is_primary:
             Address.objects.filter(user=request.user).update(is_primary=False)
 
-        Address.objects.create(
-                user=request.user,
-                address_type=request.POST.get('address_type'),
-                full_name=request.POST.get('full_name'),
-                phone_number=request.POST.get('phone_number'),
-                house_no=request.POST.get('house_no'),
-                city=request.POST.get('city'),
-                state=request.POST.get('state'),
-                pincode=request.POST.get('pincode'),
-                is_primary=is_primary
-            )
+        address = Address(
+    user=request.user,
+    address_type=request.POST.get('address_type'),
+    full_name=request.POST.get('full_name'),
+    phone_number=request.POST.get('phone_number'),
+    house_no=request.POST.get('house_no'),
+    city=request.POST.get('city'),
+    state=request.POST.get('state'),
+    pincode=request.POST.get('pincode'),
+    is_primary=is_primary
+)
+        try:
+            address.full_clean()
+        except ValidationError as e:
+            messages.error(request, " ".join(sum(e.message_dict.values(), [])))
+            return redirect('manage_addresses')
+        address.save()
 
         messages.success(request, "New address added to your Decora profile.")
         return redirect('manage_addresses')
@@ -534,7 +596,12 @@ def edit_address(request, address_id):
         address.state = state
         address.pincode = pincode
         address.is_primary = is_primary
-        
+        try:
+            address.full_clean()
+        except ValidationError as e:
+            messages.error(request, " ".join(sum(e.message_dict.values(), [])))
+            return redirect('manage_addresses')
+
         address.save()
 
         messages.success(request, f"Address '{address.address_type}' updated successfully!")
@@ -610,18 +677,20 @@ def add_money_view(request):
             return redirect("add_money")
 
         if amount < 1:
+            messages.error(request, "Amount must be greater than zero")
+            return redirect("add_money")
+
+        max_amount = getattr(settings, 'RAZORPAY_MAX_TRANSACTION_AMOUNT', 25000)
+        if amount > max_amount:
             messages.error(
-                request,
-                "Amount must be greater than zero"
-            )
+        request,
+        "Online payment cannot be processed because the transaction amount exceeds the ₹25,000 limit."
+    )
             return redirect("add_money")
 
         client = razorpay.Client(
-            auth=(
-                settings.RAZORPAY_KEY_ID,
-                settings.RAZORPAY_KEY_SECRET
-            )
-        )
+    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+)
 
 
         razorpay_order = client.order.create({

@@ -6,7 +6,6 @@ import uuid
 
 
 class Order(models.Model):
-
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
         ('SHIPPED', 'Shipped'),
@@ -29,7 +28,7 @@ class Order(models.Model):
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='COD')
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='PENDING')
-
+    original_amount=models.DecimalField(max_digits=10,decimal_places=2,default=0)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     shipping_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -58,7 +57,6 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-
     ITEM_STATUS = [
         ('ACTIVE', 'Active'),
         ('CANCELLED', 'Cancelled'),
@@ -70,27 +68,20 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
 
-
     variant = models.ForeignKey(
-        ProductVariant,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True
+        ProductVariant,on_delete=models.PROTECT,
+        null=True,blank=True
     )
-
-
     combination = models.ForeignKey(
-        VariantCombination,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True
+        VariantCombination,on_delete=models.PROTECT,
+        null=True,blank=True
     )
 
     selected_options = models.JSONField(null=True, blank=True)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-
+    return_requested_at=models.DateTimeField(null=True,blank=True)
     status = models.CharField(max_length=20, choices=ITEM_STATUS, default='ACTIVE')
     cancellation_reason = models.TextField(blank=True, null=True)
     return_reason = models.TextField(blank=True, null=True)
@@ -98,7 +89,6 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.order.order_id} - {self.product.name}"
-
 
 class OrderPayment(models.Model):
     PAYMENT_STATUS = [

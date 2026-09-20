@@ -8,7 +8,6 @@ class CategoryForm(forms.ModelForm):
         ('active', 'Active (Live)'),
         ('inactive', 'Inactive (Hidden)'),
     ]
-
     status = forms.ChoiceField(
         choices=STATUS_CHOICES,
         widget=forms.RadioSelect

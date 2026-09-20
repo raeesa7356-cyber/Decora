@@ -304,7 +304,7 @@ class="px-5 py-2 border border-[#C6A972]/30 text-[#C6A972] rounded-lg hover:bg-[
                     Name:
                 </span>
 
-                {{ order.address.full_name }}
+                {{  order.delivery_full_name }}
             </p>
 
             <p>
@@ -312,7 +312,7 @@ class="px-5 py-2 border border-[#C6A972]/30 text-[#C6A972] rounded-lg hover:bg-[
                     Phone:
                 </span>
 
-                {{ order.address.phone_number }}
+                {{ order.delivery_phone  }}
             </p>
 
             <p>
@@ -320,16 +320,16 @@ class="px-5 py-2 border border-[#C6A972]/30 text-[#C6A972] rounded-lg hover:bg-[
                     Address:
                 </span>
 
-                {{ order.address.house_no }}
+                {{ order.delivery_house_no  }}
             </p>
 
             <p>
-                {{ order.address.city }},
-                {{ order.address.state }}
+                {{ order.delivery_city }},
+                {{ order.delivery_state }}
             </p>
 
             <p>
-                {{ order.address.pincode }}
+                {{ order.delivery_pincode }}
             </p>
 
         </div>
@@ -495,11 +495,11 @@ class="px-5 py-2 border border-[#C6A972]/30 text-[#C6A972] rounded-lg hover:bg-[
                 <div class="flex justify-between">
 
                     <span>
-                        Subtotal
+                        Original Price
                     </span>
 
                     <span>
-                        ₹{{ order.subtotal }}
+                        ₹{{ order.original_amount }}
                     </span>
 
                 </div>
@@ -515,7 +515,7 @@ class="px-5 py-2 border border-[#C6A972]/30 text-[#C6A972] rounded-lg hover:bg-[
                     </span>
 
                 </div>
-
+               
                 <div class="flex justify-between">
 
                     <span>
@@ -527,19 +527,31 @@ class="px-5 py-2 border border-[#C6A972]/30 text-[#C6A972] rounded-lg hover:bg-[
                     </span>
 
                 </div>
+ <div class="flex justify-between">
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <span>
+                        ₹{{ order.subtotal }}
+                    </span>
+
+                </div>
+                        {% if coupon_discount %}
 
                 <div class="flex justify-between">
 
                     <span>
-                        Tax
+                        Coupon Discount
                     </span>
 
                     <span>
-                        ₹{{ order.tax_amount }}
+                        - ₹{{ coupon_discount }}
                     </span>
 
                 </div>
-
+{%endif%}
 <hr class="border-[#C6A972]/15">
 <div class="flex justify-between text-lg font-bold text-[#C6A972]">
                     <span>
