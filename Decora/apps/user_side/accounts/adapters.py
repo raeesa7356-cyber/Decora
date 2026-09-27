@@ -1,7 +1,7 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.shortcuts import redirect
 from django.contrib import messages
-from allauth.core.exceptions import ImmediateHttpResponse # Add this import
+from allauth.core.exceptions import ImmediateHttpResponse
 
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):

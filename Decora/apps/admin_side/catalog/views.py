@@ -204,10 +204,8 @@ def admin_product_list(request):
     
     if search_query:
         products = products.filter(
-            Q(name__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(combinations__sku__icontains=search_query)
-        ).distinct()
+            name__icontains=search_query) 
+          
 
     if category_id:
         products = products.filter(category_id=category_id)
@@ -306,8 +304,6 @@ def admin_product_upsert(request, pk=None):
                 new_product = form.save(commit=False)
                 if not pk:
                     new_product.is_active = False
-                print("FORM ACTIVE:", form.cleaned_data['is_active'])
-                print("COMBINATIONS VALID:", product_has_valid_combination(new_product))
                 new_product.save()
                 form.save_m2m()
 
@@ -319,7 +315,7 @@ def admin_product_upsert(request, pk=None):
                             new_product.is_active=False
                             messages.error(request,'Activate all combinations before activating this product.')
                     else:
-                        new_product.is_active=False        
+                        new_product.is_active=False
                     new_product.save()
 
                     if new_product.combinations.exists() and not new_product.is_active:
@@ -329,15 +325,17 @@ def admin_product_upsert(request, pk=None):
                             "please create or activate all variant combinations for this product first."
 
                         )
-                        
-                        return redirect('catalog:admin-product-edit', pk=product.id)
-                    
-                    else:
-                        messages.success(request, "Product saved successfully.")
-                else:
-                    messages.success(request, "Product saved successfully.")
 
-                return redirect('catalog:add_variant', product_id=new_product.id)            
+                        return redirect('catalog:admin-product-edit', pk=product.id)
+
+                    else:
+                        messages.success(request, "Product updated successfully")
+                        return redirect('catalog:admin-product-list')
+
+                else:
+                    messages.success(request, "Product saved successfully, now add the variant.")
+                    return redirect('catalog:add_variant', product_id=new_product.id)
+
         else:
             
             for field, errors in form.errors.items():

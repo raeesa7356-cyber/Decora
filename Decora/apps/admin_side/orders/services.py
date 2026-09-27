@@ -22,7 +22,20 @@ def _item_refund_amount(item):
         item_share = Decimal('0')
 
     return max(item.total_price - item_share, Decimal('0'))
+def get_current_payable_amount(order):
+    """
+    Amount still owed on an order right now, excluding cancelled items.
+    Mirrors the payable_amount logic in order_detail so a retry charges
+    the same reduced amount the user sees on the order page.
+    """
+    items = order.items.all()
+    cancelled_items = [i for i in items if i.status == "CANCELLED"]
 
+    if not cancelled_items:
+        return order.total_amount
+
+    non_cancelled_items = [i for i in items if i.status != "CANCELLED"]
+    return sum((i.total_price for i in non_cancelled_items), Decimal('0'))
 def _credit_wallet(user, amount, purpose):
     wallet, _ = Wallet.objects.get_or_create(user=user)
     wallet.balance += amount

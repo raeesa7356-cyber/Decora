@@ -12,6 +12,7 @@ from apps.admin_side.coupons.models import CouponUsage
 from apps.admin_side.orders.models import Order, OrderItem, OrderPayment   
 from decimal import Decimal
 from decimal import Decimal, ROUND_HALF_UP
+from .services import OrderCancellationService, OrderReturnService, ReviewService, _item_refund_amount
 
 
 
@@ -57,6 +58,13 @@ def order_detail(request, order_id):
             (order.status == "DELIVERED", "Delivered"),
         ]
 
+    cancelled_items = order_items.filter(status="CANCELLED")
+    non_cancelled_items = order_items.exclude(status="CANCELLED")
+
+    subtotal_non_cancelled = sum((i.total_price for i in non_cancelled_items), Decimal('0'))
+    payable_amount = subtotal_non_cancelled if cancelled_items.exists() else order.total_amount
+    refunded_amount = sum((_item_refund_amount(i) for i in cancelled_items), Decimal('0'))
+
     context = {
             "order": order,
             "order_items": order_items,
@@ -64,6 +72,8 @@ def order_detail(request, order_id):
             "payment_status": payment_status,
             "tracking_steps": tracking_steps,
             "coupon_discount": _get_order_coupon_discount(order),
+            "payable_amount": payable_amount,
+            "refunded_amount": refunded_amount,
         }
 
     return render(request, "user_side/checkout/order_detail.html", context)

@@ -9,7 +9,7 @@ from django.db.models import Q, Sum
 from django.contrib import messages
 from decimal import Decimal
 from apps.admin_side.orders.models import Order, OrderItem, OrderPayment
-
+from .services import AdminReturnService, _item_refund_amount
 
 def _get_order_coupon_discount(order):
     diff = (order.subtotal + order.shipping_charge) - order.total_amount
@@ -101,8 +101,17 @@ def order_detail(request, order_id):
             messages.error(request, "Invalid status transition.")
         return redirect("admin_order_detail", order.id)
 
+    cancelled_items = order.items.filter(status="CANCELLED")
+    non_cancelled_items = order.items.exclude(status="CANCELLED")
+
+    subtotal_non_cancelled = sum((i.total_price for i in non_cancelled_items), Decimal('0'))
+    payable_amount = subtotal_non_cancelled if cancelled_items.exists() else order.total_amount
+    refunded_amount = sum((_item_refund_amount(i) for i in cancelled_items), Decimal('0'))
+
     context = {
                 "coupon_discount": _get_order_coupon_discount(order),
+                "payable_amount": payable_amount,
+                "refunded_amount": refunded_amount,
                 'order': order,
                 'status_choices': Order.STATUS_CHOICES,
                 'payment': payment,
@@ -112,7 +121,6 @@ def order_detail(request, order_id):
                 'can_update_status': can_update_status,
             }
     return render(request, 'admin_side/orders/order_detail.html', context)
-
 @staff_member_required
 def inventory_list(request):
     search = request.GET.get('search', '').strip()
@@ -180,10 +188,14 @@ def reject_return(request, item_id):
 @staff_member_required
 def return_request_detail(request, item_id):
     item = get_object_or_404(
-        OrderItem.objects.select_related("order", "order__user", "product", "combination"), 
+        OrderItem.objects.select_related("order", "order__user", "product", "combination"),
         id=item_id
     )
-    return render(request, "admin_side/orders/return_request_detail.html", {"item": item})
+    refund_amount = _item_refund_amount(item)
+    return render(request, "admin_side/orders/return_request_detail.html", {
+"item": item,
+"refund_amount": refund_amount,
+})
 
 @staff_member_required
 def review_list(request):

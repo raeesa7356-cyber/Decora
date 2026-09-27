@@ -18,26 +18,25 @@
 
             <div class="bg-[#0d0d0d] rounded-2xl p-8 mb-8">
 
-                <p class="text-gray-500 mb-2">
+                              <p class="text-gray-500 mb-2">
                     Order ID
                 </p>
 
                 <p class="text-white">
-                    {{ order.order_id }}
+                    {% if order %}{{ order.order_id }}{% else %}Processing…{% endif %}
                 </p>
 
-                <h2 class="text-5xl text-white mt-4">
-                    ₹{{ order.total_amount }}
-                </h2>
+              <h2 class="text-5xl text-white mt-4">
+    ₹{% if display_amount %}{{ display_amount }}{% elif order %}{{ order.total_amount }}{% else %}{{ display_amount }}{% endif %}
+</h2>
 
             </div>
-
-            <button
-                id="rzp-button"
-                class="w-full bg-[#E3C565] text-black py-5 rounded-full"
-            >
-                Pay ₹{{ order.total_amount }}
-            </button>
+<button
+    id="rzp-button"
+    class="w-full bg-[#E3C565] text-black py-5 rounded-full"
+>
+    Pay ₹{% if display_amount %}{{ display_amount }}{% elif order %}{{ order.total_amount }}{% else %}{{ display_amount }}{% endif %}
+</button>
 
         </div>
 
@@ -88,7 +87,36 @@ document.getElementById("rzp-button")
     e.preventDefault();
 
 });
+var rzp = new Razorpay(options);
 
+document.getElementById("rzp-button")
+.addEventListener("click", function(e){
+    rzp.open();
+    e.preventDefault();
+});
+
+// NEW: handle payment failure and forward it to verify_order_payment
+rzp.on('payment.failed', function (response) {
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ request.scheme }}://{{ request.get_host }}{% url 'verify_order_payment' %}";
+
+    function addField(name, value) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    }
+
+    // matches what verify_order_payment already reads from request.POST
+    addField('razorpay_order_id', response.error.metadata.order_id || '');
+    addField('razorpay_payment_id', response.error.metadata.payment_id || '');
+    addField('error[metadata]', JSON.stringify(response.error.metadata));
+
+    document.body.appendChild(form);
+    form.submit();
+});
 </script>
 
 {% endblock %}

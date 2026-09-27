@@ -112,10 +112,15 @@ def wallet_transaction_list(request):
 def sales_report(request):
     start, end, period = _get_date_range(request)
     report = _build_sales_report(start, end)
+
+    orders_paginator = Paginator(report['orders'], 5)
+    orders_page_obj = orders_paginator.get_page(request.GET.get('page'))
+
     context = {
         **report,
-        'start': start,'end': end,
-        'period': period,'date_from': request.GET.get('date_from') or str(start),
+        'orders_page_obj': orders_page_obj,
+        'start': start, 'end': end,
+        'period': period, 'date_from': request.GET.get('date_from') or str(start),
         'date_to': request.GET.get('date_to') or str(end),
     }
     return render(request, 'admin_side/sales/sales_report.html', context)

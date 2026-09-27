@@ -628,6 +628,25 @@ def order_list(request):
     )
     orders = orders.order_by("-created_at")
 
+    from apps.admin_side.orders.models import OrderPayment
+
+    for order in orders:
+        if order.payment_method == "RAZORPAY":
+            payment = OrderPayment.objects.filter(order=order).first()
+            if not payment or payment.status == "PENDING":
+                order.payment_status = "PENDING"
+            elif payment.status == "SUCCESS":
+                order.payment_status = "PAID"
+            elif payment.status == "FAILED":
+                order.payment_status = "FAILED"
+            else:
+                order.payment_status = "PENDING"
+        elif order.payment_method == "WALLET":
+            order.payment_status = "PAID"
+        else:  
+            
+            order.payment_status = "PAID" if order.status == "DELIVERED" else "PENDING"
+
     return render(
     request,
     "user_side/accounts/order_list.html",

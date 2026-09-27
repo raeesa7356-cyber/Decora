@@ -52,9 +52,9 @@
             <a href="#" class="flex items-center text-gray-500 hover:text-white transition text-sm">
                 <i class="fa-solid fa-gear mr-3"></i> Settings
             </a>
-            <a href="{% url 'logout-page' %}" class="flex items-center text-gray-500 hover:text-red-400 transition text-sm">
-                <i class="fa-solid fa-arrow-right-from-bracket mr-3"></i> Logout
-            </a>
+           <button type="button" onclick="openLogoutModal()" class="flex items-center text-gray-500 hover:text-red-400 transition text-sm w-full text-left">
+    <i class="fa-solid fa-arrow-right-from-bracket mr-3"></i> Logout
+</button>
         </div>
     </aside>
 
@@ -92,6 +92,8 @@
 </div>
 
 {% if messages %}
+
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -105,7 +107,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endif %}
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-[99999]">
+    <div class="bg-[#111111] border border-white/10 rounded-3xl p-8 w-[90%] max-w-md shadow-2xl">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                <i class="fa-solid fa-arrow-right-from-bracket text-red-500 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-white font-bold text-lg italic">Log Out</h2>
+                <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Are you sure you want to log out?</p>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-8">
+            <button type="button" onclick="closeLogoutModal()" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 py-4 rounded-2xl uppercase text-[10px] tracking-widest font-bold transition-all">Cancel</button>
+            <a href="{% url 'logout-page' %}" class="flex-1 bg-red-500 hover:bg-red-400 text-white py-4 rounded-2xl uppercase text-[10px] tracking-widest font-black text-center transition-all">Confirm</a>
+        </div>
+    </div>
+</div>
 
+<script>
+function openLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+function closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+document.getElementById('logoutModal').addEventListener('click', function(e) {
+    if (e.target.id === 'logoutModal') closeLogoutModal();
+});
+</script>
 <script>
 function showToast(message, type='success') {
 
@@ -187,5 +222,6 @@ function showToast(message, type='success') {
     setTimeout(removeToast, 10000);
 }
 </script>
+
 </body>
 </html>

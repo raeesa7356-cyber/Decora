@@ -161,8 +161,6 @@ def product_list(request):
         enriched.sort(key=lambda p: p.name.lower())
     elif sort_option == 'name_za':
         enriched.sort(key=lambda p: p.name.lower(), reverse=True)
-        enriched.sort(key=lambda p: p.created_at, reverse=True)
-
     paginator = Paginator(enriched, 6)
     page_obj = paginator.get_page(request.GET.get('page'))
     products = page_obj

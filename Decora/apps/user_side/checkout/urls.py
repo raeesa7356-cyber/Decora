@@ -20,12 +20,8 @@ urlpatterns = [
         views.set_default_address,
         name='checkout_set_default_address'
     ),
-    path(
-    'payment/<int:order_id>/',
-    views.checkout_payment,
-    name='checkout_payment'
-),
-
+    path('payment/', views.checkout_payment_pending, name='checkout_payment_pending'),
+path('payment/<int:order_id>/', views.checkout_payment, name='checkout_payment'),
     path(
     'verify-payment/',
     views.verify_order_payment,

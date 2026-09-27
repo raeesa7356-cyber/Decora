@@ -6,6 +6,8 @@ from .models import ProductOffer, CategoryOffer, ReferralOffer
 from apps.admin_side.catalog.models import Product, Category
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 def _parse_local_datetime(raw_value):
     naive_dt = parse_datetime(raw_value)
@@ -20,21 +22,48 @@ def admin_required(view):
 
 @admin_required
 def offer_list(request):
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '')
+
     product_offers = ProductOffer.objects.select_related('product').order_by('-created_at')
     category_offers = CategoryOffer.objects.select_related('category').order_by('-created_at')
+
+    if search:
+        product_offers = product_offers.filter(
+            Q(name__icontains=search) | Q(product__name__icontains=search)
+        )
+        category_offers = category_offers.filter(
+            Q(name__icontains=search) | Q(category__name__icontains=search)
+        )
+
+    if status == 'active':
+        product_offers = product_offers.filter(is_active=True)
+        category_offers = category_offers.filter(is_active=True)
+    elif status == 'inactive':
+        product_offers = product_offers.filter(is_active=False)
+        category_offers = category_offers.filter(is_active=False)
 
     for o in product_offers:
         o.offer_kind = 'product'
         o.target_name = o.product.name
-        
     for o in category_offers:
         o.offer_kind = 'category'
         o.target_name = o.category.name
 
     offers = sorted(
-                chain(product_offers, category_offers),key=lambda o: o.created_at,reverse=True
-            )
-    return render(request, 'admin_side/offers/offer_list.html', {'offers': offers})
+        chain(product_offers, category_offers),
+        key=lambda o: o.created_at,
+        reverse=True
+    )
+
+    paginator = Paginator(offers, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'admin_side/offers/offer_list.html', {
+        'page_obj': page_obj,
+        'search': search,
+        'status': status,
+    })
 
 def _offer_form_context(products, categories, offer=None):
     return {'products': products, 'categories': categories, 'offer': offer}
@@ -109,7 +138,7 @@ def offer_edit(request, offer_type, offer_id):
 
     model = ProductOffer if offer_type == "product" else CategoryOffer
     offer = get_object_or_404(model, id=offer_id)
-    offer.offer_kind = offer_type  # for the template
+    offer.offer_kind = offer_type  
 
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
@@ -172,8 +201,32 @@ def offer_delete(request, offer_type, offer_id):
 
 @admin_required
 def referral_offer_list(request):
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '')
+
     referrals = ReferralOffer.objects.select_related(
         'referrer', 'referred_user'
     ).order_by('-created_at')
-    return render(request, 'admin_side/offers/referral_offer_list.html', {'referrals': referrals})
 
+    if search:
+        referrals = referrals.filter(
+            Q(referral_code__icontains=search) |
+            Q(referrer__first_name__icontains=search) |
+            Q(referrer__email__icontains=search) |
+            Q(referred_user__first_name__icontains=search) |
+            Q(referred_user__email__icontains=search)
+        )
+
+    if status == 'used':
+        referrals = referrals.filter(is_used=True)
+    elif status == 'unused':
+        referrals = referrals.filter(is_used=False)
+
+    paginator = Paginator(referrals, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'admin_side/offers/referral_offer_list.html', {
+        'page_obj': page_obj,
+        'search': search,
+        'status': status,
+    })

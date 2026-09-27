@@ -172,4 +172,5 @@ def update_cart_quantity(request, cart_id):
                 'item_total': item_total,
                 'subtotal': subtotal,
                 'total': subtotal
+                
             })

@@ -13,7 +13,7 @@ class ProductOffer(models.Model):
     description = models.TextField(blank=True, default='')
     discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES, default='percent')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='offers')
-    discount_percent = models.DecimalField(max_digits=10, decimal_places=2)  # now holds % OR fixed amount
+    discount_percent = models.DecimalField(max_digits=10, decimal_places=2)  
     valid_from = models.DateTimeField()
     valid_until = models.DateTimeField()
     is_active = models.BooleanField(default=True)
@@ -50,7 +50,8 @@ class ReferralOffer(models.Model):
     referrer = models.ForeignKey(User, related_name='referrals_made', on_delete=models.CASCADE)
     referred_user = models.ForeignKey(User, related_name='referred_by', on_delete=models.CASCADE, null=True, blank=True)
     referral_code = models.CharField(max_length=20, unique=True)
-    token = models.CharField(max_length=64, unique=True, default=generate_token)  # ← named function, not lambda
+    token = models.CharField(max_length=64, unique=True, default=generate_token)  
+    
     reward_amount = models.DecimalField(max_digits=10, decimal_places=2)
     is_used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

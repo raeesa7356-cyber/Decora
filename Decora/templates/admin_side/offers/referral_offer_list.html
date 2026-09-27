@@ -16,6 +16,41 @@
       ← Back to Offers
     </a>
   </div>
+
+  <!-- Search / Filter -->
+  <div class="mb-6 bg-zinc-900 border border-yellow-500/10 rounded-xl p-4">
+    <form method="GET" class="flex flex-wrap items-center gap-3">
+      <div class="relative flex-1 min-w-[220px]">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+        </svg>
+        <input type="text" name="search" value="{{ search }}"
+               placeholder="Search by referral code, referrer or referred user..."
+               class="w-full h-10 pl-10 pr-3 bg-zinc-950 border border-zinc-700 rounded-md text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-yellow-500/60 transition">
+      </div>
+
+      <select name="status"
+              class="h-10 bg-zinc-950 border border-zinc-700 rounded-md px-3 text-sm text-white focus:outline-none focus:border-yellow-500/60 transition">
+        <option value="">All Status</option>
+        <option value="used" {% if status == 'used' %}selected{% endif %}>Used</option>
+        <option value="unused" {% if status == 'unused' %}selected{% endif %}>Unused</option>
+      </select>
+
+      <button type="submit"
+              class="h-10 px-5 bg-yellow-500 hover:bg-yellow-400 text-black text-sm font-medium rounded-md transition-colors">
+        Apply
+      </button>
+
+      {% if search or status %}
+      <a href="{% url 'referral_offer_list' %}"
+         class="h-10 flex items-center px-4 text-sm text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-md transition-colors">
+        Clear
+      </a>
+      {% endif %}
+    </form>
+  </div>
  
   <!-- Messages -->
   {% if messages %}
@@ -46,15 +81,19 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-zinc-800">
-          {% for ref in referrals %}
+          {% for ref in page_obj %}
           <tr class="hover:bg-zinc-800/40 transition-colors">
             <td class="px-5 py-4">
               <span class="font-mono font-semibold text-yellow-400 tracking-wide">{{ ref.referral_code }}</span>
             </td>
-            <td class="px-5 py-4 text-zinc-200">{{ ref.referrer.username }}</td>
-            <td class="px-5 py-4 text-zinc-400">
+            <td class="px-5 py-4">
+              <p class="text-zinc-200 font-medium">{{ ref.referrer.first_name|default:ref.referrer.username }}</p>
+              <p class="text-zinc-500 text-xs mt-0.5">{{ ref.referrer.email }}</p>
+            </td>
+            <td class="px-5 py-4">
               {% if ref.referred_user %}
-                {{ ref.referred_user.username }}
+                <p class="text-zinc-200 font-medium">{{ ref.referred_user.first_name|default:ref.referred_user.username }}</p>
+                <p class="text-zinc-500 text-xs mt-0.5">{{ ref.referred_user.email }}</p>
               {% else %}
                 <span class="text-zinc-600 italic">Not yet used</span>
               {% endif %}
@@ -76,7 +115,7 @@
           {% empty %}
           <tr>
             <td colspan="6" class="px-5 py-16 text-center text-zinc-500 text-sm">
-              No referral offers yet.
+              No referral offers found.
             </td>
           </tr>
           {% endfor %}
@@ -84,5 +123,29 @@
       </table>
     </div>
   </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-center mt-6 gap-1">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}"
+       class="w-9 h-9 flex items-center justify-center rounded-md text-zinc-400 hover:text-yellow-400 hover:bg-zinc-800 transition text-sm">
+      <i class="fa-solid fa-angle-left text-xs"></i>
+    </a>
+    {% endif %}
+
+    <span class="px-4 h-9 flex items-center justify-center rounded-md bg-yellow-500 text-black text-sm font-semibold">
+      {{ page_obj.number }}
+    </span>
+    <span class="text-zinc-600 text-sm mx-1">of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}"
+       class="w-9 h-9 flex items-center justify-center rounded-md text-zinc-400 hover:text-yellow-400 hover:bg-zinc-800 transition text-sm">
+      <i class="fa-solid fa-angle-right text-xs"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

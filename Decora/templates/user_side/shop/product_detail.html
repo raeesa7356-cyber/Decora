@@ -53,15 +53,19 @@
 
     {# ================= BREADCRUMB ================= #}
     <nav class="flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-gray-500 mb-10">
-        <a href="{% url 'shop:home' %}" class="hover:text-[#D4AF37] transition">Home</a>
-        <span>/</span>
-        <a href="{% url 'shop:product-list' %}" class="hover:text-[#D4AF37] transition">Shop</a>
-        <span>/</span>
-        <span class="text-gray-400">{{ product.category.name }}</span>
-        <span>/</span>
-        <span class="text-white truncate max-w-[200px]">{{ product.name }}</span>
-    </nav>
-
+    <a href="{% url 'shop:home' %}" class="hover:text-[#D4AF37] transition">Home</a>
+    <span>/</span>
+    <a href="{% url 'shop:product-list' %}" class="hover:text-[#D4AF37] transition">Shop</a>
+    <span>/</span>
+    {% if product.category %}
+    <a href="{% url 'shop:product-list' %}?category={{ product.category.name|urlencode }}"
+       class="text-gray-400 hover:text-[#D4AF37] transition">
+        {{ product.category.name }}
+    </a>
+    {% endif %}
+    <span>/</span>
+    <span class="text-white truncate max-w-[200px]">{{ product.name }}</span>
+</nav>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
         {# ================= PRODUCT IMAGES ==================== #}

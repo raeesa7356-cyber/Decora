@@ -5,7 +5,7 @@
 {% block content %}
 
 <style>
-    .container {
+.container {
     padding: 24px;
     color: #F5F5F5;
 }
@@ -31,6 +31,7 @@
     background: #181818;
     color: #CFCFCF;
     border: 1px solid #2A2A2A;
+    font-size: 13px;
     transition: 0.3s;
 }
 
@@ -45,39 +46,94 @@
     border-color: #D4AF37;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+.table-card {
     background: #181818;
     border: 1px solid #2A2A2A;
     border-radius: 12px;
     overflow: hidden;
 }
 
+table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+colgroup col.col-user     { width: 16%; }
+colgroup col.col-product  { width: 20%; }
+colgroup col.col-rating   { width: 9%; }
+colgroup col.col-status   { width: 11%; }
+colgroup col.col-visible  { width: 11%; }
+colgroup col.col-comment  { width: 21%; }
+colgroup col.col-actions  { width: 12%; }
+
 th {
     background: #111;
     color: #D4AF37;
-    padding: 16px;
-    font-size: 13px;
+    padding: 14px 16px;
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
     border-bottom: 1px solid #2A2A2A;
+    text-align: left;
 }
 
 td {
-    padding: 16px;
+    padding: 14px 16px;
     color: #F5F5F5;
+    font-size: 13.5px;
     border-bottom: 1px solid #2A2A2A;
+    vertical-align: middle;
 }
 
-tr:hover {
-    background: rgba(212, 175, 55, 0.05);
+tr:hover td {
+    background: rgba(212, 175, 55, 0.04);
 }
-.badge {
-    padding: 6px 12px;
-    border-radius: 30px;
+
+.truncate-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #F5F5F5;
+    font-size: 13.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-email {
+    color: #7A7A7A;
+    font-size: 11.5px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.product-name {
+    color: #D8D8D8;
+    font-size: 12.5px;
+    font-weight: 400;
+}
+
+.comment-text {
+    color: #999999;
     font-size: 12px;
+    line-height: 1.5;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 11px;
+    border-radius: 30px;
+    font-size: 11px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .approved {
@@ -91,13 +147,15 @@ tr:hover {
     color: #D4AF37;
     border: 1px solid rgba(212, 175, 55, 0.3);
 }
+
 .btn {
     display: inline-block;
-    padding: 8px 14px;
+    padding: 7px 13px;
     border-radius: 8px;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 500;
+    white-space: nowrap;
     transition: 0.3s;
 }
 
@@ -112,29 +170,13 @@ tr:hover {
     color: #D4AF37;
 }
 
-.btn-approve {
-    background: #D4AF37;
-    color: #111;
-    border: none;
-}
-
-.btn-approve:hover {
-    background: #E5C158;
-}
-
-.btn-hide {
-    background: #7A5C00;
-    color: white;
-}
-
-.btn-delete {
-    background: #7F1D1D;
-    color: white;
-}
 .rating {
     color: #D4AF37;
     font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
 }
+
 .visible {
     background: rgba(59, 130, 246, 0.15);
     color: #60A5FA;
@@ -168,66 +210,89 @@ tr:hover {
     </div>
 
     <!-- TABLE -->
-    <table>
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Product</th>
-                <th>Rating</th>
-              <th>Status</th>
-<th>Visibility</th>
-<th>Comment</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+    <div class="table-card">
+        <table>
+            <colgroup>
+                <col class="col-user">
+                <col class="col-product">
+                <col class="col-rating">
+                <col class="col-status">
+                <col class="col-visible">
+                <col class="col-comment">
+                <col class="col-actions">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Product</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                    <th>Visibility</th>
+                    <th>Comment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-        <tbody>
-        {% for review in reviews %}
-            <tr>
-                <td>{{ review.user.username }}</td>
-                <td>{{ review.product.name }}</td>
+            <tbody>
+            {% for review in reviews %}
+                <tr>
+                    <td>
+                        <div class="user-name" title="{{ review.user.first_name|default:review.user.username }}">
+                            {{ review.user.first_name|default:review.user.username }}
+                        </div>
+                        <div class="user-email" title="{{ review.user.email }}">
+                            {{ review.user.email }}
+                        </div>
+                    </td>
 
-<td class="rating">
-    ⭐ {{ review.rating }}/5
-</td>
-                <td>
-                    {% if review.is_approved %}
-                        <span class="badge approved">Approved</span>
-                    {% else %}
-                        <span class="badge pending">Pending</span>
-                    {% endif %}
-                </td>
-<td>
-    {% if review.is_visible %}
-        <span class="badge visible">
-            Visible
-        </span>
-    {% else %}
-        <span class="badge hidden-badge">
-            Hidden
-        </span>
-    {% endif %}
-</td>
-                <td>
-                    {{ review.comment|truncatechars:60 }}
-                </td>
+                    <td>
+                        <div class="product-name truncate-cell" title="{{ review.product.name }}">
+                            {{ review.product.name }}
+                        </div>
+                    </td>
 
-               <td>
-    <a class="btn btn-view"
-       href="{% url 'admin_review_detail' review.id %}">
-        View Details
-    </a>
-</td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="6" style="text-align:center; padding:20px;">
-                    No reviews found
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                    <td class="rating">
+                        ⭐ {{ review.rating }}/5
+                    </td>
+
+                    <td>
+                        {% if review.is_approved %}
+                            <span class="badge approved">Approved</span>
+                        {% else %}
+                            <span class="badge pending">Pending</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if review.is_visible %}
+                            <span class="badge visible">Visible</span>
+                        {% else %}
+                            <span class="badge hidden-badge">Hidden</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="comment-text truncate-cell" title="{{ review.comment }}">
+                            {{ review.comment|truncatechars:45 }}
+                        </div>
+                    </td>
+
+                    <td>
+                        <a class="btn btn-view" href="{% url 'admin_review_detail' review.id %}">
+                            View
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:20px; color:#7A7A7A;">
+                        No reviews found
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </div>
 

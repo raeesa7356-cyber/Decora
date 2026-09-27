@@ -118,7 +118,7 @@ def admin_dashboard_view(request):
         .order_by('-total_qty')[:5]
     )
 
-    recent_orders = Order.objects.select_related('user').order_by('-created_at')[:8]
+    recent_orders = Order.objects.select_related('user').order_by('-created_at')[:5]
 
     context = {
         'stats': stats,
