@@ -1,0 +1,383 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<div class="max-w-4xl mx-auto p-8 space-y-8">
+
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-white">
+        {% if combination %}Edit Combination{% else %}New Combination{% endif %} — {{ product.name }}
+      </h1>
+      <p class="text-sm text-gray-400 mt-1">Price, stock, SKU, and photos for this specific combination.</p>
+    </div>
+    <a href="{% url 'catalog:admin-product-edit' pk=product.id %}" class="text-sm text-[#D4AF37] hover:underline">← Back to product</a>
+  </div>
+
+  {% if messages %}
+    <div class="space-y-2">
+      {% for message in messages %}
+        <div class="rounded-xl border px-4 py-3 text-sm
+          {% if message.tags == 'error' %}border-red-500/30 bg-red-500/10 text-red-300
+          {% elif message.tags == 'success' %}border-emerald-500/30 bg-emerald-500/10 text-emerald-300
+          {% else %}border-white/10 bg-white/5 text-gray-200{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- AJAX errors render here without touching the form below -->
+  <div id="form-error-box" class="hidden rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 px-4 py-3 text-sm space-y-1"></div>
+
+  <form method="post" id="combination-form" enctype="multipart/form-data" class="space-y-8">
+    {% csrf_token %}
+
+    <!-- Attribute values -->
+    <div class="bg-black/40 border border-white/10 rounded-2xl p-6">
+      <h2 class="text-white font-medium mb-3">Attribute values</h2>
+
+      {% if combination %}
+        <div class="flex flex-wrap gap-2">
+          {% for v in combination.variants.all %}
+            <span class="px-3 py-1.5 rounded-full bg-[#D4AF37] text-black text-xs font-semibold">
+              {{ v.variant_type }}: {{ v.variant_value }}
+            </span>
+          {% endfor %}
+        </div>
+        {% for vid in selected_variant_ids %}
+          <input type="hidden" name="variants" value="{{ vid }}">
+        {% endfor %}
+        <p class="text-xs text-gray-500 mt-3">Values are locked once a combination exists.</p>
+      {% else %}
+        <div class="flex flex-wrap gap-x-8 gap-y-3">
+          {% regroup form.variants.field.queryset by variant_type as type_groups %}
+          {% for group in type_groups %}
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs text-gray-500 font-semibold">{{ group.grouper }}:</span>
+              {% for v in group.list %}
+                <label class="cursor-pointer">
+                  <input type="checkbox" name="variants" value="{{ v.pk }}" class="hidden peer" />
+                  <span class="px-3 py-1.5 rounded-full border border-white/10 text-xs text-gray-300 peer-checked:bg-[#D4AF37] peer-checked:text-black peer-checked:border-[#D4AF37] transition inline-block">
+                    {{ v.variant_value }}
+                  </span>
+                </label>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        {% if form.variants.errors %}<p class="text-red-400 text-xs mt-2">{{ form.variants.errors.0 }}</p>{% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Pricing -->
+    <div class="bg-black/40 border border-white/10 rounded-2xl p-6">
+      <h2 class="text-white font-medium mb-4">Pricing & Stock</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Original Price</label>
+          {{ form.original_price }}
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Discount Price</label>
+          {{ form.discount_price }}
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Stock</label>
+          {{ form.stock_quantity }}
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-gray-500 mb-2">SKU</label>
+          {{ form.sku }}
+        </div>
+      </div>
+      <label class="flex items-center gap-2 mt-4 text-sm text-gray-300">
+        {{ form.is_default }} Set as default combination
+      </label>
+      <p class="text-xs text-gray-500 mt-1">Only one combination per product can be default — setting this will unset any other.</p>
+    </div>
+
+    <!-- Main image -->
+    <div class="bg-black/40 border border-white/10 rounded-2xl p-6">
+      <h2 class="text-white font-medium mb-4">Main Image</h2>
+      <input type="hidden" name="delete_main_image" id="delete-main-image-flag" value="false">
+      <div id="main-image-tile" class="relative w-40 h-40 rounded-2xl border border-dashed border-white/20 bg-white/5 flex items-center justify-center overflow-hidden cursor-pointer">
+        <div id="main-image-placeholder" class="text-center text-gray-500 text-xs px-4 {% if combination.main_image %}hidden{% endif %}">
+          <p>Drag &amp; drop or click</p>
+          <p class="mt-1">JPG, PNG up to 5MB</p>
+        </div>
+        <img id="main-image-preview"
+             src="{% if combination.main_image %}{{ combination.main_image.url }}{% endif %}"
+             class="w-full h-full object-cover {% if not combination.main_image %}hidden{% endif %}" />
+        <button type="button" id="main-image-remove"
+                class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center text-sm {% if not combination.main_image %}hidden{% endif %}">
+          ×
+        </button>
+        <input type="file" id="main-image-input" name="main_image" accept="image/*" class="hidden" />
+      </div>
+    </div>
+
+    <!-- Gallery -->
+    <div class="bg-black/40 border border-white/10 rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-white font-medium">Gallery</h2>
+        <span class="text-xs text-gray-500">Minimum 3 images</span>
+      </div>
+      <div id="gallery-grid" class="flex flex-wrap gap-4"></div>
+    </div>
+
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'catalog:admin-product-edit' pk=product.id %}" class="px-6 py-3 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition">Cancel</a>
+      <button type="submit" class="px-6 py-3 rounded-xl bg-[#D4AF37] text-black font-medium hover:bg-[#c9a52f] transition">Save Combination</button>
+    </div>
+  </form>
+</div>
+
+<!-- Crop modal -->
+<div id="crop-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+  <div class="bg-[#111] border border-white/10 rounded-2xl p-6 w-full max-w-lg">
+    <h3 class="text-white font-medium mb-4">Crop image</h3>
+    <div class="max-h-[60vh] overflow-hidden">
+      <img id="crop-image" class="max-w-full block" />
+    </div>
+    <div class="flex justify-end gap-3 mt-4">
+      <button type="button" id="crop-cancel" class="px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition">Cancel</button>
+      <button type="button" id="crop-apply" class="px-4 py-2 rounded-xl bg-[#D4AF37] text-black font-medium hover:bg-[#c9a52f] transition">Apply</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  let cropper = null;
+  let cropCallback = null;
+
+  function openCropModal(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.getElementById('crop-image');
+      img.src = e.target.result;
+      document.getElementById('crop-modal').classList.remove('hidden');
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1, background: false });
+      cropCallback = callback;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function closeCropModal() {
+    document.getElementById('crop-modal').classList.add('hidden');
+    if (cropper) { cropper.destroy(); cropper = null; }
+    cropCallback = null;
+  }
+
+  document.getElementById('crop-apply').addEventListener('click', () => {
+    if (!cropper) return;
+    cropper.getCroppedCanvas({ width: 1200, height: 1200 }).toBlob((blob) => {
+      const file = new File([blob], 'image.jpg', { type: 'image/jpeg' });
+      if (cropCallback) cropCallback(file);
+      closeCropModal();
+    }, 'image/jpeg', 0.92);
+  });
+  document.getElementById('crop-cancel').addEventListener('click', closeCropModal);
+
+  // ---- Main image ----
+  const mainTile = document.getElementById('main-image-tile');
+  const mainInput = document.getElementById('main-image-input');
+  const mainPreview = document.getElementById('main-image-preview');
+  const mainPlaceholder = document.getElementById('main-image-placeholder');
+  const mainRemoveBtn = document.getElementById('main-image-remove');
+  const deleteMainFlag = document.getElementById('delete-main-image-flag');
+  const hadMainImage = mainPreview.getAttribute('src') !== '';
+
+  mainTile.addEventListener('click', (e) => {
+    if (e.target === mainRemoveBtn) return;
+    mainInput.click();
+  });
+
+  mainInput.addEventListener('change', () => {
+    if (!mainInput.files.length) return;
+    openCropModal(mainInput.files[0], (croppedFile) => {
+      const dt = new DataTransfer();
+      dt.items.add(croppedFile);
+      mainInput.files = dt.files;
+      mainPreview.src = URL.createObjectURL(croppedFile);
+      mainPreview.classList.remove('hidden');
+      mainPlaceholder.classList.add('hidden');
+      mainRemoveBtn.classList.remove('hidden');
+      deleteMainFlag.value = 'false';
+    });
+  });
+
+  mainRemoveBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dt = new DataTransfer();
+    mainInput.files = dt.files;
+    mainPreview.src = '';
+    mainPreview.classList.add('hidden');
+    mainPlaceholder.classList.remove('hidden');
+    mainRemoveBtn.classList.add('hidden');
+    deleteMainFlag.value = 'true';
+  });
+
+  // ---- Gallery ----
+  const galleryGrid = document.getElementById('gallery-grid');
+  const existingGallery = [
+    {% for g in existing_gallery %}{ id: {{ g.id }}, url: '{{ g.image.url }}' },{% endfor %}
+  ];
+
+  function countEmptyTiles() {
+    return Array.from(galleryGrid.querySelectorAll('input[name="gallery_images"]'))
+      .filter(input => input.files.length === 0).length;
+  }
+
+  function maybeAddEmptyTile() {
+    if (countEmptyTiles() === 0) {
+      galleryGrid.appendChild(createEmptyTile());
+    }
+  }
+
+ function createExistingTile(item) {
+    const wrap = document.createElement('div');
+    wrap.className = 'relative w-28 h-28 rounded-xl overflow-hidden border border-white/10';
+    wrap.innerHTML = `
+      <img src="${item.url}" class="w-full h-full object-cover" />
+      <button type="button" class="tile-remove-btn absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs">×</button>
+    `;
+    const btn = wrap.querySelector('.tile-remove-btn');
+    btn.addEventListener('click', () => {
+      const hiddenFlag = document.createElement('input');
+      hiddenFlag.type = 'hidden';
+      hiddenFlag.name = 'delete_gallery_images';
+      hiddenFlag.value = item.id;
+      galleryGrid.appendChild(hiddenFlag);
+      wrap.remove();
+      maybeAddEmptyTile();
+    });
+    return wrap;
+  }
+
+  function resetTile(wrap, input) {
+    wrap.innerHTML = '';
+    wrap.className = 'relative w-28 h-28 rounded-xl border border-dashed border-white/20 bg-white/5 flex items-center justify-center cursor-pointer text-gray-500 text-2xl';
+    wrap.textContent = '+';
+    wrap.appendChild(input);
+  }
+
+  function fillTile(wrap, input, imageUrl) {
+    wrap.innerHTML = '';
+    wrap.className = 'relative w-28 h-28 rounded-xl overflow-hidden border border-white/10 cursor-default';
+
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.className = 'w-full h-full object-cover';
+    wrap.appendChild(img);
+    wrap.appendChild(input);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'tile-remove-btn absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dt = new DataTransfer();
+      input.files = dt.files;
+      resetTile(wrap, input);
+    });
+    wrap.appendChild(removeBtn);
+  }
+
+  function createEmptyTile() {
+    const wrap = document.createElement('div');
+    wrap.className = 'relative w-28 h-28 rounded-xl border border-dashed border-white/20 bg-white/5 flex items-center justify-center cursor-pointer text-gray-500 text-2xl';
+    wrap.textContent = '+';
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.name = 'gallery_images';
+    input.accept = 'image/*';
+    input.className = 'hidden';
+    wrap.appendChild(input);
+
+    wrap.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+      if (!input.files.length) return;
+      openCropModal(input.files[0], (croppedFile) => {
+        const dt = new DataTransfer();
+        dt.items.add(croppedFile);
+        input.files = dt.files;
+        fillTile(wrap, input, URL.createObjectURL(croppedFile));
+        maybeAddEmptyTile();
+      });
+    });
+
+    return wrap;
+  }
+
+  existingGallery.forEach(item => galleryGrid.appendChild(createExistingTile(item)));
+  const startingEmptyTiles = Math.max(3 - existingGallery.length, 1);
+  for (let i = 0; i < startingEmptyTiles; i++) galleryGrid.appendChild(createEmptyTile());
+
+  // ---- AJAX submit (keeps all selected images/crops intact on error) ----
+  const form = document.getElementById('combination-form');
+  const errorBox = document.getElementById('form-error-box');
+
+  function showErrors(messagesList) {
+    errorBox.innerHTML = messagesList.map(m => `<p>${m}</p>`).join('');
+    errorBox.classList.remove('hidden');
+    errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.classList.add('hidden');
+    errorBox.innerHTML = '';
+
+    const filledCount = Array.from(document.querySelectorAll('input[name="gallery_images"]')).filter(i => i.files.length).length;
+    const deletingCount = document.querySelectorAll('input[name="delete_gallery_images"]:checked').length;
+    const remaining = existingGallery.length - deletingCount + filledCount;
+
+    if (remaining < 3) {
+      showErrors(['Please provide at least 3 gallery images in total.']);
+      return;
+    }
+    if (!mainInput.files.length && (deleteMainFlag.value === 'true' || !hadMainImage)) {
+      showErrors(['Please add a main image.']);
+      return;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    try {
+      const formData = new FormData(form);
+      const response = await fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        window.location.href = data.redirect;
+        return;
+      }
+
+      const msgs = [];
+      if (data.non_field_errors) msgs.push(...data.non_field_errors);
+      if (data.errors) {
+        Object.values(data.errors).forEach(fieldErrors => msgs.push(...fieldErrors));
+      }
+      showErrors(msgs.length ? msgs : ['Something went wrong. Please check the form and try again.']);
+    } catch (err) {
+      showErrors(['Network error — please try again.']);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Combination';
+    }
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fff; margin: 0; padding: 40px; color: #333; line-height: 1.4; }
+    .container { max-width: 600px; margin: 0 auto; }
+
+    .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 40px; }
+    .logo { color: #D4AF37; font-size: 20px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; }
+    .invoice-id { font-size: 12px; color: #999; }
+
+    .details-row { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 11px; }
+    .label { color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .val { color: #333; font-weight: 500; }
+
+    .status-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 30px; padding: 12px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+    .status-pill { display: inline-block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; }
+    .status-pill.pending { background: #fff3e0; color: #e65100; }
+    .status-pill.paid { background: #e6f4ea; color: #2e7d32; }
+    .status-pill.failed { background: #fdecea; color: #c62828; }
+    .status-pill.refunded, .status-pill.partial { background: #e8f0fe; color: #1a56c4; }
+    .status-pill.na { background: #f2f2f2; color: #888; }
+
+    .status-banner { padding: 14px 18px; border-radius: 8px; margin-bottom: 30px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .status-banner.cancelled { background: #fdecea; border: 1px solid #f5c2c0; color: #c62828; }
+    .status-banner.returned { background: #e6f4ea; border: 1px solid #a5d6a7; color: #2e7d32; }
+    .status-banner.failed { background: #fdecea; border: 1px solid #f5c2c0; color: #c62828; }
+
+    .table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .table th { font-size: 10px; color: #aaa; text-transform: uppercase; text-align: left; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .table td { font-size: 12px; padding: 12px 0; border-bottom: 1px solid #f9f9f9; }
+    .row-muted td { opacity: 0.5; }
+    .row-muted .price-cell { text-decoration: line-through; color: #aaa; }
+
+    .badge-refunded { display: inline-block; background: #e6f4ea; color: #2e7d32; border: 1px solid #a5d6a7; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 2px 7px; border-radius: 999px; }
+
+    .totals { width: 220px; margin-left: auto; font-size: 12px; }
+    .row { display: flex; justify-content: space-between; padding: 4px 0; }
+    .total-row { border-top: 1px solid #eee; margin-top: 8px; padding-top: 8px; font-weight: bold; }
+    .refund-row { color: #2e7d32; }
+
+    .refund-summary-box { margin-top: 10px; margin-bottom: 30px; }
+    .refund-summary-box h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin: 0 0 10px; }
+    .refund-summary-box .row { font-size: 12px; }
+    .refund-summary-box .total-row { color: #2e7d32; }
+
+    .outcome-box { text-align: right; padding: 20px 0; border-top: 1px solid #eee; margin-top: 10px; margin-bottom: 20px; }
+    .outcome-box .label-line { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+    .outcome-box .amount-line { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .outcome-box .amount-line.refund { color: #2e7d32; }
+    .outcome-box .amount-line.zero { color: #333; }
+
+    .reason-box { font-size: 11px; color: #666; background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 12px 14px; margin-bottom: 20px; }
+    .reason-box .reason-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 3px; }
+
+    .coupon-note { font-size: 11px; color: #666; background: #faf7ee; border: 1px solid #eadfb8; border-radius: 6px; padding: 10px 14px; margin-bottom: 20px; }
+    .coupon-note b { color: #b8860b; }
+
+    .notes-box { font-size: 11px; color: #555; margin-top: 30px; }
+    .notes-box .notes-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 8px; }
+    .notes-box ul { margin: 0; padding-left: 16px; }
+    .notes-box li { margin-bottom: 5px; }
+
+    .footer { margin-top: 60px; font-size: 10px; color: #ccc; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div class="logo">Decora</div>
+        <div class="invoice-id">INVOICE {{ order.order_id }}</div>
+    </div>
+
+    <div class="details-row">
+        <div>
+            <div class="label">Bill To</div>
+            <div class="val">{{ order.delivery_full_name|default:order.address.full_name }}</div>
+            <div class="val">{{ order.delivery_house_no|default:order.address.house_no }}, {{ order.delivery_city|default:order.address.city }}</div>
+        </div>
+        <div style="text-align: right;">
+            <div class="label">Date</div>
+            <div class="val" style="margin-bottom: 10px;">{{ order.created_at|date:"d M Y" }}</div>
+            <div class="label">Payment Method</div>
+            <div class="val">{{ order.get_payment_method_display }}</div>
+        </div>
+    </div>
+
+    <div class="status-row">
+        <div>
+            <div class="label">Order Status</div>
+            <div class="val">{{ order.get_status_display }}</div>
+        </div>
+        <div style="text-align:right;">
+            <div class="label">Payment Status</div>
+            <span class="status-pill
+                {% if payment_status == 'PAID' %}paid
+                {% elif payment_status == 'PENDING' %}pending
+                {% elif payment_status == 'FAILED' %}failed
+                {% elif payment_status == 'REFUNDED' %}refunded
+                {% elif payment_status == 'PARTIALLY_REFUNDED' %}partial
+                {% else %}na{% endif %}">
+                {% if payment_status == 'NOT_APPLICABLE' %}N/A
+                {% elif payment_status == 'PARTIALLY_REFUNDED' %}Partially Refunded
+                {% else %}{{ payment_status|title }}{% endif %}
+            </span>
+        </div>
+    </div>
+
+    {% if is_payment_failed %}
+    <div class="status-banner failed">Payment Failed</div>
+    {% elif is_fully_cancelled %}
+    <div class="status-banner cancelled">This order was cancelled</div>
+    {% elif is_fully_returned %}
+    <div class="status-banner returned">This order was returned</div>
+    {% endif %}
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: center;">Status</th>
+                {% if not is_payment_failed %}<th style="text-align: right;">Amount</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_items %}
+            <tr class="{% if item.status == 'RETURNED' or item.status == 'CANCELLED' %}row-muted{% endif %}">
+                <td>{{ item.product.name }}</td>
+                <td style="text-align: center;">{{ item.quantity }}</td>
+                <td style="text-align: center;">
+                    {% if item.status == 'CANCELLED' %}
+                        <span style="font-size:10px; color:#c62828; font-weight:700; text-transform:uppercase;">Cancelled</span>
+                    {% elif item.status == 'RETURNED' %}
+                        <span class="badge-refunded">Returned</span>
+                    {% elif item.status == 'RETURN_REQUESTED' %}
+                        <span style="font-size:10px; color:#f57c00;">Return Pending</span>
+                    {% else %}
+                        {{ order.get_status_display }}
+                    {% endif %}
+                </td>
+                {% if not is_payment_failed %}
+                <td style="text-align: right;" class="{% if item.status == 'RETURNED' or item.status == 'CANCELLED' %}price-cell{% endif %}">
+                    ₹{{ item.total_price }}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# ============ CANCELLATION REASON ============ #}
+    {% if is_fully_cancelled and order.cancellation_reason %}
+    <div class="reason-box">
+        <div class="reason-label">Cancellation Reason</div>
+        {{ order.cancellation_reason }}
+    </div>
+    {% endif %}
+    {% if is_partial_cancel %}
+        {% for item in cancelled_items %}
+            {% if item.cancellation_reason %}
+            <div class="reason-box">
+                <div class="reason-label">Cancelled — {{ item.product.name }}</div>
+                {{ item.cancellation_reason }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {# ============ RETURN REASON ============ #}
+    {% if is_fully_returned and order.return_reason %}
+    <div class="reason-box">
+        <div class="reason-label">Return Reason</div>
+        {{ order.return_reason }}
+    </div>
+    {% endif %}
+
+    {# ============ LAYOUT BRANCH ============ #}
+
+    {% if is_payment_failed %}
+        <div class="totals">
+            <div class="row total-row">
+                <span>Total</span><span>₹{{ order.total_amount }}</span>
+            </div>
+        </div>
+
+    {% elif is_fully_cancelled %}
+        <div class="outcome-box">
+            {% if order.payment_method == "COD" %}
+                <div class="label-line">Amount Payable</div>
+                <div class="amount-line zero">₹0.00</div>
+            {% else %}
+                <div class="label-line">Total Refunded</div>
+                <div class="amount-line refund">₹{{ order.total_amount }}</div>
+            {% endif %}
+        </div>
+        {% if coupon_usage %}
+        <div class="coupon-note">
+            Coupon <b>{{ coupon_usage.coupon.code }}</b> was used on this order{% if coupon_discount %} (₹{{ coupon_discount }} off){% endif %}.
+        </div>
+        {% endif %}
+
+    {% elif is_fully_returned %}
+        <div class="refund-summary-box">
+            <h4>Refund Summary</h4>
+            {% for item in returned_items %}
+            <div class="row">
+                <span>{{ item.product.name }}</span><span>₹{{ item.total_price }}</span>
+            </div>
+            {% endfor %}
+            <div class="row total-row">
+                <span>Total Refunded</span><span>₹{{ refunded_amount }}</span>
+            </div>
+        </div>
+
+    {% elif is_partial_cancel %}
+        <div class="totals">
+            <div class="row">
+                <span>Subtotal</span><span>₹{{ subtotal_non_cancelled }}</span>
+            </div>
+            {% if coupon_discount %}
+            <div class="row" style="color:#2e7d32;">
+                <span>Coupon Discount</span><span>− ₹{{ coupon_discount }}</span>
+            </div>
+            {% endif %}
+            <div class="row">
+                <span>Shipping</span><span>{% if order.shipping_charge %}₹{{ order.shipping_charge }}{% else %}Free{% endif %}</span>
+            </div>
+            <div class="row total-row">
+                <span>Total</span><span>₹{{ payable_amount }}</span>
+            </div>
+        </div>
+
+    {% elif is_partial_return %}
+        <div class="totals">
+            <div class="row">
+                <span>Subtotal</span><span>₹{{ subtotal_non_cancelled }}</span>
+            </div>
+            <div class="row">
+                <span>Shipping</span><span>{% if order.shipping_charge %}₹{{ order.shipping_charge }}{% else %}Free{% endif %}</span>
+            </div>
+            <div class="row total-row">
+                <span>Total Paid</span><span>₹{{ order.total_amount }}</span>
+            </div>
+        </div>
+        <div class="refund-summary-box">
+            <h4>Refund Summary</h4>
+            {% for item in returned_items %}
+            <div class="row">
+                <span>{{ item.product.name }}</span><span>Refunded : ₹{{ item.total_price }}</span>
+            </div>
+            {% endfor %}
+            <div class="row total-row">
+                <span>Total Refunded</span><span>₹{{ refunded_amount }}</span>
+            </div>
+        </div>
+
+    {% else %}
+        {# Normal Pending / Shipped / Out for Delivery / Delivered — full breakdown #}
+        <div class="totals">
+            <div class="row">
+                <span>Subtotal</span><span>₹{{ subtotal_non_cancelled }}</span>
+            </div>
+            {% if coupon_discount %}
+            <div class="row" style="color:#2e7d32;">
+                <span>Coupon Discount</span><span>− ₹{{ coupon_discount }}</span>
+            </div>
+            {% endif %}
+            <div class="row">
+                <span>Shipping</span><span>{% if order.shipping_charge %}₹{{ order.shipping_charge }}{% else %}Free{% endif %}</span>
+            </div>
+            <div class="row total-row">
+                <span>Total</span><span>₹{{ order.total_amount }}</span>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="notes-box">
+        <div class="notes-title">Note</div>
+        <ul>
+            {% for note in notes %}
+            <li>{{ note }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="footer">
+        Thank you for choosing Decora. This is an electronically generated document.
+    </div>
+
+</div>
+
+</body>
+</html>

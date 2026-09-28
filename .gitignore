@@ -2,16 +2,20 @@
 venv/
 .venv/
 
-# Environment variables
+# Secrets
 .env
 
-# Django
-db.sqlite3
+# Python / Django
 __pycache__/
 *.pyc
-
-# Media
+db.sqlite3
 media/
+staticfiles/
 
-# VS Code
+# Node / Tailwind
+node_modules/
+
+# IDE / OS
 .vscode/
+.idea/
+.DS_Store

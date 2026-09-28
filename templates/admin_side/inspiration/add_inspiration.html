@@ -1,0 +1,655 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<div class="max-w-7xl mx-auto">
+
+    <div class="flex items-center justify-between mb-8">
+
+        <div>
+            <h2 class="text-white text-3xl font-bold">
+                {% if edit_mode %}
+                    Edit Inspiration
+                {% else %}
+                    Create Inspiration
+                {% endif %}
+            </h2>
+
+            <p class="text-gray-500 mt-1">
+                Build premium inspiration boards for your store
+            </p>
+        </div>
+
+    </div>
+<style>
+
+/* ---------- TOM SELECT ---------- */
+input[type="checkbox"]:checked + .room-check,
+input[type="checkbox"]:checked + .category-check{
+    background:#D4AF37;
+    border-color:#D4AF37;
+    position:relative;
+}
+
+input[type="checkbox"]:checked + .room-check::after,
+input[type="checkbox"]:checked + .category-check::after{
+    content:"✓";
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:black;
+    font-size:12px;
+    font-weight:700;
+}
+.ts-control{
+    background:#000 !important;
+    border:1px solid rgba(255,255,255,.1) !important;
+    border-radius:16px !important;
+    min-height:56px !important;
+    padding:12px !important;
+    box-shadow:none !important;
+}
+
+.ts-dropdown{
+    background:#111 !important;
+    border:1px solid rgba(255,255,255,.1) !important;
+    border-radius:16px !important;
+}
+
+.ts-dropdown .option{
+    color:#fff !important;
+    padding:12px !important;
+}
+
+.ts-dropdown .option:hover,
+.ts-dropdown .active{
+    background:rgba(212,175,55,.15) !important;
+}
+
+.ts-control .item{
+    background:#D4AF37 !important;
+    color:#000 !important;
+    border-radius:999px !important;
+    padding:4px 10px !important;
+    font-weight:600 !important;
+}
+
+/* ---------- HIDE DEFAULT CHECKBOX ---------- */
+
+input[type="checkbox"]{
+    display:none;
+}
+
+/* ---------- ROOM + CATEGORY CARDS ---------- */
+
+.room-chip,
+.category-chip{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    min-height:52px;
+    width:100%;
+    padding:12px 16px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.08);
+    background:#000;
+    color:#d1d5db;
+    font-size:14px;
+    font-weight:500;
+    transition:.25s ease;
+}
+
+.room-chip:hover,
+.category-chip:hover{
+    border-color:#D4AF37;
+    transform:translateY(-1px);
+}
+
+/* Selected */
+
+input[type="checkbox"]:checked + .room-chip,
+input[type="checkbox"]:checked + .category-chip{
+    background:#D4AF37;
+    color:#000;
+    border-color:#D4AF37;
+    font-weight:700;
+}
+
+/* ---------- TAG PILLS ---------- */
+
+.tag-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 16px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.08);
+    background:#000;
+    color:#d1d5db;
+    font-size:13px;
+    transition:.25s ease;
+}
+
+.tag-chip:hover{
+    border-color:#D4AF37;
+}
+
+input[type="checkbox"]:checked + .tag-chip{
+    background:#D4AF37;
+    color:#000;
+    border-color:#D4AF37;
+    font-weight:700;
+}
+
+/* ---------- STYLE DROPDOWN ---------- */
+
+select{
+    width:100%;
+    background:#000;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:16px;
+    padding:14px 16px;
+    outline:none;
+}
+
+select:focus{
+    border-color:#D4AF37;
+}
+
+/* ---------- CHECKBOX GRID ---------- */
+
+.selection-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+}
+
+@media(max-width:640px){
+    .selection-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+<form method="POST"
+      enctype="multipart/form-data"
+      class="space-y-8">
+
+    {% csrf_token %}
+
+<input type="hidden"
+       name="stay_on_page"
+       id="stayOnPage"
+       value="0">
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- LEFT -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- TITLE -->
+        <div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+            <label class="text-sm text-gray-400 mb-3 block">
+                Inspiration Title
+            </label>
+
+            {{ form.title }}
+
+            {% if form.title.errors %}
+                <p class="text-red-500 text-sm mt-2">
+                    {{ form.title.errors.0 }}
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+            <label class="text-sm text-gray-400 mb-3 block">
+                Description
+            </label>
+
+            {{ form.description }}
+
+            {% if form.description.errors %}
+                <p class="text-red-500 text-sm mt-2">
+                    {{ form.description.errors.0 }}
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- COVER IMAGE -->
+        <div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+            <label class="text-sm text-gray-400 mb-4 block">
+                Cover Image
+            </label>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- PREVIEW -->
+                <div class="h-60 rounded-2xl overflow-hidden bg-black border border-white/10">
+
+                    {% if edit_mode and board.cover_image %}
+                        <img id="currentImageBox"
+                             src="{{ board.cover_image.url }}"
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="h-full flex items-center justify-center text-gray-600">
+                            No Image
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- UPLOAD -->
+                <div id="uploadBox"
+                     class="relative border-2 border-dashed border-white/10 rounded-2xl flex flex-col justify-center items-center h-60 hover:bg-[#D4AF37]/5 transition">
+
+                    <input type="file"
+                           id="imageInput"
+                           accept="image/*"
+                           class="absolute inset-0 opacity-0 cursor-pointer">
+
+                    <i class="fa-solid fa-camera text-3xl text-gray-600 mb-3"></i>
+
+                    <p class="text-gray-500 text-sm">
+                        Upload Cover Image
+                    </p>
+
+                </div>
+            </div>
+
+<input type="file"
+       name="cover_image"
+       id="croppedImageInput"
+       hidden>
+
+{% if form.cover_image.errors %}
+<p class="text-red-500 text-sm mt-3">
+    {{ form.cover_image.errors.0 }}
+</p>
+{% endif %}
+        </div>
+
+        <!-- GALLERY -->
+        <div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+            <label class="text-sm text-gray-400 mb-4 block">
+                Gallery Images
+            </label>
+
+            <input type="file"
+                   name="gallery_images"
+                   multiple
+                   class="w-full p-4 rounded-2xl bg-black border border-white/10 text-white">
+
+            {% if gallery %}
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+
+            {% for image in gallery %}
+<div class="relative group">
+
+    <img src="{{ image.image.url }}" class="w-full h-32 object-cover rounded-xl">
+
+    <a href="{% url 'admin_inspiration:gallery_delete' image.id %}"
+       class="absolute top-2 right-2 bg-red-500 w-8 h-8 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition">
+        <i class="fa-solid fa-trash"></i>
+    </a>
+
+    <form method="POST" action="{% url 'admin_inspiration:gallery_set_product' image.id %}" class="mt-2">
+        {% csrf_token %}
+        <select name="product" onchange="this.form.submit()"
+                class="w-full text-xs p-2 bg-black text-white rounded-lg border border-white/10">
+            <option value="">No product linked</option>
+            {% for product in board.products.all %}
+            <option value="{{ product.id }}" {% if image.product_id == product.id %}selected{% endif %}>
+                {{ product.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+
+</div>
+{% endfor %}
+
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="space-y-6">
+<!-- ROOMS -->
+<div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+    <label class="text-sm text-gray-400 mb-4 block">
+        Rooms
+    </label>
+
+    <div class="space-y-3">
+
+{% for checkbox in form.rooms %}
+
+<label class="flex items-center gap-3 cursor-pointer group">
+
+    <input
+        type="checkbox"
+        name="{{ form.rooms.name }}"
+        value="{{ checkbox.data.value }}"
+        {% if checkbox.data.selected %}checked{% endif %}
+    >
+
+    <span class="room-check w-5 h-5 rounded-md border border-white/20 bg-black flex-shrink-0 transition"></span>
+
+    <span class="text-gray-300 group-hover:text-white transition">
+        {{ checkbox.choice_label }}
+    </span>
+
+</label>
+
+{% endfor %}
+
+    </div>
+
+</div>
+
+        <!-- CATEGORIES -->
+      <!-- CATEGORIES -->
+<div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+    <label class="text-sm text-gray-400 mb-4 block">
+        Categories
+    </label>
+
+    <div class="space-y-3">
+
+       {% for checkbox in form.categories %}
+
+<label class="flex items-center gap-3 cursor-pointer group">
+
+    <input
+        type="checkbox"
+        name="{{ form.categories.name }}"
+        value="{{ checkbox.data.value }}"
+        {% if checkbox.data.selected %}checked{% endif %}
+    >
+
+    <span class="category-check w-5 h-5 rounded-md border border-white/20 bg-black flex-shrink-0 transition"></span>
+
+    <span class="text-gray-300 group-hover:text-white transition">
+        {{ checkbox.choice_label }}
+    </span>
+
+</label>
+
+{% endfor %}
+
+    </div>
+
+</div>
+<!-- STYLE -->
+<div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+    <label class="text-sm text-gray-400 mb-3 block">
+        Style
+    </label>
+
+    <div class="relative">
+        {{ form.style }}
+    </div>
+
+</div>
+        <!-- TAGS -->
+        <div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+            <label class="text-sm text-gray-400 mb-3 block">
+                Tags
+            </label>
+
+<div class="flex flex-wrap gap-2">
+
+    {% for checkbox in form.tags %}
+        <label class="cursor-pointer">
+
+            {{ checkbox.tag }}
+
+            <span class="tag-chip px-4 py-2 rounded-full border border-white/10 bg-black text-gray-300 hover:border-[#D4AF37] transition inline-block">
+                {{ checkbox.choice_label }}
+            </span>
+
+        </label>
+    {% endfor %}
+
+</div>
+        </div>
+
+        <!-- PRODUCTS -->
+       <!-- PRODUCTS -->
+<div class="bg-[#111111] rounded-3xl p-6 border border-white/10">
+
+    <label class="text-sm text-gray-400 mb-3 block">
+        Shop This Look
+    </label>
+
+    <div class="tom-select-wrapper">
+        {{ form.products }}
+    </div>
+
+</div>
+        <!-- SETTINGS -->
+        <div class="bg-[#111111] rounded-3xl p-6 border border-white/10 space-y-5">
+
+            <div class="flex items-center justify-between">
+
+                <span class="text-white">
+                    Featured
+                </span>
+
+                {{ form.is_featured }}
+            </div>
+
+            <div class="flex items-center justify-between">
+
+                <span class="text-white">
+                    Active
+                </span>
+
+                {{ form.is_active }}
+            </div>
+
+            <div>
+
+                <label class="text-sm text-gray-400 mb-2 block">
+                    Priority
+                </label>
+
+                {{ form.priority }}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ACTIONS -->
+<div class="flex items-center gap-4 pt-4">
+
+    <a href="{% url 'admin_inspiration:list' %}"
+       class="px-6 py-3 rounded-2xl bg-white/5 text-gray-400 hover:bg-white/10 transition">
+
+        Cancel
+    </a>
+
+    <button type="submit"
+            class="bg-[#D4AF37] px-8 py-3 rounded-2xl text-black font-bold hover:scale-[1.02] transition">
+
+        Save Inspiration
+    </button>
+
+</div>
+
+</form>
+
+</div>
+
+<!-- CROPPER MODAL -->
+<!-- CROPPER MODAL -->
+<div id="cropModal"
+     class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center">
+
+    <div class="bg-[#111111] p-6 rounded-3xl w-[90%] max-w-3xl border border-white/10">
+
+        <h3 class="text-white text-xl font-bold mb-4">
+            Crop Image
+        </h3>
+
+        <div class="w-full h-[500px] bg-black rounded-2xl overflow-hidden">
+            <img id="cropImage" style="display:block; max-width:100%;">
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+
+            <button type="button"
+                    id="cancelCrop"
+                    class="px-6 py-3 rounded-xl bg-white/5 text-gray-400">
+                Cancel
+            </button>
+
+            <button type="button"
+                    id="cropButton"
+                    class="px-6 py-3 rounded-xl bg-[#D4AF37] text-black font-bold">
+                Crop & Save
+            </button>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    new TomSelect("#products-select", {
+        plugins: ['remove_button'],
+        create: false,
+        maxOptions: null
+    });
+
+});
+
+let cropper;
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const imageInput = document.getElementById('imageInput');
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+    const croppedImageInput = document.getElementById('croppedImageInput');
+
+    imageInput.addEventListener('change', function (e) {
+
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+
+            // destroy any previous instance first
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+            cropImage.src = event.target.result;
+
+            cropModal.classList.remove('hidden');
+            cropModal.classList.add('flex');
+
+            // wait a tick so the modal is visible (display:flex) before Cropper measures it
+            requestAnimationFrame(function () {
+                cropper = new Cropper(cropImage, {
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    responsive: true,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                    // NO aspectRatio set = fully free-form crop, any ratio
+                    minContainerWidth: 300,
+                    minContainerHeight: 300
+                });
+            });
+
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById("cancelCrop")
+        .addEventListener("click", function () {
+
+            cropModal.classList.add("hidden");
+            cropModal.classList.remove("flex");
+
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+        });
+
+    document.getElementById("cropButton")
+        .addEventListener("click", function () {
+
+            if (!cropper) return;
+
+            // use the actual cropped box size instead of forcing 1600x900,
+            // so any ratio the user drew is preserved at full resolution
+            const cropCanvas = cropper.getCroppedCanvas();
+
+            cropCanvas.toBlob(function (blob) {
+
+                const file = new File(
+                    [blob],
+                    "cropped.jpg",
+                    { type: "image/jpeg" }
+                );
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+
+                croppedImageInput.files = dataTransfer.files;
+
+                cropModal.classList.add("hidden");
+                cropModal.classList.remove("flex");
+
+                document.querySelector("form").submit();
+
+            }, "image/jpeg", 0.92);
+
+        });
+
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="p-8 w-full">
+    {# --- HEADER SECTION --- #}
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-white mb-2">Products</h1>
+            <p class="text-gray-500 text-sm">Manage your curated atelier inventory</p>
+        </div>
+        <a href="{% url 'catalog:admin-product-add' %}" class="bg-[#D4AF37] hover:bg-white text-black px-6 py-3 rounded-xl transition-all flex items-center font-bold text-xs uppercase tracking-widest">
+            <i class="fa-solid fa-plus mr-2"></i> Add Product
+        </a>
+    </div>
+
+    {# --- FILTER BAR --- #}
+<form method="GET" action="{% url 'catalog:admin-product-list' %}" class="bg-[#111111] border border-white/5 rounded-2xl p-4 mb-6 flex flex-wrap gap-4 items-center">
+    
+    {# Search Input #}
+    <div class="relative flex-1 min-w-[300px]">
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-600"></i>
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Quick find by name..." 
+               class="w-full bg-black/20 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm text-white focus:border-[#D4AF37]/50 outline-none transition-all">
+    </div>
+    
+    {# Category Filter #}
+    <select name="category" onchange="this.form.submit()" class="bg-black/20 border border-white/5 rounded-xl py-3 px-4 text-sm text-gray-400 outline-none focus:border-[#D4AF37]/50">
+        <option value="">Category: All</option>
+        {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"i" %}selected{% endif %}>
+                {{ cat.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    {# Room Filter #}
+    <select name="room" onchange="this.form.submit()" class="bg-black/20 border border-white/5 rounded-xl py-3 px-4 text-sm text-gray-400 outline-none focus:border-[#D4AF37]/50">
+        <option value="">Rooms: All</option>
+        {% for r in rooms %}
+            <option value="{{ r.id }}" {% if selected_room == r.id|stringformat:"i" %}selected{% endif %}>
+                {{ r.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    {# Clear Filters Button (Optional) #}
+    {% if search_query or selected_category or selected_room %}
+        <a href="{% url 'catalog:admin-product-list' %}" class="text-gray-500 hover:text-white text-xs uppercase tracking-widest ml-2">
+            Clear
+        </a>
+    {% endif %}
+    
+    {# Hidden submit button so pressing 'Enter' in search works #}
+    <button type="submit" class="hidden"></button>
+</form>
+
+    {# --- PRODUCTS TABLE --- #}
+    <div class="bg-[#111111] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-white/5 bg-white/[0.02]">
+                    <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Product</th>
+                    <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Category</th>
+                    <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Room</th>
+                    <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Price</th>
+                    <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Status</th>
+                    <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+                {% for product in products %}
+                <tr class="hover:bg-white/[0.01] transition-colors group">
+                    <td class="p-5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-[#1a1a1a] border border-white/5 overflow-hidden">
+{% if product.display_combination and product.display_combination.main_image %}
+    <img src="{{ product.display_combination.main_image.url }}" class="w-full h-full object-cover">
+{% else %}
+    <div class="w-full h-full flex items-center justify-center text-gray-600 text-xs">No Image</div>
+{% endif %}
+                            </div>
+                            <div>
+    <h3 class="text-sm font-bold text-gray-200 group-hover:text-[#D4AF37] transition-colors">
+        {{ product.name }}
+    </h3>
+
+    <p class="text-[10px] text-gray-500 uppercase tracking-tighter mb-2">
+        ID: #DEC-00{{ product.id }}
+    </p>
+
+    {# Variant Preview Tags #}
+    <div class="flex flex-wrap gap-1.5">
+
+ {% for variant in product.variants.all|slice:":4" %}
+    <span class="px-2 py-1 rounded-full text-[9px] font-bold tracking-wide border bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/20">
+        {{ variant.variant_type }}: {{ variant.variant_value }}
+    </span>
+{% empty %}
+    <span class="text-[10px] text-gray-600 italic">No variants</span>
+{% endfor %}
+        {% if product.variants.count > 4 %}
+            <span class="px-2 py-1 rounded-full text-[9px] bg-white/5 text-gray-400 border border-white/5">
+                +{{ product.variants.count|add:"-4" }} more
+            </span>
+        {% endif %}
+
+    </div>
+</div>
+                        </div>
+                    </td>
+                    <td class="p-5 text-sm text-gray-400">{{ product.category.name }}</td>
+                    <td class="p-5 text-sm text-gray-400">{{ product.room.first.name|default:"General" }}</td>
+<td class="p-5">
+
+   {% if product.starting_price %}
+    <div class="flex flex-col">
+        <span class="text-sm font-bold text-[#D4AF37]">
+            From ₹{{ product.starting_price }}
+        </span>
+        <span class="text-[9px] text-gray-500 uppercase tracking-wide">
+            {{ product.combinations.count }} combinations
+        </span>
+    </div>
+{% else %}
+    <span class="text-xs text-gray-600 italic">No pricing</span>
+{% endif %}
+
+</td>
+             <td class="p-5">
+                        {% if product.is_active %}
+                            <span class="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-widest border border-green-500/20">Active</span>
+                        {% else %}
+                            <span class="px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[9px] font-black uppercase tracking-widest border border-red-500/20">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-5">
+                        <div class="flex justify-end gap-2">
+                            <a href="{% url 'catalog:admin-product-edit' product.pk %}" class="p-2 hover:bg-white/5 text-gray-500 hover:text-white transition-all rounded-lg">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <button onclick="openDeleteModal('{{ product.id }}', '{{ product.name }}')" class="p-2 hover:bg-red-500/10 text-gray-500 hover:text-red-500 transition-all rounded-lg">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-20 text-center">
+                        <i class="fa-solid fa-box-open text-4xl text-gray-800 mb-4 block"></i>
+                        <p class="text-gray-500 italic">No products found in the atelier.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.has_other_pages %}
+<div class="flex items-center justify-between mt-6">
+
+    <div class="text-sm text-gray-500">
+        Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </div>
+
+    <div class="flex items-center gap-2">
+
+        {# Previous #}
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ selected_category }}&room={{ selected_room }}&min_price={{ min_price }}&max_price={{ max_price }}&sort={{ sort_option }}"
+               class="px-4 py-2 rounded-lg bg-[#111111] border border-white/10 text-white hover:border-[#D4AF37]">
+                Previous
+            </a>
+        {% endif %}
+
+        {# Page Numbers #}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="px-4 py-2 rounded-lg bg-[#D4AF37] text-black font-bold">
+                    {{ num }}
+                </span>
+            {% else %}
+                <a href="?page={{ num }}&search={{ search_query }}&category={{ selected_category }}&room={{ selected_room }}&min_price={{ min_price }}&max_price={{ max_price }}&sort={{ sort_option }}"
+                   class="px-4 py-2 rounded-lg bg-[#111111] border border-white/10 text-white hover:border-[#D4AF37]">
+                    {{ num }}
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {# Next #}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ selected_category }}&room={{ selected_room }}&min_price={{ min_price }}&max_price={{ max_price }}&sort={{ sort_option }}"
+               class="px-4 py-2 rounded-lg bg-[#111111] border border-white/10 text-white hover:border-[#D4AF37]">
+                Next
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+{% endif %}
+</div>
+
+{# --- DELETE MODAL --- #}
+<div id="deleteModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-[100] p-6">
+    <div class="bg-[#111111] border border-white/10 p-8 rounded-[2rem] max-w-sm w-full shadow-2xl transform transition-all">
+        <div class="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+        </div>
+        <h3 class="text-white text-2xl font-bold mb-3 text-center">Delete Product?</h3>
+        <p class="text-gray-400 text-sm mb-8 text-center leading-relaxed">
+            Are you sure you want to remove <span id="deleteProductName" class="text-white font-bold"></span>? This will also remove all associated variants.
+        </p>
+        
+        <div class="flex gap-4">
+            <button onclick="closeDeleteModal()" class="flex-1 px-6 py-4 rounded-2xl border border-white/5 text-white font-bold hover:bg-white/5 transition-all text-xs uppercase tracking-widest">Cancel</button>
+            <form id="deleteForm" method="POST" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="w-full px-6 py-4 rounded-2xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all text-xs uppercase tracking-widest shadow-lg shadow-red-600/20">Confirm</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+function openDeleteModal(id, name) {
+    document.getElementById('deleteProductName').innerText = name;
+    
+    // Update this line to include /catalog/
+    document.getElementById('deleteForm').action = `/admin-panel/catalog/products/delete/${id}/`;
+    
+    document.getElementById('deleteModal').classList.remove('hidden');
+    document.getElementById('deleteModal').classList.add('flex');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    document.getElementById('deleteModal').classList.remove('flex');
+}
+</script>
+{% endblock %}

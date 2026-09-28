@@ -1,0 +1,53 @@
+{% extends 'admin_base.html' %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto">
+
+    <h2 class="text-white text-3xl font-bold mb-8">
+        {% if tag %}
+    Edit Tag
+{% else %}
+    Add Tag
+{% endif %}
+    </h2>
+
+    <form method="POST"
+          class="bg-[#111111] p-6 rounded-3xl border border-white/10">
+
+        {% csrf_token %}
+
+        <label class="block text-sm text-gray-400 mb-2">
+            Tag Name
+        </label>
+
+<input type="text"
+       name="name"
+       value="{% if tag %}{{ tag.name }}{% endif %}"
+       class="w-full p-3 bg-black text-white rounded-xl border border-white/10">
+
+        {% if form.name.errors %}
+            <p class="text-red-500 text-sm mt-2">
+                {{ form.name.errors.0 }}
+            </p>
+        {% endif %}
+
+        <div class="flex gap-3 mt-6">
+
+            <a href="{% url 'admin_inspiration:tag_list' %}"
+               class="px-5 py-3 rounded-xl bg-white/5 text-gray-400 hover:bg-white/10">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="px-6 py-3 rounded-xl bg-[#D4AF37] text-black font-semibold">
+                Save Tag
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+
+<div class="p-6 bg-[#0F0F0F] min-h-screen">
+    <div class="mb-6">
+        <a href="{% url 'inventory_list' %}" class="inline-flex items-center gap-2 text-[#C6A972] hover:text-[#E5D3AE] transition mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Inventory
+        </a>
+        <h1 class="text-3xl font-bold text-[#C6A972]">{{ product.name }}</h1>
+        <p class="text-gray-400 mt-2">Combination Inventory</p>
+    </div>
+
+    <div class="bg-[#161616] border border-[#C6A972]/20 rounded-2xl overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-black">
+                <tr>
+                    <th class="px-6 py-4 text-left text-[#C6A972]">Combination</th>
+                    <th class="px-6 py-4 text-left text-[#C6A972]">SKU</th>
+                    <th class="px-6 py-4 text-left text-[#C6A972]">Price</th>
+                    <th class="px-6 py-4 text-left text-[#C6A972]">Stock</th>
+                    <th class="px-6 py-4 text-center text-[#C6A972]">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for combo in combinations %}
+                <tr class="border-t border-[#C6A972]/10 text-white">
+                    <td class="px-6 py-4">{{ combo.label }}</td>
+                    <td class="px-6 py-4">{{ combo.sku|default:"-" }}</td>
+                    <td class="px-6 py-4">
+                        {% if combo.discount_price %}
+                            <span class="line-through text-gray-500 text-xs">₹{{ combo.original_price }}</span>
+                            <span class="text-[#C6A972] font-semibold ml-1">₹{{ combo.discount_price }}</span>
+                        {% else %}
+                            ₹{{ combo.original_price }}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">{{ combo.stock_quantity }}</td>
+                    <td class="px-6 py-4 text-center">
+                        <a href="{% url 'update_stock' combo.id %}" class="bg-[#C6A972] text-black px-4 py-2 rounded-lg font-semibold">
+                            Update
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-10 text-[#C6A972]">No combinations yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,465 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+
+<!-- MISSING DEPENDENCIES: Select2 needs these to work -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+
+
+#id_base_price {
+    width: 100%;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.03),
+            rgba(255,255,255,0.01)
+        ) !important;
+
+    border: 1px solid rgba(255,255,255,0.08) !important;
+
+    color: white !important;
+
+    border-radius: 1rem !important;
+
+    padding: 1rem 1rem 1rem 2.8rem !important;
+
+    font-size: 14px !important;
+    font-weight: 500;
+
+    outline: none !important;
+
+    transition: all .25s ease;
+
+    backdrop-filter: blur(10px);
+}
+
+/* PLACEHOLDER */
+
+#id_base_price::placeholder {
+    color: rgba(255,255,255,0.28);
+    font-weight: 400;
+}
+
+/* FOCUS */
+
+#id_base_price:focus {
+    border-color: rgba(212,175,55,0.45) !important;
+
+    box-shadow:
+        0 0 0 4px rgba(212,175,55,0.05),
+        0 10px 30px rgba(212,175,55,0.08);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.04),
+            rgba(255,255,255,0.015)
+        ) !important;
+}
+
+/* HOVER */
+
+#id_base_price:hover {
+    border-color: rgba(255,255,255,0.14) !important;
+}
+
+/* NUMBER SPINNER */
+
+#id_base_price::-webkit-inner-spin-button,
+#id_base_price::-webkit-outer-spin-button {
+    filter: invert(1);
+    opacity: .6;
+}
+    .select2-container {
+        width: 100% !important;
+        z-index: 9999 !important;
+    }
+
+    /* MAIN SELECTION BOX */
+    .select2-container--default .select2-selection--multiple {
+        background: rgba(0,0,0,0.25) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        border-radius: 1rem !important;
+
+        min-height: 56px !important;
+        height: auto !important;
+
+        padding: 10px !important;
+
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        align-content: flex-start !important;
+
+        gap: 8px !important;
+
+        overflow: visible !important;
+
+        transition: all 0.25s ease;
+    }
+
+    /* GOLD FOCUS */
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: rgba(212,175,55,0.4) !important;
+        box-shadow: 0 0 0 3px rgba(212,175,55,0.06);
+    }
+
+    /* REMOVE SEARCH FIELD */
+    .select2-search--inline {
+        display: none !important;
+    }
+
+    /* SELECTED TAGS */
+    .select2-container--default .select2-selection__choice {
+        background: rgba(212,175,55,0.12) !important;
+        color: #D4AF37 !important;
+
+        border: 1px solid rgba(212,175,55,0.2) !important;
+        border-radius: 999px !important;
+
+        font-size: 10px !important;
+        font-weight: 700 !important;
+
+        line-height: 1 !important;
+
+        padding: 8px 14px !important;
+
+        margin: 0 !important;
+
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        min-height: 34px !important;
+
+        max-width: calc(50% - 4px) !important;
+
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* REMOVE BUTTON */
+    .select2-container--default .select2-selection__choice__remove {
+        color: #D4AF37 !important;
+        border: none !important;
+
+        margin-right: 6px !important;
+
+        font-size: 12px !important;
+        line-height: 1 !important;
+    }
+
+    .select2-container--default .select2-selection__choice__remove:hover {
+        background: transparent !important;
+        color: white !important;
+    }
+
+    /* DROPDOWN FIX */
+    .select2-dropdown {
+        background: #161616 !important;
+
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 1rem !important;
+
+        overflow: hidden !important;
+
+        z-index: 999999 !important;
+    }
+
+    /* RESULTS */
+    .select2-results__option {
+        background: #161616 !important;
+        color: rgba(255,255,255,0.72) !important;
+
+        padding: 12px 14px !important;
+
+        font-size: 12px !important;
+
+        transition: all 0.2s ease;
+    }
+
+    /* HOVER */
+    .select2-results__option--highlighted[aria-selected] {
+        background: rgba(212,175,55,0.12) !important;
+        color: #D4AF37 !important;
+    }
+
+    /* SELECTED OPTION */
+    .select2-results__option[aria-selected="true"] {
+        background: rgba(255,255,255,0.03) !important;
+        color: white !important;
+    }
+
+    /* FIX PARENT OVERFLOW CUTTING DROPDOWN */
+    .overflow-hidden,
+    .rounded-3xl,
+    .bg-\[\#111111\] {
+        overflow: visible !important;
+    }
+</style>
+
+<div class="p-8 max-w-7xl mx-auto">
+    <form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {% csrf_token %}
+        <input type="hidden" name="delete_main_image" id="del_main_val" value="false">
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold text-white italic">{% if product %}Edit{% else %}Add New{% endif %} Decor Item</h1>
+                <a href="{% url 'catalog:admin-product-list' %}" class="text-gray-500 hover:text-white text-[10px] uppercase tracking-widest transition-all">
+                    <i class="fa-solid fa-xmark mr-1"></i> Cancel
+                </a>
+            </div>
+
+            <div class="bg-[#111111] p-8 rounded-3xl border border-white/5">
+                <h2 class="text-white font-bold mb-6 italic text-sm">● Basic Information</h2>
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-[9px] text-gray-500 uppercase tracking-[0.2em] block mb-2 font-bold">Product Name</label>
+                        {{ form.name }}
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-gray-500 uppercase tracking-[0.2em] block mb-2 font-bold">Product Description</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+                </div>
+<div class="space-y-2">
+    <div class="relative">
+        {{ form.base_price }}
+    </div>
+</div>
+
+        
+<div class="bg-[#111111] p-8 rounded-3xl border border-white/5 space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-white font-bold italic text-sm">● Variants & Combinations</h2>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mt-1">
+                {{ product.variants.count }} value(s) · {{ product.combinations.count }} combination(s)
+            </p>
+        </div>
+        {% if product %}
+        <a href="{% url 'catalog:add_variant' product_id=product.id %}"
+           class="text-[10px] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black border border-[#D4AF37]/30 px-4 py-2 rounded-full uppercase font-bold tracking-widest transition-all">
+            <i class="fa-solid fa-sliders mr-1"></i> Manage Variants
+        </a>
+        {% endif %}
+    </div>
+
+    {% if product %}
+        {% regroup product.variants.all by variant_type as variant_groups %}
+        {% if variant_groups %}
+        <div class="flex flex-wrap gap-2 pb-2 border-b border-white/5">
+            {% for group in variant_groups %}
+                {% for v in group.list %}
+                    <span class="px-3 py-1.5 rounded-full text-[10px] font-bold border bg-white/5 text-gray-300 border-white/10">
+                        {{ group.grouper }}: {{ v.variant_value }}
+                    </span>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-600 text-xs italic">No variants yet — add Color, Size, or Material to get started.</p>
+        {% endif %}
+
+        {% if product.combinations.all %}
+        <div class="overflow-hidden rounded-2xl border border-white/5">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-white/5 text-gray-400 uppercase text-[9px]">
+                    <tr>
+                        <th class="p-4">Image</th>
+                        <th class="p-4">Combination</th>
+                        <th class="p-4 text-center">SKU</th>
+                        <th class="p-4 text-center">Price</th>
+                        <th class="p-4 text-center">Stock</th>
+                        <th class="p-4 text-center">Status</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-white">
+                    {% for c in product.combinations.all %}
+                    <tr class="{% if not c.is_active %}opacity-40{% endif %} bg-black/20 hover:bg-black/40 transition-all">
+                        <td class="p-4">
+                            {% if c.main_image %}
+                                <img src="{{ c.main_image.url }}" class="w-9 h-9 rounded-lg object-cover border border-white/10">
+                            {% else %}
+                                <div class="w-9 h-9 rounded-lg bg-white/5 border border-dashed border-white/20"></div>
+                            {% endif %}
+                        </td>
+                        <td class="p-4">{{ c.label }}</td>
+                        <td class="p-4 text-center font-mono">{{ c.sku|default:"-" }}</td>
+                        <td class="p-4 text-center">
+                            {% if c.discount_price %}
+                                <span class="line-through text-gray-500 text-[10px]">₹{{ c.original_price }}</span>
+                                <span class="text-green-400 font-bold ml-1">₹{{ c.discount_price }}</span>
+                            {% else %}
+                                <span class="text-[#D4AF37] font-bold">₹{{ c.original_price }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-center">{{ c.stock_quantity }}</td>
+                        <td class="p-4 text-center">
+                            {% if c.is_active %}
+                                <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase bg-green-500/10 text-green-500 border border-green-500/20">Active</span>
+                            {% else %}
+                                <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-right space-x-3">
+                            <a href="{% url 'catalog:admin-edit-combination' product_id=product.id pk=c.id %}" class="text-gray-400 hover:text-[#D4AF37]"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <button type="button" onclick="openVariantModal('{% url 'catalog:toggle_combination_status' c.id %}')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    {% else %}
+        <p class="text-gray-600 text-xs italic">Save the product first, then you'll be taken straight to variants.</p>
+    {% endif %}
+</div>
+            <!-- Categorisation Section -->
+            <div class="bg-[#111111] p-8 rounded-3xl border border-white/5">
+                <h2 class="text-white font-bold mb-6 italic text-sm">● Categorisation</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[9px] text-gray-500 uppercase tracking-[0.2em] block mb-3 font-bold">Target Rooms</label>
+                        {{ form.room }}
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-gray-500 uppercase tracking-[0.2em] block mb-2 font-bold">Category</label>
+                        {{ form.category }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-[#111111] p-6 rounded-3xl border border-white/5">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-white font-bold italic text-sm">Visibility Status</h2>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        {{ form.is_active }}
+                        <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
+                    </label>
+                </div>
+            </div>
+            <div class="bg-[#111111] p-6 rounded-3xl border border-white/5">
+    <div class="flex justify-between items-center">
+
+        <div class="flex items-center gap-3">
+            <!-- checkbox -->
+            <label class="relative inline-flex items-center cursor-pointer">
+                {{ form.is_featured }}
+
+                <div class="w-11 h-6 bg-gray-700 rounded-full
+                            peer peer-checked:bg-[#D4AF37]
+                            after:content-[''] after:absolute after:top-[2px]
+                            after:left-[2px] after:bg-white after:rounded-full
+                            after:h-5 after:w-5 after:transition-all
+                            peer-checked:after:translate-x-full">
+                </div>
+            </label>
+
+            <span class="text-white font-semibold text-sm flex items-center gap-2">
+                ★ Mark as Featured
+            </span>
+        </div>
+
+    </div>
+</div>
+
+            <div class="sticky top-8">
+                <button type="submit" class="w-full bg-[#D4AF37] hover:bg-white text-black font-black py-5 rounded-2xl transition-all uppercase text-xs italic tracking-widest shadow-lg shadow-[#D4AF37]/5">
+                    {% if product %}Update Product{% else %}Create Product{% endif %}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Variant Modal -->
+<div id="variantModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-[9999]">
+    <div class="bg-[#111111] border border-white/10 rounded-3xl p-8 w-[90%] max-w-md shadow-2xl">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                <i class="fa-solid fa-trash text-red-500 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-white font-bold text-lg italic">Delete Variant</h2>
+                <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">This variant will be remove permenently</p>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-8">
+            <button type="button" onclick="closeVariantModal()" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 py-4 rounded-2xl uppercase text-[10px] tracking-widest font-bold transition-all">Cancel</button>
+            <a id="confirmVariantBtn" href="#" class="flex-1 bg-red-500 hover:bg-red-400 text-white py-4 rounded-2xl uppercase text-[10px] tracking-widest font-black text-center transition-all">Confirm</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- SELECT2 INITIALIZATION ---
+
+$(document).ready(function () {
+
+    $('.select2-rooms').select2({
+        placeholder: "Select Rooms",
+        width: '100%',
+        closeOnSelect: false,
+        minimumResultsForSearch: Infinity,
+        dropdownParent: $('body')
+    });
+
+});
+
+
+
+    // --- YOUR ORIGINAL MODAL LOGIC ---
+    function openVariantModal(url) {
+        document.getElementById('variantModal').classList.remove('hidden');
+        document.getElementById('variantModal').classList.add('flex');
+        document.getElementById('confirmVariantBtn').href = url;
+    }
+
+    function closeVariantModal() {
+        document.getElementById('variantModal').classList.remove('flex');
+        document.getElementById('variantModal').classList.add('hidden');
+    }
+
+    document.getElementById('variantModal').addEventListener('click', function(e) {
+        if (e.target.id === 'variantModal') closeVariantModal();
+    });
+
+    // --- YOUR ORIGINAL IMAGE LOGIC ---
+    function previewImg(input, imgId, phId, delId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById(imgId);
+                const placeholder = document.getElementById(phId);
+                const deleteBtn = document.getElementById(delId);
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                if(deleteBtn) deleteBtn.classList.remove('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeImg(inputId, imgId, phId, delId, hiddenValId) {
+        document.getElementById(inputId).value = "";
+        document.getElementById(imgId).src = "";
+        document.getElementById(imgId).classList.add('hidden');
+        document.getElementById(phId).classList.remove('hidden');
+        if(delId) document.getElementById(delId).classList.add('hidden');
+        if(hiddenValId) document.getElementById(hiddenValId).value = "true";
+    }
+    
+</script>
+{% endblock %}

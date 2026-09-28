@@ -1,0 +1,137 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+    :root {
+        --luxury-gold: #E3C565;
+    }
+
+    .premium-font {
+        font-family: 'Playfair Display', serif;
+    }
+</style>
+
+<div class="min-h-screen bg-[#0A0A0A] p-8 md:p-12">
+
+    <div class="max-w-3xl mx-auto">
+
+        <!-- Header -->
+        <div class="mb-10">
+            <a href="{% url 'wallet' %}"
+               class="text-gray-500 hover:text-[#E3C565] text-sm transition">
+                ← Back to Wallet
+            </a>
+
+            <h1 class="premium-font text-white text-5xl font-bold mt-4">
+                Add Money
+            </h1>
+
+            <p class="text-gray-500 mt-2">
+                Top up your Decora Wallet securely.
+            </p>
+        </div>
+
+        <!-- Card -->
+        <div class="bg-[#111111] border border-white/5 rounded-[2rem] p-10">
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4">
+                    Select Amount
+                </label>
+
+                <!-- Quick Amount Buttons -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+
+                    <button type="button"
+                            onclick="setAmount(100)"
+                            class="amount-btn bg-[#0d0d0d] border border-white/10 rounded-xl py-4 text-white hover:border-[#E3C565] transition">
+                        ₹100
+                    </button>
+
+                    <button type="button"
+                            onclick="setAmount(500)"
+                            class="amount-btn bg-[#0d0d0d] border border-white/10 rounded-xl py-4 text-white hover:border-[#E3C565] transition">
+                        ₹500
+                    </button>
+
+                    <button type="button"
+                            onclick="setAmount(1000)"
+                            class="amount-btn bg-[#0d0d0d] border border-white/10 rounded-xl py-4 text-white hover:border-[#E3C565] transition">
+                        ₹1000
+                    </button>
+
+                    <button type="button"
+                            onclick="setAmount(2000)"
+                            class="amount-btn bg-[#0d0d0d] border border-white/10 rounded-xl py-4 text-white hover:border-[#E3C565] transition">
+                        ₹2000
+                    </button>
+
+                </div>
+
+                <!-- Custom Amount -->
+                <div class="mb-8">
+
+                    <label class="block text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-3">
+                        Custom Amount
+                    </label>
+
+                    <input
+                        type="number"
+                        min="1"
+                        id="amount"
+                        name="amount"
+                        required
+                        placeholder="Enter amount"
+                        class="w-full bg-[#0d0d0d] border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:border-[#E3C565]"
+                    >
+                </div>
+
+                <!-- Summary -->
+                <div class="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 mb-8">
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">
+                            Amount
+                        </span>
+
+                        <span class="text-white font-semibold">
+                            ₹<span id="previewAmount">0</span>
+                        </span>
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full bg-[#E3C565] text-black py-5 rounded-full uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white transition"
+                >
+                    Proceed To Payment
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function setAmount(amount) {
+    document.getElementById('amount').value = amount;
+    document.getElementById('previewAmount').innerText = amount;
+}
+
+document.getElementById('amount').addEventListener('input', function() {
+    document.getElementById('previewAmount').innerText = this.value || 0;
+});
+</script>
+
+{% endblock %}
+
