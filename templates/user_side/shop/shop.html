@@ -188,18 +188,6 @@
                placeholder:text-gray-600"
     >
 
-    {% if search_query %}
-
-    <a
-        href="{% url 'shop:product-list' %}"
-        class="absolute right-4 top-1/2 -translate-y-1/2
-               text-gray-500 hover:text-[#D4AF37] transition"
-    >
-        <i class="fa-solid fa-xmark"></i>
-    </a>
-
-    {% else %}
-
     <button
         type="submit"
         form="filter-form"
@@ -209,55 +197,33 @@
         <i class="fa-solid fa-magnifying-glass"></i>
     </button>
 
-    {% endif %}
-
 </div>
             {# Active Filter Tags #}
 <div class="flex flex-col sm:flex-row sm:items-center gap-4">
     <!-- SORT DROPDOWN -->
     <select
-    name="sort"
-    form="filter-form"
-    onchange="document.getElementById('filter-form').submit()"
-    class="bg-[#111] border border-white/10 text-gray-300 text-xs px-4 py-2 rounded-xl focus:outline-none focus:border-[#D4AF37]"
->
-    <option value="featured"
-        {% if current_sort == 'featured' %}selected{% endif %}>
-        Featured
-    </option>
-
-
-        <option value="newest"
-            {% if current_sort == 'newest' %}selected{% endif %}>
-            Newest
-        </option>
-
-        <option value="oldest"
-            {% if current_sort == 'oldest' %}selected{% endif %}>
-            Oldest
-        </option>
-
-        <option value="price_low"
-            {% if current_sort == 'price_low' %}selected{% endif %}>
-            Price: Low → High
-        </option>
-
-        <option value="price_high"
-            {% if current_sort == 'price_high' %}selected{% endif %}>
-            Price: High → Low
-        </option>
-
-        <option value="name_az"
-            {% if current_sort == 'name_az' %}selected{% endif %}>
-            A → Z
-        </option>
-
-        <option value="name_za"
-            {% if current_sort == 'name_za' %}selected{% endif %}>
-            Z → A
-        </option>
-
+        name="sort"
+        form="filter-form"
+        onchange="document.getElementById('filter-form').submit()"
+        class="bg-[#111] border border-white/10 text-gray-300 text-xs px-4 py-2 rounded-xl focus:outline-none focus:border-[#D4AF37]"
+    >
+        <option value="featured" {% if current_sort == 'featured' %}selected{% endif %}>Featured</option>
+        <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+        <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+        <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low → High</option>
+        <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+        <option value="name_az" {% if current_sort == 'name_az' %}selected{% endif %}>A → Z</option>
+        <option value="name_za" {% if current_sort == 'name_za' %}selected{% endif %}>Z → A</option>
     </select>
+
+    <!-- NEW: Clear search/filters control, next to sort -->
+    {% if search_query or selected_categories or selected_rooms %}
+    <a href="{% url 'shop:product-list' %}"
+       title="Clear search and filters"
+       class="flex items-center justify-center w-9 h-9 rounded-xl border border-white/10 bg-[#111] text-gray-400 hover:text-[#D4AF37] hover:border-[#D4AF37]/40 transition">
+        <i class="fa-solid fa-xmark text-sm"></i>
+    </a>
+    {% endif %}
 
     <!-- ACTIVE TAGS -->
     <div class="flex gap-2 flex-wrap">

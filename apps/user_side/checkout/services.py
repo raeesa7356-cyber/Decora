@@ -9,14 +9,10 @@ from django.conf import settings
 from django.utils import timezone
 from apps.admin_side.coupons.models import Coupon, CouponUsage
 from apps.user_side.accounts.models import Wallet, WalletTransaction
-
+from django.conf import settings  
 
 class BuyNowItem:
-    """
-    A cart-shaped stand-in used for the buy-now flow, so checkout code can
-    treat a real Cart row and a buy-now session the same way — both just
-    need .product, .combination, .quantity, and a no-op .delete().
-    """
+  
     def __init__(self, product, combination, quantity):
         self.product = product
         self.combination = combination
@@ -83,9 +79,22 @@ def prepare_checkout_items(cart_items):
     return cart_items
 
 
+def create_gateway_order(amount):
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    rp_order = client.order.create({
+        "amount": int(amount * 100),
+        "currency": "INR",
+        "payment_capture": 1,
+    })
+    return rp_order["id"]
+
+
 @transaction.atomic
-def create_order(*, user, address, cart_items, payment_method="COD", coupon_discount=Decimal("0")):
+def create_order(*, user, address, cart_items, payment_method="COD", coupon_discount=Decimal("0"), original_amount,
+                  razorpay_order_id=None, razorpay_payment_status=None,
+                  razorpay_payment_id=None, razorpay_signature=None):
     totals = calculate_checkout_totals(cart_items)
+
     final_total = max(totals["total"] - coupon_discount, 0)
 
     if payment_method == "WALLET":
@@ -104,20 +113,36 @@ def create_order(*, user, address, cart_items, payment_method="COD", coupon_disc
         delivery_pincode=address.pincode,
         subtotal=totals["subtotal"],
         shipping_charge=totals["shipping"],
-        discount_amount=totals["saved_amount"] + coupon_discount,
+        discount_amount=totals["saved_amount"] ,
         total_amount=final_total,
         payment_method=payment_method,
         status="PENDING",
+        original_amount=original_amount
     )
 
+
     if payment_method == "RAZORPAY":
-        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-        rp_order = client.order.create({
-            "amount": int(order.total_amount * 100),
-            "currency": "INR",
-            "payment_capture": 1,
-        })
-        OrderPayment.objects.create(order=order, razorpay_order_id=rp_order["id"], status="PENDING")
+        if razorpay_order_id:
+
+            OrderPayment.objects.create(
+                order=order,
+                razorpay_order_id=razorpay_order_id,
+                status=razorpay_payment_status or "PENDING",
+                razorpay_payment_id=razorpay_payment_id,
+                razorpay_signature=razorpay_signature,
+            )
+        else:
+            max_amount = getattr(settings, 'RAZORPAY_MAX_TRANSACTION_AMOUNT', 25000)
+            if order.total_amount > max_amount:
+                OrderPayment.objects.create(
+                    order=order,
+                    razorpay_order_id=f"LIMIT_EXCEEDED_{order.id}",
+                    status="FAILED",
+                )
+            else:
+                rp_id = create_gateway_order(order.total_amount)
+                OrderPayment.objects.create(order=order, razorpay_order_id=rp_id, status="PENDING")
+        
 
     elif payment_method == "WALLET":
         wallet.balance -= final_total
@@ -129,8 +154,6 @@ def create_order(*, user, address, cart_items, payment_method="COD", coupon_disc
 
     for item in cart_items:
         data = get_cart_item_data(item)
-
-                    # lock the real combination row so concurrent orders can't oversell it
         combo = VariantCombination.objects.select_for_update().get(id=item.combination.id)
 
         if combo.stock_quantity < item.quantity:
@@ -162,6 +185,8 @@ def validate_and_get_coupon(code, user, cart_items, subtotal):
 
     if not (coupon.valid_from <= now <= coupon.valid_until):
         raise ValueError("This coupon has expired or is not yet active.")
+    print("SUBTOTAL:", subtotal)
+    print("COUPON MINIMUM:", coupon.min_order_value)
     if subtotal < coupon.min_order_value:
         raise ValueError(f"Minimum order value of ₹{coupon.min_order_value} required.")
     if coupon.total_usage_limit and coupon.total_used_count >= coupon.total_usage_limit:

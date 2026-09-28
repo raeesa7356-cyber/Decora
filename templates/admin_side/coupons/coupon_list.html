@@ -16,6 +16,27 @@
       New Coupon
     </a>
   </div>
+
+  <!-- Filter -->
+  <div class="mb-6">
+    <form method="GET" class="flex items-center gap-2">
+      <a href="{% url 'coupon_list' %}"
+         class="px-4 py-2 rounded-md text-xs font-medium border transition-colors
+         {% if not status %}bg-yellow-500 text-black border-yellow-500{% else %}bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-yellow-500/40{% endif %}">
+        All
+      </a>
+      <a href="?status=active"
+         class="px-4 py-2 rounded-md text-xs font-medium border transition-colors
+         {% if status == 'active' %}bg-yellow-500 text-black border-yellow-500{% else %}bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-yellow-500/40{% endif %}">
+        Active
+      </a>
+      <a href="?status=expired"
+         class="px-4 py-2 rounded-md text-xs font-medium border transition-colors
+         {% if status == 'expired' %}bg-yellow-500 text-black border-yellow-500{% else %}bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-yellow-500/40{% endif %}">
+        Expired
+      </a>
+    </form>
+  </div>
  
   <!-- Messages -->
   {% if messages %}
@@ -43,11 +64,11 @@
             <th class="text-left px-5 py-3 font-medium">Validity</th>
             <th class="text-left px-5 py-3 font-medium">Usage</th>
             <th class="text-left px-5 py-3 font-medium">Status</th>
-            <th class="text-right px-5 py-3 font-medium">Actions</th>
+            <th class="text-center px-5 py-3 font-medium">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-zinc-800">
-          {% for coupon in coupons %}
+          {% for coupon in page_obj %}
           <tr class="hover:bg-zinc-800/40 transition-colors">
             <td class="px-5 py-4">
               <span class="font-mono font-semibold text-yellow-400 tracking-wide">{{ coupon.code }}</span>
@@ -96,7 +117,7 @@
     </form>
   {% endif %}
 </td>
-<td class="px-5 py-4 text-right">
+<td class="px-5 py-4 text-center">
   <div class="inline-flex items-center gap-2">
     <a href="{% url 'coupon_edit' coupon.id %}"
        class="text-yellow-400 hover:text-yellow-300 text-xs font-medium px-3 py-1.5 rounded-md border border-yellow-500/20 hover:border-yellow-500/40 transition-colors">
@@ -128,5 +149,30 @@
       </table>
     </div>
   </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-center mt-6 gap-1">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}"
+       class="w-9 h-9 flex items-center justify-center rounded-md text-zinc-400 hover:text-yellow-400 hover:bg-zinc-800 transition text-sm">
+      <i class="fa-solid fa-angle-left text-xs"></i>
+    </a>
+    {% endif %}
+
+    <span class="px-4 h-9 flex items-center justify-center rounded-md bg-yellow-500 text-black text-sm font-semibold">
+      {{ page_obj.number }}
+    </span>
+    <span class="text-zinc-600 text-sm mx-1">of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}"
+       class="w-9 h-9 flex items-center justify-center rounded-md text-zinc-400 hover:text-yellow-400 hover:bg-zinc-800 transition text-sm">
+      <i class="fa-solid fa-angle-right text-xs"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
 </div>
 {% endblock %}

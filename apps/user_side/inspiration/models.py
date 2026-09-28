@@ -108,7 +108,7 @@ class InspirationBoard(models.Model):
         return self.title
 
 
-from apps.admin_side.catalog.models import Product  # match whatever import path is actually correct in your project
+from apps.admin_side.catalog.models import Product
 
 class InspirationImage(models.Model):
 

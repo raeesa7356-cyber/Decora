@@ -49,7 +49,7 @@ class Product(models.Model):
         return (
     self.combinations.filter(is_active=True, is_default=True).first()
     or self.combinations.filter(is_active=True).order_by('id').first()
-)
+    )
 
     @property
     def has_complete_combination(self):
@@ -61,17 +61,13 @@ class Product(models.Model):
 
 
 class ProductVariant(models.Model):
-    """
-    Target shape: pure ATTRIBUTE VALUE, no image. STAGE A: old image fields
-    kept temporarily since they still hold real data in the DB.
-    """
+    
     product = models.ForeignKey(Product, related_name='variants', on_delete=models.CASCADE)
     variant_name = models.CharField(max_length=100, blank=True)
     variant_type = models.CharField(max_length=50)
     variant_value = models.CharField(max_length=50)
     is_active = models.BooleanField(default=True)
 
-    # TEMPORARY — still has real data in the DB. Do not remove yet.
     variant_image = CloudinaryField('variant_image', null=True, blank=True)
     is_default = models.BooleanField(default=False)
 
@@ -87,10 +83,7 @@ class ProductVariant(models.Model):
 
 
 class ProductGallery(models.Model):
-    """
-    TEMPORARY — old gallery tied to ProductVariant. Kept until its data is
-    copied into CombinationGallery, then this model can be removed.
-    """
+    
     variant = models.ForeignKey(ProductVariant, related_name='gallery', on_delete=models.CASCADE)
     image = CloudinaryField('gallery_image')
 
@@ -107,7 +100,6 @@ class VariantCombination(models.Model):
     stock_quantity = models.PositiveIntegerField(default=0)
     sku = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
-    # NEW — replaces the old single 'cover_image'
     main_image = CloudinaryField('combination_main_image', null=True, blank=True)
 
     is_active = models.BooleanField(default=True)

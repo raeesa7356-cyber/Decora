@@ -52,30 +52,24 @@
             <a href="#" class="flex items-center text-gray-500 hover:text-white transition text-sm">
                 <i class="fa-solid fa-gear mr-3"></i> Settings
             </a>
-<!-- change the logout link -->
-<a href="#" onclick="openLogoutModal(); return false;" class="flex items-center text-gray-500 hover:text-red-400 transition text-sm">
+           <button type="button" onclick="openLogoutModal()" class="flex items-center text-gray-500 hover:text-red-400 transition text-sm w-full text-left">
     <i class="fa-solid fa-arrow-right-from-bracket mr-3"></i> Logout
-</a>
+</button>
         </div>
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header class="h-20 bg-[#0A0A0A] border-b border-white/5 flex items-center justify-end px-10 shrink-0">
     
-    <!-- Right Side: Profile & Notifications -->
     <div class="flex items-center space-x-8">
         
-        <!-- Notification Bell -->
         <button class="relative text-gray-500 hover:text-[#D4AF37] transition">
             <i class="fa-regular fa-bell text-lg"></i>
-            <!-- Small Notification Dot -->
             <span class="absolute top-0 right-0 w-2 h-2 bg-[#D4AF37] rounded-full border-2 border-[#0A0A0A]"></span>
         </button>
 
-        <!-- Vertical Divider -->
         <div class="h-8 w-px bg-white/5"></div>
 
-        <!-- Admin Profile -->
         <div class="flex items-center space-x-3">
             <div class="text-right">
                 <p class="text-xs font-bold text-white leading-none">Raheesa</p>
@@ -98,6 +92,8 @@
 </div>
 
 {% if messages %}
+
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -111,7 +107,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endif %}
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-[99999]">
+    <div class="bg-[#111111] border border-white/10 rounded-3xl p-8 w-[90%] max-w-md shadow-2xl">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                <i class="fa-solid fa-arrow-right-from-bracket text-red-500 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-white font-bold text-lg italic">Log Out</h2>
+                <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Are you sure you want to log out?</p>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-8">
+            <button type="button" onclick="closeLogoutModal()" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 py-4 rounded-2xl uppercase text-[10px] tracking-widest font-bold transition-all">Cancel</button>
+            <a href="{% url 'logout-page' %}" class="flex-1 bg-red-500 hover:bg-red-400 text-white py-4 rounded-2xl uppercase text-[10px] tracking-widest font-black text-center transition-all">Confirm</a>
+        </div>
+    </div>
+</div>
 
+<script>
+function openLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+function closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+document.getElementById('logoutModal').addEventListener('click', function(e) {
+    if (e.target.id === 'logoutModal') closeLogoutModal();
+});
+</script>
 <script>
 function showToast(message, type='success') {
 
@@ -192,35 +221,7 @@ function showToast(message, type='success') {
 
     setTimeout(removeToast, 10000);
 }
-
-
 </script>
 
-<div id="logoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-[#111111] border border-white/10 w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl">
-        <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <i class="fa-solid fa-arrow-right-from-bracket text-2xl"></i>
-        </div>
-        <h3 class="text-white text-xl font-bold mb-2">Log Out</h3>
-        <p class="text-gray-500 text-sm mb-8">Are you sure you want to log out?</p>
-        <div class="flex space-x-3">
-            <button type="button" onclick="closeLogoutModal()" class="flex-1 px-6 py-3 rounded-xl bg-white/5 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition">Cancel</button>
-            <a href="{% url 'logout-page' %}" class="flex-1 px-6 py-3 rounded-xl bg-red-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-red-700 transition">Logout</a>
-        </div>
-    </div>
-</div>
-
-<script>
-function openLogoutModal() {
-    const modal = document.getElementById('logoutModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-}
-function closeLogoutModal() {
-    const modal = document.getElementById('logoutModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-}
-</script>
 </body>
 </html>

@@ -3,8 +3,31 @@ from django.core.exceptions import ValidationError
 from apps.admin_side.orders.models import OrderItem
 from apps.user_side.accounts.models import Wallet, WalletTransaction
 from .models import Review
+from django.utils import timezone
+
+from decimal import Decimal, ROUND_HALF_UP
 
 
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def _get_order_coupon_discount(order):
+    diff = (order.subtotal + order.shipping_charge) - order.total_amount
+    return diff if diff > 0 else Decimal('0')
+
+
+def _item_refund_amount(item):
+    """Item's paid price minus its proportional share of any coupon discount."""
+    order = item.order
+    coupon_discount = _get_order_coupon_discount(order)
+
+    if coupon_discount > 0 and order.subtotal > 0:
+        item_share = (item.total_price / order.subtotal) * coupon_discount
+        item_share = item_share.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    else:
+        item_share = Decimal('0')
+
+    return max(item.total_price - item_share, Decimal('0'))
 def _credit_wallet(user, amount, purpose):
     wallet, _ = Wallet.objects.get_or_create(user=user)
     wallet.balance += amount
@@ -44,18 +67,17 @@ class OrderCancellationService:
         item.cancellation_reason = reason
         item.save()
 
-        # FIXED: stock lives on the combination now, not on separately
-        # looked-up ProductVariant rows via a stale selected_options list.
+     
         combo = item.combination
         combo.stock_quantity += item.quantity
         combo.save()
 
         if order.payment_method in ('RAZORPAY', 'WALLET'):
             _credit_wallet(
-                user=order.user,
-                amount=item.total_price,
-                purpose='cancellation_refund',
-            )
+        user=order.user,
+        amount=_item_refund_amount(item),
+        purpose='cancellation_refund',
+    )
 
         if not order.items.filter(status="ACTIVE").exists():
             order.status = "CANCELLED"
@@ -82,13 +104,11 @@ class OrderCancellationService:
             item.cancellation_reason = reason
             item.save()
 
-            # FIXED: same combination-based stock restore
             combo = item.combination
             combo.stock_quantity += item.quantity
             combo.save()
 
-            # Refund the full order total for RAZORPAY and WALLET payments.
-            # COD at PENDING stage: cash never collected, so no refund.
+           
         if order.payment_method in ('RAZORPAY', 'WALLET'):
             _credit_wallet(
                 user=order.user,
@@ -140,6 +160,7 @@ class OrderReturnService:
             raise ValidationError("Only delivered items can be returned.")
 
         item.status = "RETURN_REQUESTED"
+        item.return_requested_at=timezone.now()
         item.return_reason = reason
         item.save()
 

@@ -77,7 +77,7 @@ from django.db.models import OuterRef, Subquery
 def product_list(request):
     category_names = request.GET.getlist('category')
     room_names = request.GET.getlist('room')
-    sort_option = request.GET.get('sort', 'newest')   # <-- default changed (see below)
+    sort_option = request.GET.get('sort', 'newest')   
     search_query = request.GET.get('search', '').strip()
     min_price_param = request.GET.get('min_price')
     max_price_param = request.GET.get('max_price')
@@ -119,10 +119,9 @@ def product_list(request):
             priced_combos, key=lambda pair: pair[1]["final_price"]
         )
 
-                            # This is the exact number shown as "From ₹..." on the card.
+                            
         display_price = float(cheapest_pricing["final_price"])
 
-                            # Filter against that SAME number, not the pre-discount original_price.
         if display_price < float(min_price) or display_price > float(max_price):
             continue
 
@@ -149,7 +148,6 @@ def product_list(request):
 
         enriched.append(product)
 
-                                # ---- Sort in Python: price is a computed value, not a DB column ----
     if sort_option == 'featured':
         enriched = [p for p in enriched if p.is_featured]
         enriched.sort(key=lambda p: p.created_at, reverse=True)
@@ -163,9 +161,6 @@ def product_list(request):
         enriched.sort(key=lambda p: p.name.lower())
     elif sort_option == 'name_za':
         enriched.sort(key=lambda p: p.name.lower(), reverse=True)
-    else:  # 'newest' and any unrecognized value
-        enriched.sort(key=lambda p: p.created_at, reverse=True)
-
     paginator = Paginator(enriched, 6)
     page_obj = paginator.get_page(request.GET.get('page'))
     products = page_obj
@@ -212,7 +207,6 @@ def product_detail(request, pk):
         for group_name, values in variant_groups_raw.items()
     }
 
-            # Build { "id1,id2,..." : combo data } for every combination
     combo_lookup = {}
     for combo in combinations:
         variant_ids = sorted(combo.variants.values_list('id', flat=True))
@@ -220,7 +214,6 @@ def product_detail(request, pk):
 
         pricing = get_combination_pricing(combo)
 
-                # Images now live on the combination itself, not on the Color variant.
         gallery_urls = [img.image.url for img in combo.gallery.all()]
 
         combo_lookup[key] = {

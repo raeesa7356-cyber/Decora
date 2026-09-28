@@ -7,8 +7,7 @@ class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
-    # Replaces both the old `variant` FK and the `selected_options` JSON field.
-    # The combination IS the exact selection — nothing left to reconstruct or sort.
+
     combination = models.ForeignKey(VariantCombination, on_delete=models.CASCADE)
 
     quantity = models.PositiveIntegerField(default=1)

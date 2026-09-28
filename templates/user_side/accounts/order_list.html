@@ -178,13 +178,35 @@
                         </div>
 
                         <!-- Right -->
-                        <div class="flex flex-wrap items-center gap-4">
+                                               <!-- Right -->
+                        <div class="flex flex-wrap items-center gap-3">
+
+                            {% if order.payment_method == 'RAZORPAY' and order.payment_status == 'PENDING' %}
+                            <span class="px-5 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] uppercase tracking-[0.2em] font-bold">
+                                Payment Pending
+                            </span>
+                            {% elif order.payment_method == 'RAZORPAY' and order.payment_status == 'FAILED' %}
+                            <span class="px-5 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] uppercase tracking-[0.2em] font-bold">
+                                Payment Failed
+                            </span>
+                            {% endif %}
 
                             <span class="px-5 py-2 rounded-full bg-[#E3C565]/10 border border-[#E3C565]/20 text-[#E3C565] text-[10px] uppercase tracking-[0.2em] font-bold">
-
                                 {{ order.get_status_display }}
-
                             </span>
+
+                            
+                            {% if order.payment_method == 'RAZORPAY' and order.payment_status == 'FAILED' %}
+                            <a href="{% url 'retry_payment' order.id %}"
+                               class="px-7 py-3 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-red-500 hover:text-white transition-all duration-300">
+                                Retry Payment
+                            </a>
+                            {% elif order.payment_method == 'RAZORPAY' and order.payment_status == 'PENDING' %}
+                            <a href="{% url 'checkout_payment' order.id %}"
+                               class="px-7 py-3 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-yellow-500 hover:text-black transition-all duration-300">
+                                Complete Payment
+                            </a>
+                            {% endif %}
 
                             <a href="{% url 'order_detail' order.id %}"
                                class="px-7 py-3 rounded-full bg-[#E3C565] text-black text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all duration-300">

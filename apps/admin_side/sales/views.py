@@ -16,11 +16,10 @@ import io
 from apps.user_side.accounts.models import WalletTransaction
 from apps.admin_side.orders.models import Order, OrderItem
 from apps.admin_side.coupons.models import CouponUsage
+from django.core.paginator import Paginator
 
-
-# ─── HELPERS ───────────────────────────────────────────────────────────────────
 def _get_date_range(request):
-    period = request.GET.get('period', 'weekly')   # ← was 'daily'
+    period = request.GET.get('period', 'weekly')   
     custom_from = request.GET.get('date_from')
     custom_to = request.GET.get('date_to')
     today = timezone.now().date()
@@ -34,19 +33,18 @@ def _get_date_range(request):
             pass
 
     if period == 'weekly':
-        start = today - timedelta(days=6)   # ← was days=7
+        start = today - timedelta(days=6)   
     elif period == 'monthly':
         start = today.replace(day=1)
     elif period == 'yearly':
         start = today.replace(month=1, day=1)
-    else:  # daily
+    else:  
         start = today
 
     return start, today, period
 
 
 def _build_sales_report(start, end):
-    """Core report data for a given date range."""
     orders = Order.objects.filter(
         created_at__date__gte=start,
         created_at__date__lte=end,
@@ -58,35 +56,26 @@ def _build_sales_report(start, end):
     total_discount = orders.aggregate(t=Sum('discount_amount'))['t'] or Decimal('0')
 
     coupon_deductions = (
-        CouponUsage.objects
-        .filter(
+        CouponUsage.objects.filter(
             order__created_at__date__gte=start,
             order__created_at__date__lte=end
-        )
-        .select_related('coupon', 'order', 'user')
+        ).select_related('coupon', 'order', 'user')
         .values(
             'coupon__code',
             'coupon__discount_type',
             'coupon__discount_amount',
-        )
-        .annotate(usage_count=Count('id'))
-    )
+        ).annotate(usage_count=Count('id')))
 
     net_revenue = gross_revenue
 
     return {
-'orders': orders,
-'total_orders': total_orders,
-'gross_revenue': gross_revenue,
-'total_discount': total_discount,
-'net_revenue': net_revenue,
-'coupon_deductions': coupon_deductions,
-}
-
-
-# ─── WALLET TRANSACTIONS ───────────────────────────────────────────────────────
-
-from django.core.paginator import Paginator
+        'orders': orders,
+        'total_orders': total_orders,
+        'gross_revenue': gross_revenue,
+        'total_discount': total_discount,
+        'net_revenue': net_revenue,
+        'coupon_deductions': coupon_deductions,
+    }
 
 @staff_member_required
 def wallet_transaction_list(request):
@@ -115,56 +104,45 @@ def wallet_transaction_list(request):
     page_obj = paginator.get_page(request.GET.get('page'))
 
     return render(request, 'admin_side/sales/transactions.html', {
-            'transactions': page_obj,
-            'purpose': purpose or '',
-            'transaction_type': transaction_type or '',
-            'search': search or '',
+            'transactions': page_obj,'purpose': purpose or '',
+            'transaction_type': transaction_type or '','search': search or '',
         })
-
-
-        # ─── SALES REPORT ─────────────────────────────────────────────────────────────
 
 @staff_member_required
 def sales_report(request):
     start, end, period = _get_date_range(request)
     report = _build_sales_report(start, end)
 
+    orders_paginator = Paginator(report['orders'], 5)
+    orders_page_obj = orders_paginator.get_page(request.GET.get('page'))
+
     context = {
         **report,
-        'start': start,
-        'end': end,
-        'period': period,
-        'date_from': request.GET.get('date_from') or str(start),
+        'orders_page_obj': orders_page_obj,
+        'start': start, 'end': end,
+        'period': period, 'date_from': request.GET.get('date_from') or str(start),
         'date_to': request.GET.get('date_to') or str(end),
     }
     return render(request, 'admin_side/sales/sales_report.html', context)
 
-# ─── DOWNLOAD PDF ──────────────────────────────────────────────────────────────
-
 @staff_member_required
 def download_sales_pdf(request):
-
     start, end, period = _get_date_range(request)
     report = _build_sales_report(start, end)
-
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
     elements = []
-
-# Title
     elements.append(Paragraph(f"Decora Sales Report", styles['Title']))
     elements.append(Paragraph(f"Period: {start} to {end}", styles['Normal']))
     elements.append(Spacer(1, 20))
-
-# Summary table
     summary_data = [
     ['Metric', 'Value'],
     ['Total Orders', str(report['total_orders'])],
     ['Gross Revenue', f"₹{report['gross_revenue']:,.2f}"],
     ['Total Discounts', f"₹{report['total_discount']:,.2f}"],
     ['Net Revenue', f"₹{report['net_revenue']:,.2f}"],
-]
+    ]
     summary_table = Table(summary_data, colWidths=[250, 200])
     summary_table.setStyle(TableStyle([
     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D4AF37')),
@@ -175,16 +153,14 @@ def download_sales_pdf(request):
     ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#333333')),
     ('FONTSIZE', (0, 0), (-1, -1), 10),
     ('PADDING', (0, 0), (-1, -1), 8),
-]))
+    ]))
     elements.append(summary_table)
     elements.append(Spacer(1, 20))
-
-# Orders table
     elements.append(Paragraph("Order Details", styles['Heading2']))
     elements.append(Spacer(1, 10))
-
     order_data = [['Order ID', 'Date', 'Customer', 'Amount', 'Discount', 'Status']]
-    for order in report['orders'][:50]:  # cap at 50 rows for PDF
+    
+    for order in report['orders'][:50]:  
         order_data.append([
             order.order_id,
             order.created_at.strftime('%d %b %Y'),
@@ -205,39 +181,28 @@ def download_sales_pdf(request):
         ('PADDING', (0, 0), (-1, -1), 5),
     ]))
     elements.append(order_table)
-
     doc.build(elements)
     buffer.seek(0)
-
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="sales_report_{start}_{end}.pdf"'
     return response
 
-
-# ─── DOWNLOAD EXCEL ────────────────────────────────────────────────────────────
-
 @staff_member_required
 def download_sales_excel(request):
-
-
     start, end, period = _get_date_range(request)
     report = _build_sales_report(start, end)
-
     wb = openpyxl.Workbook()
-
-# ── Sheet 1: Summary ──
     ws1 = wb.active
     ws1.title = "Summary"
-
     gold_fill = PatternFill("solid", fgColor="D4AF37")
     bold_font = Font(bold=True)
     header_font = Font(bold=True, color="000000")
-
     ws1.append(["Decora Sales Report"])
     ws1['A1'].font = Font(bold=True, size=14)
     ws1.append([f"Period: {start} to {end}"])
     ws1.append([])
     ws1.append(["Metric", "Value"])
+    
     for cell in ws1[4]:
         cell.fill = gold_fill
         cell.font = header_font
@@ -246,14 +211,12 @@ def download_sales_excel(request):
     ws1.append(["Gross Revenue", float(report['gross_revenue'])])
     ws1.append(["Total Discounts", float(report['total_discount'])])
     ws1.append(["Net Revenue", float(report['net_revenue'])])
-
     ws1.column_dimensions['A'].width = 25
     ws1.column_dimensions['B'].width = 20
-
-    # ── Sheet 2: Orders ──
     ws2 = wb.create_sheet("Orders")
     headers = ["Order ID", "Date", "Customer", "Email", "Amount", "Discount", "Status"]
     ws2.append(headers)
+    
     for cell in ws2[1]:
         cell.fill = gold_fill
         cell.font = header_font
@@ -272,9 +235,9 @@ def download_sales_excel(request):
     for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G']:
         ws2.column_dimensions[col].width = 20
 
-                # ── Sheet 3: Coupon Usage ──
     ws3 = wb.create_sheet("Coupon Usage")
     ws3.append(["Coupon Code", "Discount Type", "Discount Amount", "Times Used"])
+    
     for cell in ws3[1]:
         cell.fill = gold_fill
         cell.font = header_font
@@ -293,10 +256,10 @@ def download_sales_excel(request):
     buffer = io.BytesIO()
     wb.save(buffer)
     buffer.seek(0)
-
+    
     response = HttpResponse(
             buffer,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+            )
     response['Content-Disposition'] = f'attachment; filename="sales_report_{start}_{end}.xlsx"'
     return response

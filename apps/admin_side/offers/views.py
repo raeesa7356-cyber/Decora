@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from itertools import chain
-
 from .models import ProductOffer, CategoryOffer, ReferralOffer
 from apps.admin_side.catalog.models import Product, Category
 from django.utils import timezone
@@ -11,8 +10,6 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 
 def _parse_local_datetime(raw_value):
-    
-    
     naive_dt = parse_datetime(raw_value)
     if naive_dt is None:
         return None
@@ -22,7 +19,6 @@ def _parse_local_datetime(raw_value):
 
 def admin_required(view):
     return user_passes_test(lambda u: u.is_staff)(view)
-
 
 @admin_required
 def offer_list(request):
@@ -55,10 +51,10 @@ def offer_list(request):
         o.target_name = o.category.name
 
     offers = sorted(
-                        chain(product_offers, category_offers),
-                        key=lambda o: o.created_at,
-                        reverse=True
-                    )
+        chain(product_offers, category_offers),
+        key=lambda o: o.created_at,
+        reverse=True
+    )
 
     paginator = Paginator(offers, 10)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -68,7 +64,6 @@ def offer_list(request):
         'search': search,
         'status': status,
     })
-
 
 def _offer_form_context(products, categories, offer=None):
     return {'products': products, 'categories': categories, 'offer': offer}
@@ -134,9 +129,7 @@ def offer_create(request):
         messages.success(request, "Offer created successfully.")
         return redirect("offer_list")
 
-    return render(request, 'admin_side/offers/offer_form.html',
-                _offer_form_context(products, categories))
-
+    return render(request, 'admin_side/offers/offer_form.html',_offer_form_context(products, categories))
 
 @admin_required
 def offer_edit(request, offer_type, offer_id):
@@ -145,7 +138,7 @@ def offer_edit(request, offer_type, offer_id):
 
     model = ProductOffer if offer_type == "product" else CategoryOffer
     offer = get_object_or_404(model, id=offer_id)
-    offer.offer_kind = offer_type  # for the template
+    offer.offer_kind = offer_type  
 
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
@@ -189,8 +182,7 @@ def offer_edit(request, offer_type, offer_id):
         messages.success(request, "Offer updated successfully.")
         return redirect("offer_list")
 
-    return render(request, 'admin_side/offers/offer_form.html',
-        _offer_form_context(products, categories, offer=offer))
+    return render(request, 'admin_side/offers/offer_form.html',_offer_form_context(products, categories, offer=offer))
 
 @admin_required
 def offer_delete(request, offer_type, offer_id):

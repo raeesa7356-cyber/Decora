@@ -13,47 +13,37 @@ from apps.admin_side.offers.models import ReferralOffer
 from django.core.mail import send_mail
 from django.conf import settings
 import traceback
-
 from django.core.mail import EmailMultiAlternatives
-
-
 from decimal import Decimal
-
 from django.db.models import Avg, Count
 
 def get_product_rating_stats(product):
-    from apps.user_side.orders.models import Review  # ← moved here, inside the function
+    from apps.user_side.orders.models import Review  
 
     stats = Review.objects.filter(
     product=product,
     is_approved=True,
     is_visible=True,
-).aggregate(
+    ).aggregate(
     avg_rating=Avg('rating'),
     review_count=Count('id'),
-)
-
+    )
     avg = stats['avg_rating'] or 0.0
     count = stats['review_count'] or 0
     return round(avg, 1), count
+
 def get_ui_avatar(name, background="1a1a1a", color="D4AF37"):
-   
     clean_name = name.replace(" ", "+")
     return f"https://ui-avatars.com/api/?name={clean_name}&background={background}&color={color}&bold=true&size=128"
 
-
 def generate_otp(length=6):
-  
     return ''.join(random.choices(string.digits, k=length))
-
-
-
 
 def send_custom_email(subject, message, recipient_list):
     try:
         email = EmailMultiAlternatives(
             subject=subject,
-            body="Please view this email in an HTML-compatible client.",  # plain-text fallback
+            body="Please view this email in an HTML-compatible client.",  
             from_email=settings.EMAIL_HOST_USER,
             to=recipient_list,
         )
@@ -65,21 +55,18 @@ def send_custom_email(subject, message, recipient_list):
         return False
 
 def profile_image_path(instance, filename):
-    
     ext = filename.split('.')[-1]
     unique_name = f"{instance.user.username}_{uuid.uuid4().hex[:8]}.{ext}"
     return os.path.join('profile_pics/', unique_name)
 
-
 def get_best_offer_discount_amount(product, base_price):
-    
     now = timezone.now()
-
+    
     product_offer = ProductOffer.objects.filter(
         product=product, is_active=True,
         valid_from__lte=now, valid_until__gte=now
     ).order_by('-discount_percent').first()
-
+    
     category_offer = CategoryOffer.objects.filter(
         category=product.category, is_active=True,
         valid_from__lte=now, valid_until__gte=now
@@ -90,7 +77,7 @@ def get_best_offer_discount_amount(product, base_price):
             return Decimal("0")
         if offer.discount_type == "fixed":
             return Decimal(offer.discount_percent)
-        else:  # 'percent'
+        else: 
             return base_price * Decimal(offer.discount_percent) / Decimal("100")
 
     product_amt = _resolve(product_offer)
@@ -101,7 +88,6 @@ def get_best_offer_discount_amount(product, base_price):
 
 
 def get_best_offer_display(product):
-    
     now = timezone.now()
 
     product_offer = ProductOffer.objects.filter(
@@ -137,7 +123,6 @@ def get_combination_pricing(combination, coupon_discount=Decimal("0")):
         base_final = original_price
 
     combo_discount = original_price - base_final
-
     offer_discount = get_best_offer_discount_amount(combination.product, base_final)
 
     final_price = base_final - offer_discount - coupon_discount
@@ -149,19 +134,17 @@ def get_combination_pricing(combination, coupon_discount=Decimal("0")):
     "offer_discount": offer_discount,
     "coupon_discount": coupon_discount,
     "final_price": final_price,
-}
+    }
+    
 def generate_referral_code(length=8):
     chars = string.ascii_uppercase + string.digits
     return 'DEC' + ''.join(random.choices(chars, k=length))
 
-
 def get_or_create_user_referral_code(user, reward_amount=None):
-   
-
-
     existing = ReferralOffer.objects.filter(
         referrer=user, referred_user__isnull=True
     ).first()
+    
     if existing:
         return existing
 
@@ -197,12 +180,12 @@ def apply_referral_code(code, new_user):
         return False
 
     if referral.referrer_id == new_user.id:
-        return False  # can't refer yourself
+        return False   
 
     referral.referred_user = new_user
     referral.is_used = True
     referral.save()
-
+    
     wallet, _ = Wallet.objects.get_or_create(user=referral.referrer)
     wallet.balance += referral.reward_amount
     wallet.save()

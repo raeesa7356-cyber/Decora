@@ -16,20 +16,24 @@
         <p class="text-gray-400 text-sm mb-8 leading-relaxed">
             We've sent a 6-digit code to <br>
 <span class="text-white font-medium">{{ request.session.signup_data.email }}</span>        </p>
-
+{% if lock_remaining > 0 %}
+<p id="lock-message" class="text-red-400 text-xs mb-4">
+    Too many attempts. Please check your email and try again in <span id="lock-seconds">{{ lock_remaining }}</span>s.
+</p>
+{% endif %}
         <form action="{% url 'verify_otp' %}" method="POST" class="space-y-8">
             {% csrf_token %}
             
             <div class="flex justify-center gap-3">
-                <input type="text" name="otp_code" maxlength="6" required
-                    placeholder="······"
-                    class="w-full tracking-[1em] text-center text-2xl bg-[#252525] border border-white/10 rounded-lg py-4 text-[#D4AF37] outline-none focus:border-[#D4AF37] transition-all font-mono uppercase">
+<input type="text" name="otp_code" maxlength="6" required {% if lock_remaining > 0 %}disabled{% endif %}
+    placeholder="······"
+    class="w-full tracking-[1em] text-center text-2xl bg-[#252525] border border-white/10 rounded-lg py-4 text-[#D4AF37] outline-none focus:border-[#D4AF37] transition-all font-mono uppercase">
             </div>
 
-            <button type="submit" 
-                class="w-full bg-gradient-to-r from-[#D4AF37] via-[#F1D27B] to-[#B8860B] text-black font-bold py-4 rounded-lg hover:opacity-90 transition-opacity uppercase text-xs tracking-widest">
-                Verify & Join
-            </button>
+         <button type="submit" {% if lock_remaining > 0 %}disabled{% endif %}
+    class="w-full bg-gradient-to-r from-[#D4AF37] via-[#F1D27B] to-[#B8860B] text-black font-bold py-4 rounded-lg hover:opacity-90 transition-opacity uppercase text-xs tracking-widest disabled:opacity-40 disabled:cursor-not-allowed">
+    Verify & Join
+</button>
         </form>
 
         <div class="mt-10">
@@ -86,5 +90,25 @@
 
     tick(); // run immediately so it doesn't show "60" for a flash before the first tick
     const countdown = setInterval(tick, 1000);
+    {% if lock_remaining > 0 %}
+(function () {
+    let remaining = {{ lock_remaining }};
+    const lockMsg = document.getElementById('lock-message');
+    const lockSeconds = document.getElementById('lock-seconds');
+    const otpInput = document.querySelector('input[name="otp_code"]');
+    const submitBtn = document.querySelector('button[type="submit"]');
+
+    const lockCountdown = setInterval(() => {
+        remaining--;
+        if (lockSeconds) lockSeconds.textContent = remaining;
+        if (remaining <= 0) {
+            clearInterval(lockCountdown);
+            if (lockMsg) lockMsg.style.display = 'none';
+            if (otpInput) otpInput.disabled = false;
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    }, 1000);
+})();
+{% endif %}
 </script>
 {% endblock %}

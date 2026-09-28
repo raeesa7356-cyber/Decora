@@ -40,7 +40,8 @@
     </div>
 
     <!-- RETRY PAYMENT CARD — mirrors screenshot styling -->
-{% if payment_status == "FAILED" and order.payment_method == "RAZORPAY" %}    <div class="mb-8 rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-500/10 to-transparent p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+{% if payment_status == "FAILED" and order.payment_method == "RAZORPAY" and order.status != "CANCELLED" and payable_amount > 0 %}
+ <div class="mb-8 rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-500/10 to-transparent p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="flex items-start gap-4">
             <div class="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-triangle-exclamation text-red-400"></i>
@@ -194,49 +195,48 @@
                 </p>
             </div>
 
-            <!-- PAYMENT SUMMARY -->
-            <div class="bg-[#131313] border border-white/5 rounded-2xl p-6">
-                <h3 class="text-[#D4AF37] font-semibold mb-5 text-sm uppercase tracking-widest">Payment Summary</h3>
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between text-gray-300">
-                        <span>Subtotal</span><span>₹{{ order.subtotal }}</span>
-                    </div>
-      <div class="space-y-3 text-sm">
-    <div class="flex justify-between text-gray-300">
-        <span>Subtotal</span><span>₹{{ order.subtotal }}</span>
+<!-- PAYMENT SUMMARY -->
+<!-- PAYMENT SUMMARY -->
+<div class="bg-[#131313] border border-white/5 rounded-2xl p-6">
+    <h3 class="text-[#D4AF37] font-semibold mb-5 text-sm uppercase tracking-widest">Payment Summary</h3>
+    <div class="space-y-3 text-sm">
+        <div class="flex justify-between text-gray-300">
+            <span>Original Price</span><span>₹{{ order.original_amount}}</span>
+        </div>
+        {% if order.discount_amount %}
+        <div class="flex justify-between text-gray-400">
+            <span>Discount</span><span>− ₹{{ order.discount_amount }}</span>
+        </div>
+        {% endif %}
+        <div class="flex justify-between text-gray-300">
+            <span>Shipping</span><span>₹{{ order.shipping_charge }}</span>
+        </div>
+        <div class="flex justify-between text-gray-300">
+            <span>Subtotal</span><span>₹{{ order.subtotal }}</span>
+        </div>
+        {% if coupon_discount %}
+        <div class="flex justify-between text-green-400">
+            <span>Coupon Discount</span><span>− ₹{{ coupon_discount }}</span>
+        </div>
+        {% endif %}
+
+        <hr class="border-white/10">
+        <div class="flex justify-between text-gray-400">
+            <span>Order Total</span><span>₹{{ order.total_amount }}</span>
+        </div>
+
+        {% if refunded_amount %}
+        <div class="flex justify-between text-red-400">
+            <span>Refunded (Cancelled Items)</span><span>− ₹{{ refunded_amount }}</span>
+        </div>
+        {% endif %}
+
+        <hr class="border-white/10">
+        <div class="flex justify-between text-lg font-semibold text-[#D4AF37]">
+            <span>Payable Amount</span><span>₹{{ payable_amount }}</span>
+        </div>
     </div>
- {% if order.discount_amount %}
-<div class="flex justify-between text-gray-400">
-    <span>Discount</span><span>− ₹{{ order.discount_amount }}</span>
 </div>
-{% endif %}
-{% if coupon_discount %}
-<div class="flex justify-between text-green-400">
-    <span>Coupon Discount</span><span>− ₹{{ coupon_discount }}</span>
-</div>
-{% endif %}
-    {% if order.coupon_discount %}
-    <div class="flex justify-between text-green-400">
-        <span>Coupon Discount</span><span>− ₹{{ order.coupon_discount }}</span>
-    </div>
-    {% endif %}
-    <div class="flex justify-between text-gray-300">
-        <span>Shipping</span><span>₹{{ order.shipping_charge }}</span>
-    </div>
-    <hr class="border-white/10">
-    <div class="flex justify-between text-lg font-semibold text-[#D4AF37]">
-        <span>Total</span><span>₹{{ order.total_amount }}</span>
-    </div>
-</div>
-                    <div class="flex justify-between text-gray-300">
-                        <span>Shipping</span><span>₹{{ order.shipping_charge }}</span>
-                    </div>
-                    <hr class="border-white/10">
-                    <div class="flex justify-between text-lg font-semibold text-[#D4AF37]">
-                        <span>Total</span><span>₹{{ order.total_amount }}</span>
-                    </div>
-                </div>
-            </div>
 
             <!-- PAYMENT METHOD -->
             <div class="bg-[#131313] border border-white/5 rounded-2xl p-6">
@@ -255,11 +255,12 @@
 
             <!-- ACTIONS -->
             <div class="space-y-3">
-                {% if order.status == "CANCELLED" %}
-                <div class="w-full h-12 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 flex items-center justify-center text-sm">
-                    Order Cancelled
-                </div>
-{% elif payment_status == "FAILED" and order.payment_method == "RAZORPAY" %}                <a href="{% url 'retry_payment' order.id %}"
+              {% if order.status == "CANCELLED" %}
+    <div class="w-full h-12 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 flex items-center justify-center text-sm">
+        Order Cancelled
+    </div>
+{% elif payment_status == "FAILED" and order.payment_method == "RAZORPAY" and payable_amount > 0 %}
+         <a href="{% url 'retry_payment' order.id %}"
                    class="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-[#D4AF37] text-black font-semibold">
                     <i class="fa-solid fa-rotate-right"></i> Retry Payment
                 </a>

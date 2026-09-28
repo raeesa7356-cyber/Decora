@@ -9,8 +9,15 @@ from weasyprint import HTML
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 from apps.admin_side.coupons.models import CouponUsage
-from apps.admin_side.orders.models import Order, OrderItem, OrderPayment  # add OrderPayment
+from apps.admin_side.orders.models import Order, OrderItem, OrderPayment   
 from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
+from .services import OrderCancellationService, OrderReturnService, ReviewService, _item_refund_amount
+
+
+
+
+
 
 def _get_order_coupon_discount(order): 
     diff = (order.subtotal + order.shipping_charge) - order.total_amount
@@ -51,6 +58,13 @@ def order_detail(request, order_id):
             (order.status == "DELIVERED", "Delivered"),
         ]
 
+    cancelled_items = order_items.filter(status="CANCELLED")
+    non_cancelled_items = order_items.exclude(status="CANCELLED")
+
+    subtotal_non_cancelled = sum((i.total_price for i in non_cancelled_items), Decimal('0'))
+    payable_amount = subtotal_non_cancelled if cancelled_items.exists() else order.total_amount
+    refunded_amount = sum((_item_refund_amount(i) for i in cancelled_items), Decimal('0'))
+
     context = {
             "order": order,
             "order_items": order_items,
@@ -58,6 +72,8 @@ def order_detail(request, order_id):
             "payment_status": payment_status,
             "tracking_steps": tracking_steps,
             "coupon_discount": _get_order_coupon_discount(order),
+            "payable_amount": payable_amount,
+            "refunded_amount": refunded_amount,
         }
 
     return render(request, "user_side/checkout/order_detail.html", context)
@@ -156,7 +172,6 @@ def _build_invoice_context(order):
         payment = OrderPayment.objects.filter(order=order).first()
     is_payment_failed = order.payment_method == "RAZORPAY" and payment and payment.status == "FAILED"
 
-        # ---- Payment status label, following the mapping table exactly ----
     if is_payment_failed:
         payment_status = "FAILED"
     elif is_fully_cancelled or is_fully_returned:
@@ -168,7 +183,6 @@ def _build_invoice_context(order):
     else:
         payment_status = "PENDING" if order.payment_method == "COD" else "PAID"
 
-            # ---- Amounts ----
     subtotal_non_cancelled = sum((i.total_price for i in non_cancelled_items), Decimal('0'))
     refunded_amount = sum((i.total_price for i in returned_items), Decimal('0'))
     payable_amount = order.total_amount if not is_partial_cancel else subtotal_non_cancelled
@@ -176,7 +190,6 @@ def _build_invoice_context(order):
     coupon_discount = _get_order_coupon_discount(order)
     coupon_usage = CouponUsage.objects.filter(order=order).select_related('coupon').first()
 
-            # ---- Notes, tailored per scenario ----
     notes = []
     if is_payment_failed:
         notes = [
@@ -238,7 +251,7 @@ def _build_invoice_context(order):
         notes = ["Your package is out for delivery.", "Please be available to receive your order."]
         if order.payment_method == "COD":
             notes.append(f"Please keep ₹{order.total_amount} ready for Cash on Delivery.")
-    else:  # PENDING
+    else:  
         notes = [
             "Your order has been confirmed successfully.",
             "Our team is preparing your items.",

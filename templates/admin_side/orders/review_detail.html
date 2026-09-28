@@ -176,9 +176,14 @@
 </div>
     <div class="card">
 
-        <div class="row">
+                <div class="row">
             <span class="label">User:</span>
-            <span class="value">{{ review.user.username }}</span>
+            <span class="value">{{ review.user.first_name|default:review.user.username }}</span>
+        </div>
+
+        <div class="row">
+            <span class="label">Email:</span>
+            <span class="value">{{ review.user.email }}</span>
         </div>
 
         <div class="row">

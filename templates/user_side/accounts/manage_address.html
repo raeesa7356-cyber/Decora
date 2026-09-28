@@ -2,7 +2,15 @@
 {% block content %}
 <div class="min-h-screen bg-[#0A0A0A] text-gray-300 p-6 md:p-12">
     <div class="max-w-[1400px] mx-auto">
-        
+        {% if messages %}
+<div class="mb-8 space-y-2">
+    {% for message in messages %}
+    <div class="px-5 py-3 rounded-xl text-sm {% if message.tags == 'error' %}bg-red-500/10 border border-red-500/30 text-red-400{% else %}bg-green-500/10 border border-green-500/30 text-green-400{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
         <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-white/5 pb-8">
     <div class="flex items-center gap-6">
         <!-- New Back Button -->
@@ -69,14 +77,16 @@
                     <form id="address-form" method="POST" action="." class="space-y-5">
                         {% csrf_token %}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="space-y-2">
-                                <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Label</label>
-                                <input type="text" name="address_type" id="id_address_type" placeholder="Home / Work" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Receiver Name</label>
-                                <input type="text" name="full_name" id="id_full_name" placeholder="Full Name" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
-                            </div>
+                          <div class="space-y-2">
+    <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Label</label>
+    <input type="text" name="address_type" id="id_address_type" maxlength="50" placeholder="Home / Work" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+    <p id="address_type-limit-msg" class="text-[9px] text-red-500/80 ml-2 uppercase tracking-tighter hidden font-bold">Maximum 50 characters reached.</p>
+</div>
+<div class="space-y-2">
+    <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Receiver Name</label>
+    <input type="text" name="full_name" id="id_full_name" maxlength="100" placeholder="Full Name" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+    <p id="full_name-limit-msg" class="text-[9px] text-red-500/80 ml-2 uppercase tracking-tighter hidden font-bold">Maximum 100 characters reached.</p>
+</div>
                         </div>
 
                         <div class="space-y-2">
@@ -93,31 +103,41 @@
                             <p id="phone-error" class="text-[9px] text-red-500/80 ml-2 uppercase tracking-tighter hidden font-bold">Please enter exactly 10 digits.</p>
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Address Details</label>
-                            <input type="text" name="house_no" id="id_house_no" placeholder="House No, Street, Landmark" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
-                        </div>
+<div class="space-y-2">
+    <label class="text-[9px] uppercase tracking-widest text-gray-500 ml-2">Address Details</label>
+    <input type="text" name="house_no" id="id_house_no" maxlength="100" placeholder="House No, Street, Landmark" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+    <p id="house_no-limit-msg" class="text-[9px] text-red-500/80 ml-2 uppercase tracking-tighter hidden font-bold">Maximum 100 characters reached.</p>
+</div>
 
-                        <div class="grid grid-cols-3 gap-4">
-                            <input type="text" name="city" id="id_city" placeholder="City" class="bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
-<input type="text" 
-       name="state" 
-       id="id_state" 
-       placeholder="State" 
-       pattern="[A-Za-z\s]+" 
-       oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '');"
-       class="bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" 
-       required>
-       <input type="text" 
-       name="pincode" 
-       id="id_pincode" 
-       placeholder="Pincode" 
-       pattern="[1-9][0-9]{5}" 
-       maxlength="6"
-       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-       class="bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" 
-       required>                        </div>
-                        
+<div class="grid grid-cols-3 gap-4">
+    <div>
+        <input type="text" name="city" id="id_city" maxlength="50" placeholder="City" class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition" required>
+        <p id="city-limit-msg" class="text-[9px] text-red-500/80 ml-2 uppercase tracking-tighter hidden font-bold mt-1">Max 50 characters.</p>
+    </div>
+    <div>
+        <input type="text"
+               name="state"
+               id="id_state"
+               placeholder="State"
+               maxlength="50"
+               pattern="[A-Za-z\s]+"
+               oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '');"
+               class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition"
+               required>
+        <p id="state-limit-msg" class="text-[9px] text-red-500/80 ml-2 uppercase tracking-tighter hidden font-bold mt-1">Max 50 characters.</p>
+    </div>
+    <div>
+        <input type="text"
+               name="pincode"
+               id="id_pincode"
+               placeholder="Pincode"
+               pattern="[1-9][0-9]{5}"
+               maxlength="6"
+               oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+               class="w-full bg-black border border-white/10 p-4 rounded-2xl text-sm text-white focus:border-[#D4AF37] outline-none transition"
+               required>
+    </div>
+</div>
                         <div class="flex items-center space-x-3 py-4">
                             <input type="checkbox" name="is_primary" id="id_is_primary" class="w-4 h-4 accent-[#D4AF37] bg-black border-white/10">
                             <label for="id_is_primary" class="text-[10px] text-gray-500 uppercase tracking-widest cursor-pointer">Set as default address</label>
@@ -161,6 +181,28 @@
     const cancelBtn = document.getElementById('cancel-btn');
     const phoneInput = document.getElementById('id_phone_number');
     const phoneError = document.getElementById('phone-error');
+    function attachLimitWarning(inputId, msgId) {
+    const input = document.getElementById(inputId);
+    const msg = document.getElementById(msgId);
+    if (!input || !msg) return;
+    input.addEventListener('input', function () {
+        if (this.maxLength > 0 && this.value.length >= this.maxLength) {
+            msg.classList.remove('hidden');
+        } else {
+            msg.classList.add('hidden');
+        }
+    });
+}
+
+attachLimitWarning('id_address_type', 'address_type-limit-msg');
+attachLimitWarning('id_full_name', 'full_name-limit-msg');
+attachLimitWarning('id_house_no', 'house_no-limit-msg');
+attachLimitWarning('id_city', 'city-limit-msg');
+attachLimitWarning('id_state', 'state-limit-msg');
+
+function hideAllLimitMessages() {
+    document.querySelectorAll('[id$="-limit-msg"]').forEach(el => el.classList.add('hidden'));
+}
 const deleteModal = document.getElementById('deleteModal');
 document.body.appendChild(deleteModal);
     // Phone Validation on Submit

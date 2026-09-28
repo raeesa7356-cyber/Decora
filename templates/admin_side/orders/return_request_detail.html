@@ -4,7 +4,12 @@
 
 <div class="p-6 min-h-screen bg-[#0A0A0A] text-white">
 
-    <div class="mb-8">
+       <div class="mb-8">
+
+        <a href="{% url 'admin_return_requests' %}"
+           class="inline-flex items-center gap-2 text-[#C6A972] hover:text-white text-sm mb-4 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i> Back to Return Requests
+        </a>
 
         <h1 class="text-4xl font-bold text-[#C6A972]">
             Return Request
@@ -20,7 +25,7 @@
 
         <div class="grid md:grid-cols-2 gap-8">
 
-            <div>
+                      <div>
 
                 <h3 class="text-[#C6A972] font-semibold mb-4">
                     Order Information
@@ -39,7 +44,7 @@
                         Customer:
                     </span>
 
-                    {{ item.order.user.username }}
+                    {{ item.order.user.first_name|default:item.order.user.username }}
                 </p>
 
                 <p class="mt-3">
@@ -83,7 +88,7 @@
 
                 {% endif %}
 
-                <div>
+                            <div>
 
                     <p class="font-semibold">
                         {{ item.product.name }}
@@ -94,7 +99,15 @@
                     </p>
 
                     <p class="text-gray-400">
-                        Price: ₹{{ item.price }}
+                        Unit Price: ₹{{ item.price }}
+                    </p>
+
+                    <p class="text-gray-400">
+                        Item Total: ₹{{ item.total_price }}
+                    </p>
+
+                    <p class="text-[#C6A972] font-semibold mt-1">
+                        Refund Amount: ₹{{ refund_amount }}
                     </p>
 
                 </div>

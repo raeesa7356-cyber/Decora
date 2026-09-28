@@ -22,12 +22,10 @@ def global_context(request):
             ('Reports','chart-line','sales_report'),
             ('Returns','rotate-left','admin_return_requests'),
             ('Offers','tags','offer_list'),
-
-
         ]
     }
+    
     if request.user.is_authenticated:
-        
         context['cart_count']=Cart.objects.filter(user=request.user).count()
         context['wishlist_count']=Wishlist.objects.filter(user=request.user).count()
         try:

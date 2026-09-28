@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .models import Coupon
+from django.core.paginator import Paginator
+from django.utils import timezone
 
 
 def admin_required(view):
@@ -29,21 +31,35 @@ def coupon_generate_code(request):
     return JsonResponse({'code': code})
 
 
+
+
 @admin_required
 def coupon_list(request):
     coupons = Coupon.objects.filter(is_deleted=False).order_by('-created_at')
-    return render(request, 'admin_side/coupons/coupon_list.html', {'coupons': coupons})
+
+    status = request.GET.get('status', '')
+    now = timezone.now()
+    if status == 'active':
+        coupons = coupons.filter(is_active=True, valid_until__gte=now)
+    elif status == 'expired':
+        coupons = coupons.filter(valid_until__lt=now)
+
+    paginator = Paginator(coupons, 5)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'admin_side/coupons/coupon_list.html', {
+    'page_obj': page_obj,
+    'status': status,
+})
 
 
 def _parse_and_save_coupon(request, coupon=None):
-    """Shared logic for create + edit. Returns (success: bool, redirect_name: str)."""
     code = request.POST.get("code", "").strip().upper()
     discount_type = request.POST.get("discount_type", "flat")
 
     if discount_type not in ("flat", "percentage"):
         discount_type = "flat"
 
-        # On edit, exclude the current coupon from the duplicate-code check
     duplicate_qs = Coupon.objects.filter(code=code, is_deleted=False)
     if coupon:
         duplicate_qs = duplicate_qs.exclude(id=coupon.id)

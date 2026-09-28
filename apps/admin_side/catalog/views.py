@@ -5,31 +5,24 @@ from django.contrib import messages
 from django.db import transaction
 from django.core.paginator import Paginator
 from django.db.models import Q, Min
-
 from .models import (
     Product, Category, Room,
-    ProductVariant, VariantCombination, CombinationGallery
-)
+    ProductVariant, VariantCombination, CombinationGallery)
+
 from .forms import (
     CategoryForm, ProductForm, VariantValueForm, VariantForm,
-    VariantCombinationForm, RoomForm
-)
+    VariantCombinationForm, RoomForm)
+
 from django.http import JsonResponse
 from django.urls import reverse
 
-# ---------------------------------------------------------------------------
-# Activation rules
-# ---------------------------------------------------------------------------
-
 def combination_meets_activation_criteria(combo):
-
     has_color = combo.variants.filter(variant_type='Color').exists()
     has_images = bool(combo.main_image) and combo.gallery.count() >= 3
     return has_color and has_images
 
 
-def product_has_valid_combination(product):
-   
+def product_has_valid_combination(product):  
     combos = product.combinations.all()
     if not combos.exists():
         return False
@@ -41,16 +34,9 @@ def generate_sku(product, combo):
     return f"{product.id}-{'-'.join(parts)}-{combo.id}"
 
 
-# ---------------------------------------------------------------------------
-# Combination auto-generation
-# ---------------------------------------------------------------------------
-
 def cleanup_incomplete_combinations(product):
 
-    active_types = set(
-        product.variants.filter(is_active=True).values_list('variant_type', flat=True).distinct()
-    )
-
+    active_types = set(product.variants.filter(is_active=True).values_list('variant_type', flat=True).distinct())
     for combo in product.combinations.filter(is_active=False, original_price=0, stock_quantity=0, main_image=''):
         combo_types = set(combo.variants.values_list('variant_type', flat=True))
         if combo_types != active_types:
@@ -59,37 +45,33 @@ def cleanup_incomplete_combinations(product):
 
 def generate_combinations_from_selection(product, selected_variant_ids):
    
-    active_types = set(
-        product.variants.filter(is_active=True).values_list('variant_type', flat=True).distinct()
-    )
-
-    selected_variants = ProductVariant.objects.filter(
-        id__in=selected_variant_ids, product=product, is_active=True
-    )
-
+    active_types = set(product.variants.filter(is_active=True).values_list('variant_type', flat=True).distinct())
+    selected_variants = ProductVariant.objects.filter(id__in=selected_variant_ids, product=product, is_active=True)
     selected_by_type = {}
+    
     for v in selected_variants:
         selected_by_type.setdefault(v.variant_type, []).append(v)
 
     missing_types = active_types - set(selected_by_type.keys())
+    
     if missing_types:
         return None, f"Select at least one value for: {', '.join(sorted(missing_types))}."
 
     value_lists = list(selected_by_type.values())
-
-    existing_sets = [
-        frozenset(combo.variants.values_list('id', flat=True))
-        for combo in product.combinations.all()
-    ]
+    
+    for combo in product.combinations.all():
+        existing_types=set(combo.variants.values_list('variant_type',flat=True))
+        if existing_types!=active_types:
+            combo.delete()
+            
+    existing_sets = [frozenset(combo.variants.values_list('id', flat=True)) for combo in product.combinations.all()]
 
     created = []
     for combo_tuple in cartesian_product(*value_lists):
         variant_ids = frozenset(v.id for v in combo_tuple)
         if variant_ids in existing_sets:
             continue
-        new_combo = VariantCombination.objects.create(
-            product=product, original_price=0, stock_quantity=0, is_active=False
-        )
+        new_combo = VariantCombination.objects.create(product=product, original_price=0, stock_quantity=0, is_active=False)
         new_combo.variants.set(combo_tuple)
         new_combo.sku = generate_sku(product, new_combo)
         new_combo.save(update_fields=['sku'])
@@ -99,12 +81,10 @@ def generate_combinations_from_selection(product, selected_variant_ids):
     return created, None
 
 
-            # ---------------------------------------------------------------------------
-            # Categories & Rooms
-            # ---------------------------------------------------------------------------
+            
 
 def category_room_list(request):
-    category_list = Category.objects.all().order_by('-created_at')
+    category_list = Category.objects.all().order_by('-is_active')
 
     search_query = request.GET.get('search', '')
     if search_query:
@@ -199,9 +179,7 @@ def edit_room(request, pk):
     return render(request, 'admin_side/catalog/edit_room.html', {'room': room})
 
 
-    # ---------------------------------------------------------------------------
-    # Products
-    # ---------------------------------------------------------------------------
+  
 
 def admin_product_list(request):
     categories = Category.objects.filter(is_active=True)
@@ -222,15 +200,12 @@ def admin_product_list(request):
         min_price=Min(
             'combinations__original_price',
             filter=Q(combinations__is_active=True)
-        )
-    )
-
+        ))
+    
     if search_query:
         products = products.filter(
-            Q(name__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(combinations__sku__icontains=search_query)
-        ).distinct()
+            name__icontains=search_query) 
+          
 
     if category_id:
         products = products.filter(category_id=category_id)
@@ -245,6 +220,7 @@ def admin_product_list(request):
         products = products.filter(min_price__lte=max_price)
 
     sort_option = request.GET.get('sort', 'newest')
+    
     sort_map = {
         'newest': '-id',
         'oldest': 'id',
@@ -280,33 +256,33 @@ def admin_product_list(request):
 
 
 def admin_product_archives(request):
-
-    deleted_products = Product.objects.filter(is_active=False).order_by('-id').prefetch_related('combinations')
-    for product in deleted_products:
-        first_combo = product.combinations.first()
-        product.display_price = first_combo.original_price if first_combo else None
+    deleted_products = Product.objects.filter(is_active=False).order_by('-id')
     return render(request, 'admin_side/catalog/archieves.html', {
-    'products': deleted_products
+'products': deleted_products
 })
 
 
 def admin_product_restore(request, pk):
     product = get_object_or_404(Product, pk=pk)
+
     if not product.combinations.exists():
         messages.error(request, "Cannot restore product. Add at least one combination.")
     elif not product_has_valid_combination(product):
         incomplete_count = product.combinations.filter(is_active=False).count()
         messages.error(
-            request,
-            f"Cannot restore product — {incomplete_count} combination(s) still incomplete. "
-            "Every combination needs a Color value, a main image, and at least 3 gallery images "
-            "before this product can go live."
-        )
+        request,
+        f"Cannot restore product — {incomplete_count} combination(s) still incomplete. "
+        "Every combination needs a Color value, a main image, and at least 3 gallery images "
+        "before this product can go live."
+    )
     else:
         product.is_active = True
         product.save()
         messages.success(request, f'"{product.name}" restored.')
+
     return redirect('catalog:admin_product_archives')
+
+
 def admin_product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
@@ -326,15 +302,20 @@ def admin_product_upsert(request, pk=None):
         if form.is_valid():
             with transaction.atomic():
                 new_product = form.save(commit=False)
-
                 if not pk:
                     new_product.is_active = False
-
                 new_product.save()
                 form.save_m2m()
 
                 if pk:
-                    new_product.is_active = product_has_valid_combination(new_product)
+                    if form.cleaned_data['is_active']:
+                        if product_has_valid_combination(new_product):
+                            new_product.is_active=True
+                        else:
+                            new_product.is_active=False
+                            messages.error(request,'Activate all combinations before activating this product.')
+                    else:
+                        new_product.is_active=False
                     new_product.save()
 
                     if new_product.combinations.exists() and not new_product.is_active:
@@ -344,14 +325,19 @@ def admin_product_upsert(request, pk=None):
                             "please create or activate all variant combinations for this product first."
 
                         )
-                        return redirect('catalog:admin-product-edit', pk=product.id)
-                    else:
-                        messages.success(request, "Product saved successfully.")
-                else:
-                    messages.success(request, "Product saved successfully.")
 
-                return redirect('catalog:add_variant', product_id=new_product.id)
+                        return redirect('catalog:admin-product-edit', pk=product.id)
+
+                    else:
+                        messages.success(request, "Product updated successfully")
+                        return redirect('catalog:admin-product-list')
+
+                else:
+                    messages.success(request, "Product saved successfully, now add the variant.")
+                    return redirect('catalog:add_variant', product_id=new_product.id)
+
         else:
+            
             for field, errors in form.errors.items():
                 if field == '__all__':
                     for error in errors:
@@ -362,19 +348,19 @@ def admin_product_upsert(request, pk=None):
                     if field in form.fields
                     else field.replace('_', ' ').title()
                 )
+                
                 for error in errors:
                     messages.error(request, f"{field_name}: {error}")
+                    
     else:
         form = ProductForm(instance=product)
 
     return render(request, 'admin_side/catalog/forms.html', {
-'form': form,
-'product': product,})
+        'form': form,
+        'product': product,
+        })
 
 
-# ---------------------------------------------------------------------------
-# Variants (bulk add of values -> auto-generates combinations)
- # ---------------------------------------------------------------------------
 
 def admin_add_variant(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -387,11 +373,7 @@ def admin_add_variant(request, product_id):
             variant_type = form.cleaned_data['variant_type']
             values = form.cleaned_data['values']
 
-            existing_values = {
-                v.lower() for v in product.variants
-                .filter(variant_type=variant_type)
-                .values_list('variant_value', flat=True)
-            }
+            existing_values = {v.lower() for v in product.variants.filter(variant_type=variant_type).values_list('variant_value', flat=True)}
 
             created_count = 0
             for value in values:
@@ -411,14 +393,16 @@ def admin_add_variant(request, product_id):
                     f"Added {created_count} {variant_type} value(s). "
                     "Select values below and click Generate to create combinations."
                 )
+                
             else:
                 messages.info(request, "No new values added — they already exist.")
 
             return redirect('catalog:add_variant', product_id=product.id)
+        
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, error)
+                    messages.error(request, error)                   
     else:
         form = VariantValueForm()
 
@@ -489,7 +473,7 @@ def toggle_variant_status(request, pk):
             return redirect('catalog:add_variant', product_id=product.id)
 
     affected_count = variant.combinations.count()
-    variant.combinations.all().delete()  # cascade — removes combos that included this value
+    variant.combinations.all().delete()  
     variant.delete()
 
     product.is_active = product_has_valid_combination(product)
@@ -509,14 +493,11 @@ def admin_manage_variants(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     variants = product.variants.all()
     return render(request, 'admin_panel/products/variants.html', {
-'product': product,
-'variants': variants
-})
+        'product': product,
+        'variants': variants
+    })
 
 
-# ---------------------------------------------------------------------------
-# Combinations (price, stock, sku, main image + gallery)
-# ---------------------------------------------------------------------------
 
 def admin_add_combination(request, product_id, pk=None):
     product = get_object_or_404(Product, id=product_id)
@@ -526,7 +507,7 @@ def admin_add_combination(request, product_id, pk=None):
 
     if request.method == 'POST':
         form = VariantCombinationForm(request.POST, request.FILES, instance=combo, product=product)
-        form.fields['main_image'].required = False  # validated manually below
+        form.fields['main_image'].required = False 
 
         if form.is_valid():
 
@@ -538,12 +519,13 @@ def admin_add_combination(request, product_id, pk=None):
                 msg = "No default combination is set yet — please check 'Set as default combination' before saving."
                 if is_ajax:
                     return JsonResponse({'success': False, 'non_field_errors': [msg]}, status=400)
+                
                 messages.error(request, msg)
                 return render(request, 'admin_side/catalog/add_combination.html', {
-                'form': form, 'product': product, 'combination': combo,
-                'existing_gallery': existing_gallery,
-                'selected_variant_ids': list(request.POST.getlist('variants')),
-            })
+                    'form': form, 'product': product, 'combination': combo,
+                    'existing_gallery': existing_gallery,
+                    'selected_variant_ids': list(request.POST.getlist('variants')),
+                })
 
             with transaction.atomic():
                 new_combo = form.save(commit=False)
@@ -590,7 +572,6 @@ def admin_add_combination(request, product_id, pk=None):
                 if not new_combo.sku:
                     new_combo.sku = generate_sku(product, new_combo)
 
-                                # Only one combination per product may be default.
                 if form.cleaned_data.get('is_default'):
                     product.combinations.exclude(pk=new_combo.pk).update(is_default=False)
                     new_combo.is_default = True

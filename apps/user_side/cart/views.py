@@ -11,6 +11,7 @@ from apps.core.utils import get_combination_pricing
 
 @login_required
 def cart_view(request):
+    request.session.pop("buy_now", None)
     cart_items = (
         Cart.objects.filter(user=request.user)
         .select_related('product', 'product__category', 'combination')
@@ -171,4 +172,5 @@ def update_cart_quantity(request, cart_id):
                 'item_total': item_total,
                 'subtotal': subtotal,
                 'total': subtotal
+                
             })
