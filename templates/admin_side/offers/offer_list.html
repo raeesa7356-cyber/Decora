@@ -8,7 +8,7 @@
   <div class="flex items-center justify-between mb-8">
     <div>
       <p class="text-xs uppercase tracking-[0.25em] text-yellow-500/70 mb-1">Decora · Promotions</p>
-      <h1 class="text-2xl font-semibold text-white">Offers</h1>
+      <h1 class="text-2xl font-semibold text-white">Offer</h1>
     </div>
     <div class="flex gap-3">
       <a href="{% url 'referral_offer_list' %}"
@@ -21,6 +21,41 @@
         New Offer
       </a>
     </div>
+  </div>
+
+  <!-- Search / Filter -->
+  <div class="mb-6 bg-zinc-900 border border-yellow-500/10 rounded-xl p-4">
+    <form method="GET" class="flex flex-wrap items-center gap-3">
+      <div class="relative flex-1 min-w-[220px]">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+        </svg>
+        <input type="text" name="search" value="{{ search }}"
+               placeholder="Search by offer name, product or category..."
+               class="w-full h-10 pl-10 pr-3 bg-zinc-950 border border-zinc-700 rounded-md text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-yellow-500/60 transition">
+      </div>
+
+      <select name="status"
+              class="h-10 bg-zinc-950 border border-zinc-700 rounded-md px-3 text-sm text-white focus:outline-none focus:border-yellow-500/60 transition">
+        <option value="">All Status</option>
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+      </select>
+
+      <button type="submit"
+              class="h-10 px-5 bg-yellow-500 hover:bg-yellow-400 text-black text-sm font-medium rounded-md transition-colors">
+        Apply
+      </button>
+
+      {% if search or status %}
+      <a href="{% url 'offer_list' %}"
+         class="h-10 flex items-center px-4 text-sm text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-md transition-colors">
+        Clear
+      </a>
+      {% endif %}
+    </form>
   </div>
  
   <!-- Messages -->
@@ -52,7 +87,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-zinc-800">
-          {% for offer in offers %}
+          {% for offer in page_obj %}
           <tr class="hover:bg-zinc-800/40 transition-colors">
             <td class="px-5 py-4">
               {% if offer.offer_kind == 'product' %}
@@ -101,7 +136,7 @@
           {% empty %}
           <tr>
             <td colspan="6" class="px-5 py-16 text-center">
-              <p class="text-zinc-500 text-sm mb-3">No offers yet.</p>
+              <p class="text-zinc-500 text-sm mb-3">No offers found.</p>
               <a href="{% url 'offer_create' %}" class="text-yellow-400 hover:text-yellow-300 text-sm font-medium underline">
                 Create your first offer
               </a>
@@ -112,6 +147,30 @@
       </table>
     </div>
   </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-center mt-6 gap-1">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}"
+       class="w-9 h-9 flex items-center justify-center rounded-md text-zinc-400 hover:text-yellow-400 hover:bg-zinc-800 transition text-sm">
+      <i class="fa-solid fa-angle-left text-xs"></i>
+    </a>
+    {% endif %}
+
+    <span class="px-4 h-9 flex items-center justify-center rounded-md bg-yellow-500 text-black text-sm font-semibold">
+      {{ page_obj.number }}
+    </span>
+    <span class="text-zinc-600 text-sm mx-1">of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}"
+       class="w-9 h-9 flex items-center justify-center rounded-md text-zinc-400 hover:text-yellow-400 hover:bg-zinc-800 transition text-sm">
+      <i class="fa-solid fa-angle-right text-xs"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 <!-- Delete Confirmation Modal -->
 <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -152,4 +211,3 @@
   }
 </script>
 {% endblock %}
- 

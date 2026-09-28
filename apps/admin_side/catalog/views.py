@@ -280,33 +280,33 @@ def admin_product_list(request):
 
 
 def admin_product_archives(request):
-    deleted_products = Product.objects.filter(is_active=False).order_by('-id')
+
+    deleted_products = Product.objects.filter(is_active=False).order_by('-id').prefetch_related('combinations')
+    for product in deleted_products:
+        first_combo = product.combinations.first()
+        product.display_price = first_combo.original_price if first_combo else None
     return render(request, 'admin_side/catalog/archieves.html', {
-'products': deleted_products
+    'products': deleted_products
 })
 
 
 def admin_product_restore(request, pk):
     product = get_object_or_404(Product, pk=pk)
-
     if not product.combinations.exists():
         messages.error(request, "Cannot restore product. Add at least one combination.")
     elif not product_has_valid_combination(product):
         incomplete_count = product.combinations.filter(is_active=False).count()
         messages.error(
-        request,
-        f"Cannot restore product — {incomplete_count} combination(s) still incomplete. "
-        "Every combination needs a Color value, a main image, and at least 3 gallery images "
-        "before this product can go live."
-    )
+            request,
+            f"Cannot restore product — {incomplete_count} combination(s) still incomplete. "
+            "Every combination needs a Color value, a main image, and at least 3 gallery images "
+            "before this product can go live."
+        )
     else:
         product.is_active = True
         product.save()
         messages.success(request, f'"{product.name}" restored.')
-
     return redirect('catalog:admin_product_archives')
-
-
 def admin_product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':

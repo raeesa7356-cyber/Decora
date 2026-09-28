@@ -88,69 +88,63 @@
 </form>
 
     <!-- Table Section -->
-    <div id="table-container" class="bg-[#111111] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-        <div class="overflow-x-auto no-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[1000px]">
-                <thead class="bg-black/40 text-[10px] uppercase text-gray-500 font-bold tracking-[0.2em]">
-                    <tr>
-                        <th class="px-8 py-6">Customer Details</th>
-                        <th class="px-8 py-6">Contact Info</th>
-                        <th class="px-8 py-6">Joined Date</th>
-                        <th class="px-8 py-6 text-center">Orders</th>
-                        <th class="px-8 py-6">Status</th>
-                        <th class="px-8 py-6 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5 text-sm text-gray-400">
-                    {% for user in users %}
-                    <tr class="hover:bg-white/[0.02] transition-colors group">
-                        <td class="px-8 py-5">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/5 flex items-center justify-center text-[#D4AF37] font-bold border border-[#D4AF37]/20">
-                                    {% if user.first_name %}{{ user.first_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}
-                                </div>
-                                <div>
-                                    <p class="text-white font-semibold tracking-tight">{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</p>
-                                    <p class="text-[10px] text-gray-600">ID: #{{ user.id }} | User: {{ user.username }}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-8 py-5"><p class="text-xs text-gray-300">{{ user.email }}</p></td>
-                        <td class="px-8 py-5 text-xs">{{ user.date_joined|date:"M d, Y" }}</td>
-                        <td class="px-8 py-5 text-center font-mono text-[#D4AF37]">0</td>
-                        <td class="px-8 py-5">
-                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter {% if user.is_active %} bg-green-500/10 text-green-500 {% else %} bg-red-500/10 text-red-500 {% endif %}">
-                                {% if user.is_active %}Active{% else %}Blocked{% endif %}
-                            </span>
-                        </td>
-                        <td class="px-8 py-5 text-right">
-                            <div class="flex justify-end items-center space-x-6">
-                                <a href="{% url 'user-detail' user_id=user.id %}" class="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-[#D4AF37] transition-all duration-300 group">
-                                    <span>View</span>
-                                    <div class="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center group-hover:border-[#D4AF37]/30 group-hover:bg-[#D4AF37]/5 transition-all">
-                                        <i class="fa-solid fa-eye text-[10px]"></i>
-                                    </div>
-                                </a>
-                                <span class="h-4 w-px bg-white/5"></span>
-                                
-                                <!-- Toggle Form remains separate for POST action -->
-                                <form id="toggle-form-{{ user.id }}" action="{% url 'toggle-user-status' user.id %}" method="POST" class="hidden">
-                                    {% csrf_token %}
-                                </form>
-                                <button type="button" 
-                                        onclick="openModal('{{ user.id }}', '{{ user.username }}', '{{ user.is_active|yesno:'true,false' }}')"
-                                        class="w-20 text-right text-[10px] font-bold uppercase tracking-[0.2em] transition-colors {% if user.is_active %} text-gray-600 hover:text-red-500 {% else %} text-green-500 hover:text-green-400 {% endif %}">
-                                    {% if user.is_active %}Block{% else %}Unblock{% endif %}
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="6" class="px-8 py-20 text-center text-gray-600 italic tracking-widest uppercase text-xs">No users found.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+   <div id="table-container" class="bg-[#111111] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+    <table class="w-full text-left border-collapse table-fixed">
+        <thead class="bg-black/40 text-[10px] uppercase text-gray-500 font-bold tracking-[0.2em]">
+            <tr>
+                <th class="w-[28%] px-6 py-6">Customer Details</th>
+                <th class="w-[22%] px-6 py-6">Contact Info</th>
+                <th class="w-[14%] px-6 py-6">Joined Date</th>
+                <th class="w-[10%] px-6 py-6 text-center">Orders</th>
+                <th class="w-[12%] px-6 py-6">Status</th>
+                <th class="w-[14%] px-6 py-6 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5 text-sm text-gray-400">
+            {% for user in users %}
+            <tr class="hover:bg-white/[0.02] transition-colors group">
+                <td class="px-6 py-5">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/5 flex items-center justify-center text-[#D4AF37] font-bold border border-[#D4AF37]/20">
+                            {% if user.first_name %}{{ user.first_name|first|upper }}{% else %}{{ user.username|first|upper }}{% endif %}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-white font-semibold tracking-tight truncate">{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</p>
+                            <p class="text-[10px] text-gray-600 truncate">ID: #{{ user.id }} | {{ user.username }}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-5"><p class="text-xs text-gray-300 truncate" title="{{ user.email }}">{{ user.email }}</p></td>
+                <td class="px-6 py-5 text-xs">{{ user.date_joined|date:"M d, Y" }}</td>
+                <td class="px-6 py-5 text-center font-mono text-[#D4AF37]">{{ user.order_count }}</td>
+                <td class="px-6 py-5">
+                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter {% if user.is_active %}bg-green-500/10 text-green-500{% else %}bg-red-500/10 text-red-500{% endif %}">
+                        {% if user.is_active %}Active{% else %}Blocked{% endif %}
+                    </span>
+                </td>
+                <td class="px-6 py-5">
+                    <div class="flex items-center justify-center gap-4">
+                        <form id="toggle-form-{{ user.id }}" action="{% url 'toggle-user-status' user.id %}" method="POST" class="hidden">
+                            {% csrf_token %}
+                        </form>
+                        <a href="{% url 'user-detail' user_id=user.id %}" title="View"
+                           class="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center text-gray-500 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5 transition-all">
+                            <i class="fa-solid fa-eye text-[10px]"></i>
+                        </a>
+                        <button type="button"
+                                onclick="openModal('{{ user.id }}', '{{ user.username }}', '{{ user.is_active|yesno:'true,false' }}')"
+                                class="text-[10px] font-bold uppercase tracking-widest transition-colors {% if user.is_active %}text-gray-600 hover:text-red-500{% else %}text-green-500 hover:text-green-400{% endif %}">
+                            {% if user.is_active %}Block{% else %}Unblock{% endif %}
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-8 py-20 text-center text-gray-600 italic tracking-widest uppercase text-xs">No users found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
         <!-- Pagination Section -->
         {% if users.has_other_pages %}

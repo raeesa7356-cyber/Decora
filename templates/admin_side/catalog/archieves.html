@@ -33,14 +33,14 @@
                     <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Category</th>
                     <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Original Price</th>
                     <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">Status</th>
-                    <th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 text-right">Recovery</th>
-                </tr>
+<!-- header: text-right -> text-center -->
+<th class="p-5 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500 text-center">Recovery</th>                </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
                 {% for product in products %}
                 <tr class="hover:bg-white/[0.01] transition-colors group opacity-80 hover:opacity-100">
                     <td class="p-5">
-                        <div class="flex items-center gap-4">
+    <div class="flex justify-center gap-3">
                             <div class="w-12 h-12 rounded-lg bg-black border border-white/5 overflow-hidden grayscale group-hover:grayscale-0 transition-all">
                                 {% if product.variants.first.variant_image %}
                                     <img src="{{ product.variants.first.variant_image.url }}" class="w-full h-full object-cover">
@@ -57,8 +57,8 @@
                         </div>
                     </td>
                     <td class="p-5 text-sm text-gray-600 italic">{{ product.category.name }}</td>
-                    <td class="p-5 text-sm font-bold text-gray-500">${{ product.base_price }}</td>
-                    <td class="p-5">
+<td class="p-5 text-sm font-bold text-gray-500">${{ product.display_price|default:"0.00" }}</td>                   
+ <td class="p-5">
                         <span class="px-3 py-1 rounded-full bg-white/5 text-gray-500 text-[9px] font-black uppercase tracking-widest border border-white/10">Hidden</span>
                     </td>
                     <td class="p-5 text-right">
